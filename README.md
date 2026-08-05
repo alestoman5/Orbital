@@ -49,124 +49,50 @@ and mistype — the most. Block *contents* only get light-touch coverage
 (`BLOCK_OPTIONS` in `keywords.ts`) and aren't flagged as unknown if
 unrecognized, to avoid false positives.
 
-## Try it locally (no publishing needed)
+## Installation
+
+This extension isn't on the VS Code Marketplace yet, so install it from a
+`.vsix` package:
+
+1. Download the `.vsix` file (or build one — see below).
+2. In VS Code, open the Extensions view → "..." menu → **Install from VSIX**,
+   and pick the file. Or from a terminal:
+   ```bash
+   code --install-extension orca-inp-0.1.0.vsix
+   ```
+
+Once installed, opening any `.inp` file automatically enables syntax
+highlighting, diagnostics, autocompletion, snippets, and hover info — no
+extra setup needed.
+
+### Building the `.vsix` yourself
 
 ```bash
 npm install
-npm run compile
-```
-
-Then in VS Code: **Run and Debug → "Launch Extension"** (or press `F5`).
-This opens a new VS Code window with the extension loaded — open any
-`.inp` file there to try it.
-
-If you don't have a launch config yet, create `.vscode/launch.json`:
-
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Launch Extension",
-      "type": "extensionHost",
-      "request": "launch",
-      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: compile"
-    }
-  ]
-}
-```
-
-## Packaging a `.vsix` (install without publishing)
-
-```bash
 npm install -g @vscode/vsce
 vsce package
 ```
 
-This produces `orca-inp-0.1.0.vsix`. Install it with:
+This produces `orca-inp-0.1.0.vsix` in the project folder, ready to install
+as described above.
 
-```bash
-code --install-extension orca-inp-0.1.0.vsix
-```
+## Settings
 
-or via the Extensions view → "..." menu → **Install from VSIX**.
-
-## Publishing to the VS Code Marketplace
-
-1. Create a [publisher](https://marketplace.visualstudio.com/manage) and
-   an Azure DevOps Personal Access Token.
-2. Update `publisher` in `package.json` to your publisher id.
-3. `vsce login <publisher>` then `vsce publish`.
-
-You can also list it on [Open VSX](https://open-vsx.org/) (`ovsx publish`)
-so it's available to VSCodium / non-Microsoft-marketplace editors.
-
-## Project layout
-
-```
-package.json                 extension manifest (contributes, activation)
-language-configuration.json  comments, brackets, word pattern
-syntaxes/orca.tmLanguage.json TextMate grammar (highlighting)
-snippets/orca.json           job-type snippets
-src/keywords.ts              reference lists: methods, basis sets, blocks
-src/diagnostics.ts           structural linting logic
-src/completion.ts            context-aware autocomplete
-src/hover.ts                 hover documentation
-src/extension.ts             activation / wiring
-test/                        unit tests (mocha + ts-node)
-```
-
-## Running the tests
-
-```
-npm install
-npm test
-```
-
-Tests run under plain Node + `ts-node`/`mocha`, not `@vscode/test-electron` —
-`src/diagnostics.ts`, `src/completion.ts` and `src/hover.ts` take
-`vscode.TextDocument`/etc. as plain parameters, so `test/mocks/vscode.ts`
-stands in for the real `vscode` module (only implementing the surface those
-files touch) via a `require('vscode')` patch in
-`test/register-vscode-mock.js`. `src/keywords.ts` has no `vscode` dependency
-and is tested directly.
-
-Requires Node 22.6+ (the test setup disables Node's native TypeScript
-stripping via `--no-experimental-strip-types` so `ts-node`'s CommonJS
-require hook handles `.ts` files instead — that flag doesn't exist on older
-Node versions).
-
-## Extending the keyword lists
-
-`src/keywords.ts` is intentionally not exhaustive — ORCA has hundreds of
-keywords across versions. The lists there cover common DFT/HF/MP2/CC
-workflows. If diagnostics flag a keyword you use often as "unrecognized",
-just add it to the relevant array (`JOB_KEYWORDS`, `METHOD_KEYWORDS`,
-`BASIS_KEYWORDS`, `BLOCK_NAMES`, or `BLOCK_OPTIONS`).
-
-To disable the unknown-keyword warning entirely, set in VS Code settings:
+To turn off the "unrecognized keyword" diagnostic, add this to your VS Code
+settings:
 
 ```json
 "orcaInp.diagnostics.unknownKeywordSeverity": "off"
 ```
 
-## Known limitations / roadmap ideas
+## Known limitations
 
-- The `%geom ... Constraints ... end ... end` nested-block case is handled
-  correctly by the diagnostics linter (proper stack-based matching), but
-  the *grammar* (highlighting) treats the first `end` it meets as the
-  block close — nested `%block` highlighting is v0.1-quality, contributions
-  welcome.
-- No hover-provider yet (e.g. showing a short description of a keyword on
-  hover) — would be a natural next feature using the same keyword data.
-- No parsing of `.out` files yet — could be a companion feature/extension
-  (progress indicator on convergence, imaginary-frequency count, etc.).
-- Keyword lists could be auto-generated from the ORCA manual PDF.
-
-Contributions and PRs welcome — this is meant to be a community tool for
-people running ORCA day to day.
+- Nested `%block` regions (e.g. `%geom ... Constraints ... end ... end`) are
+  handled correctly by the diagnostics (unclosed/stray `end` checks), but
+  syntax *highlighting* treats the first `end` it meets as the block close,
+  so nested blocks can highlight a little oddly.
+- No parsing of `.out` result files yet (e.g. convergence progress,
+  imaginary-frequency counts) — `.inp` input files only, for now.
 
 ## License
 
