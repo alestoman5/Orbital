@@ -1,0 +1,85 @@
+{
+  "Single point energy": {
+    "prefix": "orca-sp",
+    "body": [
+      "# ${1:description}",
+      "! ${2:B3LYP} ${3:def2-TZVP} ${4:D4}",
+      "%pal nprocs ${5:4} end",
+      "%maxcore ${6:2000}",
+      "* xyz ${7:0} ${8:1}",
+      "${9:O   0.000000   0.000000   0.000000}",
+      "*"
+    ],
+    "description": "Minimal single point energy calculation"
+  },
+
+  "Geometry optimization + frequencies": {
+    "prefix": "orca-optfreq",
+    "body": [
+      "# ${1:description}",
+      "! ${2:B3LYP} ${3:def2-TZVP} ${4:D4} RIJCOSX def2/J Opt Freq",
+      "%pal nprocs ${5:4} end",
+      "%maxcore ${6:2000}",
+      "* xyz ${7:0} ${8:1}",
+      "${9:O   0.000000   0.000000   0.000000}",
+      "*"
+    ],
+    "description": "Geometry optimization followed by frequency calculation"
+  },
+
+  "TD-DFT UV/Vis": {
+    "prefix": "orca-tddft",
+    "body": [
+      "# ${1:UV/Vis via TD-DFT}",
+      "! ${2:wB97X-D4} ${3:def2-TZVP} RIJCOSX def2/J",
+      "%pal nprocs ${4:4} end",
+      "%maxcore ${5:2000}",
+      "%tddft",
+      "  nroots ${6:10}",
+      "end",
+      "* xyzfile ${7:0} ${8:1} ${9:molecule.xyz}"
+    ],
+    "description": "TD-DFT excited states / UV-Vis spectrum"
+  },
+
+  "Transition state (OptTS + Freq)": {
+    "prefix": "orca-optts",
+    "body": [
+      "# ${1:transition state search}",
+      "! ${2:B3LYP} ${3:def2-TZVP} ${4:D4} OptTS Freq",
+      "%pal nprocs ${5:4} end",
+      "%maxcore ${6:2000}",
+      "%geom",
+      "  Calc_Hess true",
+      "end",
+      "* xyz ${7:0} ${8:1}",
+      "${9:# atoms here}",
+      "*"
+    ],
+    "description": "Transition state optimization with analytic Hessian at start"
+  },
+
+  "%pal block": {
+    "prefix": "orca-pal",
+    "body": "%pal nprocs ${1:4} end",
+    "description": "Parallelization block"
+  },
+
+  "%geom constraints block": {
+    "prefix": "orca-constraints",
+    "body": [
+      "%geom",
+      "  Constraints",
+      "    { B ${1:0} ${2:1} }",
+      "  end",
+      "end"
+    ],
+    "description": "Constrain a bond between two atom indices"
+  },
+
+  "Implicit solvation (CPCM)": {
+    "prefix": "orca-cpcm",
+    "body": "! ${1:B3LYP} ${2:def2-TZVP} CPCM(${3:water})",
+    "description": "Add implicit solvation via CPCM"
+  }
+}

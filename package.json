@@ -1,0 +1,87 @@
+{
+  "name": "orca-inp",
+  "displayName": "ORCA Input Files (.inp)",
+  "description": "Syntax highlighting, diagnostics and autocompletion for ORCA quantum chemistry input files (.inp)",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "alestoman5",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alestoman5/Orbital"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Snippets"
+  ],
+  "keywords": [
+    "orca",
+    "quantum chemistry",
+    "computational chemistry",
+    "dft",
+    "inp"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:orca-inp"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "orca-inp",
+        "aliases": ["ORCA Input", "orca-inp"],
+        "extensions": [".inp"],
+        "filenamePatterns": ["*.inp"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/orca-icon.svg",
+          "dark": "./images/orca-icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "orca-inp",
+        "scopeName": "source.orca-inp",
+        "path": "./syntaxes/orca.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "orca-inp",
+        "path": "./snippets/orca.json"
+      }
+    ],
+    "configuration": {
+      "title": "ORCA Input",
+      "properties": {
+        "orcaInp.diagnostics.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable live syntax/structure diagnostics for .inp files."
+        },
+        "orcaInp.diagnostics.unknownKeywordSeverity": {
+          "type": "string",
+          "enum": ["error", "warning", "information", "off"],
+          "default": "warning",
+          "description": "Severity used when a simple-input (!) keyword is not recognized."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.x",
+    "typescript": "^5.4.0",
+    "@vscode/vsce": "^2.24.0"
+  }
+}

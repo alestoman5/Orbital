@@ -1,0 +1,108 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ORCA Input",
+  "scopeName": "source.orca-inp",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#simple-input-line" },
+    { "include": "#block-region" },
+    { "include": "#coordinate-block" },
+    { "include": "#numbers" },
+    { "include": "#strings" }
+  ],
+  "repository": {
+    "comment": {
+      "match": "#.*$",
+      "name": "comment.line.number-sign.orca"
+    },
+
+    "simple-input-line": {
+      "begin": "^\\s*(!)",
+      "beginCaptures": {
+        "1": { "name": "keyword.operator.simple-input.orca" }
+      },
+      "end": "$",
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#job-keywords" },
+        { "include": "#method-keywords" },
+        { "include": "#basis-keywords" },
+        { "include": "#numbers" }
+      ]
+    },
+
+    "job-keywords": {
+      "match": "(?i)\\b(Opt|OptTS|Freq|NumFreq|NumNumFreq|IRC|NEB-TS|NEB|GOAT|DOCKER|SP|ScanTS|MD|Copt|Conf|TightOpt|LooseOpt|TightSCF|LooseSCF|VeryTightSCF|SlowConv|NormalSCF|PAL[0-9]+|RIJCOSX|RIJK|RI|NoRI|CPCM(?:\\([A-Za-z0-9]+\\))?|SMD|D3BJ|D3ZERO|D4|Engrad|AnFreq)\\b",
+      "name": "keyword.control.job.orca"
+    },
+
+    "method-keywords": {
+      "match": "(?i)\\b(HF|DFT|B3LYP|BP86|BLYP|PBE|PBE0|TPSS|TPSSh|M06|M06-2X|M062X|wB97X|wB97X-D4|wB97X-D3|CAM-B3LYP|B2PLYP|r2SCAN|r2SCAN-3c|B97-3c|PBEh-3c|MP2|RI-MP2|SCS-MP2|CCSD|CCSD\\(T\\)|DLPNO-CCSD|DLPNO-CCSD\\(T\\)|CASSCF|NEVPT2|CIS|TD-DFT|TDDFT|XTB|XTB1|XTB2|GFN2-XTB)\\b",
+      "name": "entity.name.function.method.orca"
+    },
+
+    "basis-keywords": {
+      "match": "(?i)\\b(def2-SVP|def2-SV\\(P\\)|def2-TZVP|def2-TZVPP|def2-QZVP|def2-QZVPP|def2-ECP|ma-def2-SVP|ma-def2-TZVP|def2/J|def2/JK|def2-TZVP/C|cc-pVDZ|cc-pVTZ|cc-pVQZ|cc-pVTZ/C|cc-pVDZ/C|aug-cc-pVDZ|aug-cc-pVTZ|6-31G|6-31G\\*|6-311G|STO-3G)\\b",
+      "name": "support.type.basis.orca"
+    },
+
+    "block-region": {
+      "begin": "(?i)^\\s*(%)([A-Za-z][A-Za-z0-9_]*)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.block.orca" },
+        "2": { "name": "keyword.control.block-name.orca" }
+      },
+      "end": "(?i)^\\s*(end)\\b",
+      "endCaptures": {
+        "1": { "name": "keyword.control.block-end.orca" }
+      },
+      "patterns": [
+        { "include": "#comment" },
+        { "include": "#numbers" },
+        { "include": "#strings" },
+        {
+          "match": "(?i)\\bend\\b",
+          "name": "keyword.control.block-end.orca"
+        },
+        {
+          "match": "(?i)\\b(nprocs|maxcore|maxiter|convergence|nroots|epsilon|dipole|true|false|tight|Constraints)\\b",
+          "name": "variable.parameter.block-option.orca"
+        },
+        {
+          "match": "\\{[^}]*\\}",
+          "name": "constant.other.constraint.orca"
+        }
+      ]
+    },
+
+    "coordinate-block": {
+      "begin": "^\\s*(\\*)\\s*(xyz|xyzfile|int|gzmt|internal)?",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.coordinate-block.orca" },
+        "2": { "name": "keyword.control.coordinate-type.orca" }
+      },
+      "end": "^\\s*(\\*)\\s*$",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.coordinate-block.orca" }
+      },
+      "patterns": [
+        { "include": "#comment" },
+        {
+          "match": "^\\s*([A-Za-z]{1,3})\\b",
+          "name": "entity.name.tag.element.orca"
+        },
+        { "include": "#numbers" }
+      ]
+    },
+
+    "numbers": {
+      "match": "-?\\b\\d+\\.?\\d*(?:[eE][+-]?\\d+)?\\b",
+      "name": "constant.numeric.orca"
+    },
+
+    "strings": {
+      "match": "\"[^\"]*\"",
+      "name": "string.quoted.double.orca"
+    }
+  }
+}
