@@ -113,8 +113,30 @@ snippets/orca.json           job-type snippets
 src/keywords.ts              reference lists: methods, basis sets, blocks
 src/diagnostics.ts           structural linting logic
 src/completion.ts            context-aware autocomplete
+src/hover.ts                 hover documentation
 src/extension.ts             activation / wiring
+test/                        unit tests (mocha + ts-node)
 ```
+
+## Running the tests
+
+```
+npm install
+npm test
+```
+
+Tests run under plain Node + `ts-node`/`mocha`, not `@vscode/test-electron` —
+`src/diagnostics.ts`, `src/completion.ts` and `src/hover.ts` take
+`vscode.TextDocument`/etc. as plain parameters, so `test/mocks/vscode.ts`
+stands in for the real `vscode` module (only implementing the surface those
+files touch) via a `require('vscode')` patch in
+`test/register-vscode-mock.js`. `src/keywords.ts` has no `vscode` dependency
+and is tested directly.
+
+Requires Node 22.6+ (the test setup disables Node's native TypeScript
+stripping via `--no-experimental-strip-types` so `ts-node`'s CommonJS
+require hook handles `.ts` files instead — that flag doesn't exist on older
+Node versions).
 
 ## Extending the keyword lists
 

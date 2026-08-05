@@ -1,0 +1,7 @@
+{
+  "require": ["ts-node/register", "test/register-vscode-mock.js"],
+  "extension": ["ts"],
+  "spec": ["test/**/*.test.ts"],
+  "timeout": 5000,
+  "node-option": ["no-experimental-strip-types"]
+}
