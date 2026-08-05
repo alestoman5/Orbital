@@ -1,8 +1,8 @@
 # Contributing
 
 Thanks for considering a contribution to the ORCA Input (.inp) extension.
-This covers local setup, running the tests, and packaging/publishing —
-for a user-facing overview of the extension itself, see [README.md](./README.md).
+This covers local setup, running the tests, and packaging a `.vsix` — for a
+user-facing overview of the extension itself, see [README.md](./README.md).
 
 ## Project layout
 
@@ -93,16 +93,6 @@ code --install-extension orca-inp-<version>.vsix
 ```
 
 or via the Extensions view → "..." menu → **Install from VSIX**.
-
-## Publishing to the VS Code Marketplace
-
-1. Create a [publisher](https://marketplace.visualstudio.com/manage) and an
-   Azure DevOps Personal Access Token.
-2. Update `publisher` in `package.json` to your publisher id.
-3. `vsce login <publisher>` then `vsce publish`.
-
-You can also list it on [Open VSX](https://open-vsx.org/) (`ovsx publish`)
-so it's available to VSCodium / non-Microsoft-marketplace editors.
 
 ## Roadmap ideas
 
