@@ -25,6 +25,12 @@ Syntax highlighting, structural diagnostics, and autocompletion for
   file and hit Tab/Enter).
 - **Hover**: hovering a recognized simple-input keyword or a `%block`
   name shows a short description.
+- **`.out` run status** (early support): while an `.inp` file is active,
+  a status bar item tracks its matching `.out` file (same name, same
+  folder) and shows `running`, `converged`, or `failed` as ORCA writes to
+  it, re-parsing on change (debounced ~1.5s). More output parsing (SCF/
+  optimization/frequency detail, Avogadro hand-off) is in progress — see
+  [Known limitations](#known-limitations).
 
 ## Keyword coverage
 
@@ -91,8 +97,15 @@ settings:
   handled correctly by the diagnostics (unclosed/stray `end` checks), but
   syntax *highlighting* treats the first `end` it meets as the block close,
   so nested blocks can highlight a little oddly.
-- No parsing of `.out` result files yet (e.g. convergence progress,
-  imaginary-frequency counts) — `.inp` input files only, for now.
+- `.out` parsing currently covers termination status, the final single-
+  point energy, geometry-optimization convergence cycles, the final
+  Cartesian geometry, total run time, and `Warning:` lines. Frequencies,
+  thermochemistry, an imaginary-frequency diagnostic, an Avogadro
+  hand-off, and a richer summary view are planned but not implemented
+  yet. The geometry-convergence table and SCF-iteration parsers are
+  best-effort (not verified against a real ORCA 6.x run in the
+  environment this was built in) — see the doc comments in
+  `src/outparser/sections.ts` for specifics.
 
 ## License
 

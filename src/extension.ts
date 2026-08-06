@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { lintDocument } from './diagnostics';
 import { OrcaCompletionProvider } from './completion';
 import { OrcaHoverProvider } from './hover';
+import { OutputStatusBar } from './outparser/statusBar';
 
 const LANGUAGE_ID = 'orca-inp';
 
@@ -41,6 +42,8 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.languages.registerHoverProvider(LANGUAGE_ID, new OrcaHoverProvider())
   );
+
+  context.subscriptions.push(new OutputStatusBar());
 }
 
 export function deactivate(): void {
