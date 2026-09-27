@@ -7,3 +7,4 @@ tsconfig.json
 **/.eslintrc.json
 node_modules/**
 .git/**
+docs/**

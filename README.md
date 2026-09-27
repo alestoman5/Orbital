@@ -3,6 +3,8 @@
 Syntax highlighting, structural diagnostics, and autocompletion for
 [ORCA](https://orcaforum.kofo.mpg.de/) quantum-chemistry `.inp` input files.
 
+![Syntax highlighting and live diagnostics for an ORCA input file](docs/screenshots/diagnostics.png)
+
 ## Features
 
 - **Syntax highlighting** for simple-input lines (`! B3LYP def2-TZVP D4`),
@@ -31,6 +33,23 @@ Syntax highlighting, structural diagnostics, and autocompletion for
   it, re-parsing on change (debounced ~1.5s). More output parsing (SCF/
   optimization/frequency detail, Avogadro hand-off) is in progress — see
   [Known limitations](#known-limitations).
+
+## Screenshots
+
+**Autocompletion** — methods, functionals and basis sets after `!`, with a
+short description of the selected entry:
+
+![Completion list after typing wB97 on a simple-input line](docs/screenshots/completion.png)
+
+**Hover** — a one-line description of recognized keywords and `%block`
+names:
+
+![Hover tooltip on the B3LYP keyword](docs/screenshots/hover.png)
+
+**`.out` run status** — the status bar tracks the matching `.out` file; the
+tooltip shows the final single-point energy:
+
+![Status bar showing "ORCA: converged" with the final energy in the tooltip](docs/screenshots/out-status.png)
 
 ## Keyword coverage
 
