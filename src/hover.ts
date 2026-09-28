@@ -3,8 +3,9 @@ import {
   KEYWORD_DOCS, BLOCK_DOCS, RUNTYPE_KEYWORDS, WAVEFUNCTION_METHOD_KEYWORDS,
   DFT_FUNCTIONAL_KEYWORDS, BASIS_KEYWORDS, AUX_BASIS_KEYWORDS, ECP_KEYWORDS,
   ALGORITHMIC_KEYWORDS, RELATIVISTIC_KEYWORDS, NEB_KEYWORDS,
-  MISC_STRUCTURE_KEYWORDS, BLOCK_NAMES, isKnownSimpleKeyword
+  MISC_STRUCTURE_KEYWORDS, BLOCK_NAMES, BLOCK_OPTIONS_BY_BLOCK, isKnownSimpleKeyword
 } from './keywords';
+import { enclosingBlock } from './completion';
 
 function categoryFallback(token: string): string | null {
   const lower = token.toLowerCase();
@@ -21,6 +22,9 @@ function categoryFallback(token: string): string | null {
   if (inList(ALGORITHMIC_KEYWORDS)) return 'SCF/algorithmic control keyword.';
   if (inList(MISC_STRUCTURE_KEYWORDS)) return 'General input-structure keyword.';
   if (/^CPCM\(/i.test(token)) return 'Implicit solvation via the CPCM model, with the named solvent.';
+  if (/^CPCMC\(/i.test(token)) return 'CPCM with the COSMO epsilon function, with the named solvent.';
+  if (/^SMD\(/i.test(token)) return 'Implicit solvation via the SMD model, with the named solvent.';
+  if (/^ALPB\(/i.test(token)) return 'Analytical linearized Poisson-Boltzmann solvation for xTB methods, with the named solvent.';
   if (/^PAL\d+$/i.test(token)) return 'Shorthand for %pal nprocs <n> end.';
   if (/^cc-p/i.test(token)) return 'Dunning correlation-consistent basis set family.';
   if (/^(DKH|ZORA)-/i.test(token)) return 'Relativistically recontracted basis set for use with this Hamiltonian.';
@@ -62,6 +66,14 @@ export class OrcaHoverProvider implements vscode.HoverProvider {
         KEYWORD_DOCS[Object.keys(KEYWORD_DOCS).find(k => k.toLowerCase() === word.toLowerCase()) || ''];
       const text = exact || categoryFallback(word) || 'Recognized ORCA simple-input keyword.';
       return new vscode.Hover(new vscode.MarkdownString(`**${word}** — ${text}`));
+    }
+
+    // Option inside a %block: "  Calc_Hess true" within %geom ... end
+    const block = enclosingBlock(doc, position.line);
+    const options = block !== undefined ? BLOCK_OPTIONS_BY_BLOCK[block] : undefined;
+    const option = options?.find(o => o.name.toLowerCase() === word.toLowerCase());
+    if (option) {
+      return new vscode.Hover(new vscode.MarkdownString(`**${option.name}** (%${block}) — ${option.doc}`));
     }
 
     return undefined;

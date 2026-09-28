@@ -6,7 +6,7 @@ import {
   RUNTYPE_KEYWORDS, WAVEFUNCTION_METHOD_KEYWORDS, DFT_FUNCTIONAL_KEYWORDS,
   BASIS_KEYWORDS, AUX_BASIS_KEYWORDS, ECP_KEYWORDS, RELATIVISTIC_KEYWORDS,
   NEB_KEYWORDS, ALGORITHMIC_KEYWORDS, MISC_STRUCTURE_KEYWORDS,
-  BLOCK_NAMES, BLOCK_OPTIONS, BLOCK_DOCS, KEYWORD_DOCS
+  BLOCK_NAMES, BLOCK_OPTIONS, BLOCK_OPTIONS_BY_BLOCK, BLOCK_DOCS, KEYWORD_DOCS
 } from '../src/keywords';
 
 const provider = new OrcaCompletionProvider();
@@ -50,11 +50,46 @@ describe('OrcaCompletionProvider: "%" block-name line', () => {
 });
 
 describe('OrcaCompletionProvider: inside an open %block ... end region', () => {
-  it('offers block options when the nearest unmatched line above is a %block opener', () => {
-    const doc = makeDoc(['%pal', 'nprocs 4']);
-    const items: any[] = provider.provideCompletionItems(doc as any, new Position(1, 8) as any);
+  it('offers the generic block options for a block without a curated option list', () => {
+    const doc = makeDoc(['%plots', 'dim1 40']);
+    const items: any[] = provider.provideCompletionItems(doc as any, new Position(1, 7) as any);
     assert.strictEqual(items.length, BLOCK_OPTIONS.length);
     assert.ok(items.some(i => i.label === 'nprocs'));
+  });
+
+  it('offers only that block\'s own options for curated blocks', () => {
+    const doc = makeDoc(['%pal', 'nprocs 4']);
+    const items: any[] = provider.provideCompletionItems(doc as any, new Position(1, 8) as any);
+    assert.deepStrictEqual(items.map(i => i.label), BLOCK_OPTIONS_BY_BLOCK['pal'].map(o => o.name));
+  });
+
+  it('offers %geom options (not %tddft ones) inside %geom, with documentation', () => {
+    const doc = makeDoc(['! PBE def2-SVP OptTS', '%geom', '  ']);
+    const items: any[] = provider.provideCompletionItems(doc as any, new Position(2, 2) as any);
+    const labels = items.map(i => i.label);
+    assert.ok(labels.includes('Calc_Hess'));
+    assert.ok(!labels.includes('NRoots'));
+    const calcHess = items.find(i => i.label === 'Calc_Hess');
+    assert.strictEqual(calcHess.detail, '%geom option');
+    assert.ok(calcHess.documentation.value.length > 0);
+  });
+
+  it('still knows it is inside %geom after a closed Constraints sub-block', () => {
+    const doc = makeDoc(['%geom', '  Constraints', '    { B 0 1 C }', '  end', '  ']);
+    const items: any[] = provider.provideCompletionItems(doc as any, new Position(4, 2) as any);
+    assert.ok(items.some(i => i.label === 'Calc_Hess'));
+  });
+
+  it('treats %cis as a synonym of %tddft', () => {
+    const doc = makeDoc(['%cis', '  ']);
+    const items: any[] = provider.provideCompletionItems(doc as any, new Position(1, 2) as any);
+    assert.ok(items.some(i => i.label === 'NRoots'));
+  });
+
+  it('ignores one-line blocks above the cursor', () => {
+    const doc = makeDoc(['%pal nprocs 4 end', '  ']);
+    const items = provider.provideCompletionItems(doc as any, new Position(1, 2) as any);
+    assert.deepStrictEqual(items, []);
   });
 
   it('does not offer block options once the block has been closed', () => {
