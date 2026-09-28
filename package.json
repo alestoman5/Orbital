@@ -2,7 +2,7 @@
   "name": "orca-inp",
   "displayName": "ORCA Input Files (.inp)",
   "description": "Syntax highlighting, diagnostics and autocompletion for ORCA quantum chemistry input files (.inp)",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "publisher": "alestoman5",
   "repository": {
@@ -41,6 +41,10 @@
       { "command": "orcaInp.exportPyneapples", "title": "Export Excitations for PyNEAppLES", "category": "ORCA" },
       { "command": "orcaInp.boltzmannWeights", "title": "Boltzmann Weights of Conformers", "category": "ORCA" },
       { "command": "orcaInp.previewSpectrum", "title": "Preview Absorption Spectrum", "category": "ORCA", "icon": "$(graph-line)" },
+      { "command": "orcaInp.plotDat", "title": "Plot MD Data (.dat)", "category": "ORCA", "icon": "$(graph)" },
+      { "command": "orcaInp.neaOverview", "title": "NEA Run Overview", "category": "NEA" },
+      { "command": "orcaInp.neaOpenOutputs", "title": "Open NEA Run Outputs", "category": "NEA" },
+      { "command": "orcaInp.neaCommand", "title": "Build NEA Script Command", "category": "NEA", "icon": "$(terminal)" },
       { "command": "orcaInp.runActions", "title": "Actions for This Run", "category": "ORCA" },
       { "command": "orcaInp.runs.refresh", "title": "Refresh", "category": "ORCA", "icon": "$(refresh)" },
       { "command": "orcaInp.runs.toggleProblemsOnly", "title": "Show Only Problem Runs", "category": "ORCA", "icon": "$(filter)" },
@@ -48,7 +52,7 @@
     ],
     "views": {
       "explorer": [
-        { "id": "orcaRuns", "name": "ORCA Runs", "when": "workspaceFolderCount > 0" }
+        { "id": "orcaRuns", "name": "ORCA Runs (optimizations)", "when": "workspaceFolderCount > 0" }
       ]
     },
     "menus": {
@@ -78,10 +82,15 @@
         { "command": "orcaInp.boltzmannWeights", "when": "resourceExtname == .out && listMultiSelection", "group": "7_orca" },
         { "command": "orcaInp.createBasisVariants", "when": "resourceExtname == .inp", "group": "7_orca" },
         { "command": "orcaInp.compareGeometries", "when": "explorerResourceIsFolder", "group": "7_orca" },
-        { "command": "orcaInp.exportPyneapples", "when": "explorerResourceIsFolder", "group": "7_orca" }
+        { "command": "orcaInp.exportPyneapples", "when": "explorerResourceIsFolder", "group": "7_orca" },
+        { "command": "orcaInp.plotDat", "when": "resourceExtname == .dat", "group": "7_orca" },
+        { "command": "orcaInp.neaOverview", "when": "explorerResourceIsFolder", "group": "8_nea" },
+        { "command": "orcaInp.neaOpenOutputs", "when": "explorerResourceIsFolder", "group": "8_nea" },
+        { "command": "orcaInp.neaCommand", "when": "explorerResourceIsFolder || resourceExtname =~ /^\\.(xyz|molden)$/", "group": "8_nea" }
       ],
       "editor/title": [
-        { "command": "orcaInp.previewSpectrum", "when": "resourceExtname == .out", "group": "navigation" }
+        { "command": "orcaInp.previewSpectrum", "when": "resourceExtname == .out", "group": "navigation" },
+        { "command": "orcaInp.plotDat", "when": "resourceExtname == .dat", "group": "navigation" }
       ]
     },
     "languages": [
@@ -211,15 +220,15 @@
           "default": 298.15,
           "description": "Temperature (K) for conformer Boltzmann weights."
         },
+        "orcaInp.nea.scriptsDir": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the uv-vis scripts/ directory (from_geometry.py, ...). Empty = search the workspace."
+        },
         "orcaInp.runs.exclude": {
           "type": "string",
           "default": "**/{node_modules,.git}/**",
-          "description": "Glob of folders ignored when looking for .out files."
-        },
-        "orcaInp.runs.maxFiles": {
-          "type": "number",
-          "default": 500,
-          "description": "Maximum number of .out files listed in the ORCA Runs view."
+          "description": "Glob of folders ignored when batch commands look for .out files."
         }
       }
     }

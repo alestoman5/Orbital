@@ -1,12 +1,13 @@
-// "ORCA Runs" explorer view: every .out file in the workspace with a verdict
-// read from the log itself (normal termination, SCF/opt convergence,
-// imaginary modes, T1/D1) — not from exit codes, which ORCA and friends
-// don't set reliably. A toggle limits the list to problem runs.
+// "ORCA Runs" explorer view: the optimizations (Opt/OptTS) among the .out
+// files in the folder of the active editor, with a verdict read from the log
+// itself (normal termination, SCF/opt convergence, imaginary modes, T1/D1) —
+// not from exit codes, which ORCA and friends don't set reliably. A toggle
+// limits the list to problem runs.
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { findOutFiles, loadOutput } from './io';
+import { loadOutput, naturalCompare } from './io';
 import { RunSummary, summarizeRun } from './runSummary';
 
 const VERDICT_ICON: Record<RunSummary['verdict'], [string, string | undefined]> = {
@@ -30,8 +31,8 @@ const VERDICT_TEXT: Record<RunSummary['verdict'], string> = {
 };
 
 export class RunItem extends vscode.TreeItem {
-  constructor(public readonly outPath: string, public readonly summary: RunSummary | undefined, root: string | undefined) {
-    super(root ? path.relative(root, outPath) : path.basename(outPath), vscode.TreeItemCollapsibleState.None);
+  constructor(public readonly outPath: string, public readonly summary: RunSummary | undefined) {
+    super(path.basename(outPath), vscode.TreeItemCollapsibleState.None);
     this.resourceUri = vscode.Uri.file(outPath);
     const v = summary?.verdict ?? 'unknown';
     const [icon, color] = VERDICT_ICON[v];
@@ -58,27 +59,46 @@ export class RunsTreeProvider implements vscode.TreeDataProvider<RunItem>, vscod
   private readonly cache = new Map<string, { mtimeMs: number; summary: RunSummary | undefined }>();
   private readonly disposables: vscode.Disposable[] = [];
   private refreshTimer: ReturnType<typeof setTimeout> | undefined;
+  private folder: string | undefined;
+  private watcher: vscode.FileSystemWatcher | undefined;
 
   constructor() {
-    const watcher = vscode.workspace.createFileSystemWatcher('**/*.out');
     this.disposables.push(
-      watcher,
-      watcher.onDidChange(() => this.scheduleRefresh()),
-      watcher.onDidCreate(() => this.scheduleRefresh()),
-      watcher.onDidDelete(uri => {
-        this.cache.delete(uri.fsPath);
-        this.scheduleRefresh();
-      }),
+      vscode.window.onDidChangeActiveTextEditor(() => this.followActiveEditor()),
       this.emitter
     );
     void vscode.commands.executeCommand('setContext', 'orcaInp.runs.problemsOnly', false);
+    this.followActiveEditor();
   }
 
   dispose(): void {
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
     }
+    this.watcher?.dispose();
     this.disposables.forEach(d => d.dispose());
+  }
+
+  /** Switches the view to the folder of the active file (keeps it when no file editor is active). */
+  private followActiveEditor(): void {
+    const uri = vscode.window.activeTextEditor?.document.uri;
+    if (!uri || uri.scheme !== 'file') {
+      return;
+    }
+    const folder = path.dirname(uri.fsPath);
+    if (folder === this.folder) {
+      return;
+    }
+    this.folder = folder;
+    this.watcher?.dispose();
+    this.watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(folder, '*.out'));
+    this.watcher.onDidChange(() => this.scheduleRefresh());
+    this.watcher.onDidCreate(() => this.scheduleRefresh());
+    this.watcher.onDidDelete(u => {
+      this.cache.delete(u.fsPath);
+      this.scheduleRefresh();
+    });
+    this.refresh();
   }
 
   refresh(): void {
@@ -120,21 +140,28 @@ export class RunsTreeProvider implements vscode.TreeDataProvider<RunItem>, vscod
   }
 
   async getChildren(): Promise<RunItem[]> {
-    const maxFiles = vscode.workspace.getConfiguration('orcaInp').get<number>('runs.maxFiles', 500);
-    const outs = await findOutFiles();
-    const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!this.folder) {
+      return [new vscode.TreeItem('Open a file to list the optimizations in its folder') as RunItem];
+    }
+    let outs: string[];
+    try {
+      outs = fs.readdirSync(this.folder).filter(f => f.endsWith('.out')).sort(naturalCompare).map(f => path.join(this.folder!, f));
+    } catch {
+      return [];
+    }
     const items: RunItem[] = [];
-    for (const out of outs.slice(0, maxFiles)) {
+    for (const out of outs) {
       const summary = this.summaryFor(out);
-      const bad = !summary || !['ok', 'ts-ok'].includes(summary.verdict);
-      if (this.problemsOnly && !bad) {
+      if (!summary || !['opt', 'optts'].includes(summary.kind)) {
         continue;
       }
-      items.push(new RunItem(out, summary, root));
+      if (this.problemsOnly && ['ok', 'ts-ok'].includes(summary.verdict)) {
+        continue;
+      }
+      items.push(new RunItem(out, summary));
     }
-    if (outs.length > maxFiles) {
-      const more = new vscode.TreeItem(`… ${outs.length - maxFiles} more .out files (raise orcaInp.runs.maxFiles)`);
-      items.push(more as RunItem);
+    if (items.length === 0) {
+      items.push(new vscode.TreeItem(`No optimizations in ${path.basename(this.folder)}/`) as RunItem);
     }
     return items;
   }

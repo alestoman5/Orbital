@@ -8,7 +8,12 @@ import { parseOrcaInput, parseXyz } from './chem/inputFile';
 
 const BLOCK_START_RE = /^\s*%([A-Za-z][A-Za-z0-9_]*)/;
 const BLOCK_END_RE = /^\s*end\b/i;
-const COORD_START_RE = /^\s*\*\s*(xyz|xyzfile|int|gzmt|internal)?\s*(-?\d+)?\s*(\d+)?/i;
+const COORD_START_RE = /^\s*\*\s*(?:(xyzfile|gzmtfile|pdbfile|xyz|gzmt|internal|int)\b)?\s*(-?\d+)?\s*(\d+)?\s*(\S+)?/i;
+// "%maxcore 4000", "%moinp "x.gbw"" etc. take no "end".
+const ONE_LINE_DIRECTIVE_RE = /^\s*%(maxcore|moinp|base|id)\b/i;
+const ONE_LINE_BLOCK_RE = /\bend\s*$/i;
+// Sub-blocks inside a %block that take their own "end" (%geom Constraints ... end ... end).
+const SUB_BLOCK_RE = /^\s*(Constraints|Scan|Nuclei|Coords|Modify_Internal|Hybrid_Hess)\b/i;
 const COORD_END_RE = /^\s*\*\s*$/;
 const SIMPLE_INPUT_RE = /^\s*!(.*)$/;
 
@@ -56,14 +61,22 @@ export function lintDocument(
     if (coordOpenLine === null) {
       const coordStart = COORD_START_RE.exec(lineText);
       if (coordStart && trimmed.startsWith('*')) {
-        coordOpenLine = i;
         sawAnyCoordBlock = true;
         const chargeStr = coordStart[2];
         const multStr = coordStart[3];
-        const coordType = coordStart[1];
-        if (!coordType) {
-          // e.g. "* xyz" missing, or malformed header
+        const coordType = coordStart[1]?.toLowerCase();
+        if (coordType?.endsWith('file')) {
+          // One-line form: "* xyzfile <charge> <mult> <file>", no closing "*".
+          if (chargeStr === undefined || multStr === undefined || coordStart[4] === undefined) {
+            diagnostics.push(new vscode.Diagnostic(
+              doc.lineAt(i).range,
+              `Incomplete header — expected "* ${coordType} <charge> <multiplicity> <file>".`,
+              vscode.DiagnosticSeverity.Warning
+            ));
+          }
+          continue;
         }
+        coordOpenLine = i;
         if (chargeStr === undefined || multStr === undefined) {
           diagnostics.push(new vscode.Diagnostic(
             doc.lineAt(i).range,
@@ -83,10 +96,19 @@ export function lintDocument(
     // %block ... end tracking
     const blockStart = BLOCK_START_RE.exec(lineText);
     if (blockStart) {
+      const code = lineText.split('#')[0];
+      if (ONE_LINE_DIRECTIVE_RE.test(code) || ONE_LINE_BLOCK_RE.test(code)) {
+        continue;
+      }
       blockStack.push({ name: blockStart[1], line: i });
       continue;
     }
-    if (BLOCK_END_RE.test(lineText)) {
+    if (blockStack.length > 0 && SUB_BLOCK_RE.test(lineText) && !ONE_LINE_BLOCK_RE.test(lineText.split('#')[0])) {
+      blockStack.push({ name: `${blockStack[blockStack.length - 1].name} ${lineText.trim().split(/\s+/)[0]}`, line: i });
+      continue;
+    }
+    // "nprocs 4 end": a value line that also closes the (sub-)block.
+    if (BLOCK_END_RE.test(lineText) || (blockStack.length > 0 && ONE_LINE_BLOCK_RE.test(lineText.split('#')[0]) && !SUB_BLOCK_RE.test(lineText))) {
       if (blockStack.length === 0) {
         diagnostics.push(new vscode.Diagnostic(
           doc.lineAt(i).range,

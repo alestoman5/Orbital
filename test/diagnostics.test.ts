@@ -173,3 +173,55 @@ describe('lintDocument: sanity heads-up diagnostics', () => {
     assert.deepStrictEqual(diags, []);
   });
 });
+
+describe('lintDocument: one-line directives and xyzfile', () => {
+  it('accepts %maxcore and a one-line "* xyzfile" header', () => {
+    const diags = lint([
+      '! DLPNO-CCSD(T) def2-TZVPP def2-TZVPP/C',
+      '',
+      '%pal',
+      '  nprocs 8',
+      'end',
+      '',
+      '%maxcore 4000',
+      '',
+      '* xyzfile 0 1 prod.xyz',
+      ''
+    ]);
+    assert.deepStrictEqual(diags, []);
+  });
+
+  it('accepts a %block ... end on one line', () => {
+    const diags = lint(['! HF def2-SVP', '%pal nprocs 4 end', '* xyz 0 1', 'C 0 0 0', '*']);
+    assert.deepStrictEqual(diags, []);
+  });
+
+  it('warns about "* xyzfile" without a file name', () => {
+    const diags = lint(['! HF def2-SVP', '* xyzfile 0 1']);
+    assert.strictEqual(diags.length, 1);
+    assert.match(diags[0].message, /Incomplete header/);
+  });
+});
+
+describe('lintDocument: nested sub-blocks', () => {
+  it('accepts %geom Constraints ... end ... end', () => {
+    const diags = lint(['! Opt', '%geom', '  Constraints', '    { B 0 1 C }', '  end', 'end', '* xyz 0 1', 'C 0 0 0', '*']);
+    assert.deepStrictEqual(diags, []);
+  });
+
+  it('flags a %geom whose Constraints sub-block is closed but the block is not', () => {
+    const diags = lint(['! Opt', '%geom', '  Constraints', '    { B 0 1 C }', '  end', '* xyz 0 1', 'C 0 0 0', '*']);
+    assert.strictEqual(diags.length, 1);
+    assert.match(diags[0].message, /%geom/);
+  });
+});
+
+describe('lintDocument: value and end on one line', () => {
+  it('accepts "nprocs 4 end" inside %pal and a one-line Constraints inside %geom', () => {
+    const diags = lint([
+      '! Opt CHELPG CPCMX(methanol)', '%pal', '  nprocs 4 end   # comment', '%geom', '  Constraints { B 0 1 C } end', 'end',
+      '* xyz 0 1', 'C 0 0 0', '*'
+    ]);
+    assert.deepStrictEqual(diags, []);
+  });
+});
