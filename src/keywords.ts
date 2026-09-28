@@ -30,7 +30,7 @@
 export const RUNTYPE_KEYWORDS = [
   'ENERGY', 'SP', 'OPT', 'COPT', 'ENGRAD', 'NUMGRAD', 'NUMFREQ', 'FREQ',
   'ANFREQ', 'NUMNUMFREQ', 'NUMNACME', 'MD', 'CIM', 'IRC', 'OPTTS',
-  'SCANTS', 'GOAT', 'DOCKER'
+  'SCANTS', 'GOAT', 'DOCKER', 'L-OPT', 'L-OPTH', 'EXTOPT', 'NMR', 'EPR'
 ];
 
 // ---------------------------------------------------------------------
@@ -92,7 +92,7 @@ export const WAVEFUNCTION_METHOD_KEYWORDS = [
 // ---------------------------------------------------------------------
 export const ALGORITHMIC_KEYWORDS = [
   'RHF', 'RKS', 'UHF', 'UKS', 'ROHF', 'ROKS', 'AllowRHF', 'RI', 'NORI',
-  'RIJCOSX', 'RI-JK', 'SPLITJ', 'SPLIT-RI-J', 'NoSplit-RI-J', 'RI-J-XC',
+  'RIJCOSX', 'RI-JK', 'RIJK', 'COSX', 'SPLITJ', 'SPLIT-RI-J', 'NoSplit-RI-J', 'RI-J-XC',
   'DIRECT', 'CONV', 'NOITER', 'NOCOSX',
   'PATOM', 'PMODEL', 'HUECKEL', 'HCORE', 'MOREAD', 'AUTOSTART',
   'NOAUTOSTART',
@@ -160,7 +160,7 @@ export const DFT_FUNCTIONAL_KEYWORDS = [
   'SCS-wB2GP-PLYP', 'SOS-wB2GP-PLYP', 'SCS-RSX-QIDH', 'SOS-RSX-QIDH',
   'SCS-wB88PP86', 'SOS-wB88PP86', 'SCS-wPBEPP86', 'SOS-wPBEPP86',
   'HF-3c', 'B97-3c', 'R2SCAN-3c', 'r2SCAN-3c', 'PBEh-3c', 'wB97X-3c',
-  'D4', 'D3BJ', 'D3ZERO', 'D2',
+  'D4', 'D3', 'D3BJ', 'D3ZERO', 'D2',
   'NL', 'SCNL'
 ];
 
@@ -236,6 +236,8 @@ export const ECP_KEYWORDS = [
 export const KNOWN_PATTERN_REGEXES = [
   /^CPCM\([A-Za-z0-9_-]+\)$/i,
   /^SMD\([A-Za-z0-9_-]+\)$/i,
+  /^CPCMC\([A-Za-z0-9_-]+\)$/i,
+  /^ALPB\([A-Za-z0-9_-]+\)$/i,
   /^PAL\d+$/i,
   /^SCFCONV\d+$/i,
   /^DEFGRID[1-3]$/i,
@@ -276,6 +278,127 @@ export const BLOCK_OPTIONS = [
   'correlation', 'gtensor', 'atensor', 'SymThresh', 'UseSymmetry',
   'PointGroup', 'CleanUpGradient', 'SymRelaxOpt'
 ];
+
+// ---------------------------------------------------------------------
+// Per-block options for the blocks used most in everyday work, so
+// completion inside "%geom ... end" offers %geom variables rather than the
+// generic BLOCK_OPTIONS list. Still deliberately not exhaustive (see note
+// at the top of the file): blocks without an entry fall back to
+// BLOCK_OPTIONS. Keys are lower-case block names.
+// ---------------------------------------------------------------------
+export interface BlockOption {
+  name: string;
+  doc: string;
+}
+
+export const BLOCK_OPTIONS_BY_BLOCK: Record<string, BlockOption[]> = {
+  geom: [
+    { name: 'MaxIter', doc: 'Maximum number of optimization cycles.' },
+    { name: 'Calc_Hess', doc: 'true: compute an exact Hessian before the first step (recommended for OptTS).' },
+    { name: 'Recalc_Hess', doc: 'Recompute the exact Hessian every n steps.' },
+    { name: 'NumHess', doc: 'true: use a numerical instead of an analytic Hessian for Calc_Hess.' },
+    { name: 'InHess', doc: 'Initial Hessian: Read, Almloef, Lindh, Schlegel, Unit.' },
+    { name: 'InHessName', doc: 'File to read the initial Hessian from (with InHess Read), e.g. "job.hess".' },
+    { name: 'TS_Mode', doc: 'Mode to follow uphill in OptTS, e.g. {M 0} or an internal coordinate {B 0 1}.' },
+    { name: 'TS_Active_Atoms', doc: 'Atoms whose coordinates define the TS-active region.' },
+    { name: 'Constraints', doc: 'Frozen coordinates, e.g. { B 0 1 C } ... end.' },
+    { name: 'Scan', doc: 'Relaxed surface scan, e.g. B 0 1 = 1.0, 2.0, 10 ... end.' },
+    { name: 'Trust', doc: 'Trust radius (bohr); negative value = fixed trust radius.' },
+    { name: 'MaxStep', doc: 'Maximum step length in internal coordinates.' },
+    { name: 'Convergence', doc: 'Normal, Loose or Tight optimization convergence.' },
+    { name: 'fullScan', doc: 'true: do not stop an OptTS scan at the first maximum.' },
+    { name: 'optimizeHydrogens', doc: 'true: optimize only hydrogen positions (others frozen).' }
+  ],
+  scf: [
+    { name: 'MaxIter', doc: 'Maximum number of SCF iterations.' },
+    { name: 'Convergence', doc: 'SCF convergence preset: Sloppy, Loose, Normal, Strong, Tight, VeryTight, Extreme.' },
+    { name: 'Guess', doc: 'Initial guess: PModel, Hueckel, HCore, PAtom, MORead.' },
+    { name: 'DIISMaxEq', doc: 'Number of Fock matrices kept for DIIS (raise to 15-40 for hard cases).' },
+    { name: 'DirectResetFreq', doc: 'Full Fock rebuild every n iterations (1 = most robust).' },
+    { name: 'SOSCFStart', doc: 'Orbital-gradient threshold at which SOSCF starts.' },
+    { name: 'Shift', doc: 'Level shift, e.g. Shift 0.1 ErrOff 0.1 end.' },
+    { name: 'Damp', doc: 'Damping, e.g. DampFac 0.7 DampErr 0.1.' },
+    { name: 'AutoTRAH', doc: 'true/false: switch to the trust-region augmented Hessian solver when DIIS struggles.' },
+    { name: 'BrokenSym', doc: 'Broken-symmetry solution, e.g. BrokenSym 1,1.' },
+    { name: 'HFTyp', doc: 'RHF, UHF, ROHF, CASSCF.' }
+  ],
+  tddft: [
+    { name: 'NRoots', doc: 'Number of excited states to compute.' },
+    { name: 'IRoot', doc: 'State whose properties/gradient are computed (excited-state Opt).' },
+    { name: 'TDA', doc: 'true: Tamm-Dancoff approximation (default true in ORCA).' },
+    { name: 'Triplets', doc: 'true: also compute triplet states.' },
+    { name: 'DoSOC', doc: 'true: spin-orbit coupled states (needs Triplets true).' },
+    { name: 'MaxDim', doc: 'Davidson expansion space size factor.' },
+    { name: 'IRootMult', doc: 'Multiplicity of IRoot: Singlet or Triplet.' },
+    { name: 'DoNTO', doc: 'true: natural transition orbitals.' },
+    { name: 'PrintLevel', doc: 'Amount of output.' }
+  ],
+  cpcm: [
+    { name: 'SMD', doc: 'true: use the SMD model instead of plain CPCM.' },
+    { name: 'SMDSolvent', doc: 'Solvent name for SMD, e.g. "water".' },
+    { name: 'Epsilon', doc: 'Dielectric constant of a custom solvent.' },
+    { name: 'Refrac', doc: 'Refractive index of a custom solvent.' },
+    { name: 'Radius', doc: 'Custom cavity radius for an element, e.g. Radius[8] 1.8.' }
+  ],
+  freq: [
+    { name: 'Temp', doc: 'Temperature(s) for thermochemistry, K.' },
+    { name: 'Pressure', doc: 'Pressure for thermochemistry, atm.' },
+    { name: 'QuasiRRHO', doc: 'true: quasi-rigid-rotor-harmonic-oscillator treatment of low modes.' },
+    { name: 'CutOffFreq', doc: 'Frequency cut-off (cm^-1) for the quasi-RRHO treatment.' },
+    { name: 'ScalFreq', doc: 'Frequency scaling factor.' },
+    { name: 'Hybrid_Hess', doc: 'Atoms treated with the exact Hessian in a partial Hessian calculation.' }
+  ],
+  irc: [
+    { name: 'MaxIter', doc: 'Maximum number of IRC steps per direction.' },
+    { name: 'Direction', doc: 'both, forward, backward, down.' },
+    { name: 'InitHess', doc: 'Initial Hessian: read (from Hess_Filename), calc_anfreq, calc_numfreq.' },
+    { name: 'Hess_Filename', doc: 'Hessian file to read with InitHess read, e.g. "ts.hess" from OptTS Freq.' },
+    { name: 'PrintLevel', doc: 'Amount of output.' }
+  ],
+  neb: [
+    { name: 'NEB_End_XYZFile', doc: 'Product geometry (.xyz).' },
+    { name: 'NEB_TS_XYZFile', doc: 'TS guess geometry (.xyz).' },
+    { name: 'NImages', doc: 'Number of intermediate images.' },
+    { name: 'Interpolation', doc: 'IDPP (default), linear, XTB.' },
+    { name: 'PreOpt_Ends', doc: 'true: optimize the reactant and product first.' }
+  ],
+  mdci: [
+    { name: 'MaxIter', doc: 'Maximum number of CC iterations.' },
+    { name: 'NRoots', doc: 'Number of EOM/STEOM roots.' },
+    { name: 'DoSOC', doc: 'Spin-orbit coupling for EOM/STEOM states.' },
+    { name: 'TCutPNO', doc: 'PNO truncation threshold (DLPNO).' },
+    { name: 'PrintLevel', doc: 'Amount of output (raise to print more diagnostics).' }
+  ],
+  casscf: [
+    { name: 'Nel', doc: 'Number of active electrons.' },
+    { name: 'Norb', doc: 'Number of active orbitals.' },
+    { name: 'Mult', doc: 'Multiplicity/ies of the states, e.g. Mult 1,3.' },
+    { name: 'NRoots', doc: 'Number of roots per multiplicity.' },
+    { name: 'TrafoStep', doc: 'Integral transformation: RI, Exact.' },
+    { name: 'PTMethod', doc: 'Perturbative correction: SC_NEVPT2, FIC_NEVPT2.' }
+  ],
+  eprnmr: [
+    { name: 'Nuclei', doc: 'Nuclei and properties, e.g. Nuclei = all H {aiso, adip}.' },
+    { name: 'GTensor', doc: 'true: compute the g-tensor.' },
+    { name: 'Ori', doc: 'Gauge origin: GIAO, CenterOfMass, CenterOfElCharge.' }
+  ],
+  output: [
+    { name: 'Print[P_Hirshfeld]', doc: '1: print Hirshfeld charges.' },
+    { name: 'Print[P_MOs]', doc: '1: print MO coefficients.' },
+    { name: 'Print[P_Basis]', doc: '2: print the basis set.' }
+  ],
+  pal: [
+    { name: 'nprocs', doc: 'Number of MPI processes.' }
+  ],
+  md: [
+    { name: 'Timestep', doc: 'Time step, e.g. Timestep 0.5_fs.' },
+    { name: 'Initvel', doc: 'Initial velocities, e.g. Initvel 300_K.' },
+    { name: 'Thermostat', doc: 'e.g. Thermostat NHC 300_K Timecon 10.0_fs.' },
+    { name: 'Dump', doc: 'Trajectory output, e.g. Dump Position Stride 1 Filename "trajectory.xyz".' },
+    { name: 'Run', doc: 'Number of steps to run.' }
+  ]
+};
+BLOCK_OPTIONS_BY_BLOCK['cis'] = BLOCK_OPTIONS_BY_BLOCK['tddft'];
 
 // ---------------------------------------------------------------------
 // Aggregate list used by diagnostics/completion for the "! ..." line
@@ -344,7 +467,15 @@ export const KEYWORD_DOCS: Record<string, string> = {
   'DIIS': 'Turn on DIIS SCF convergence acceleration (default).',
 
   'D4': 'DFT-D4 dispersion correction (density dependent, with Becke-Johnson damping).',
+  'D3': 'DFT-D3 dispersion correction (Becke-Johnson damping; same as D3BJ).',
   'D3BJ': 'DFT-D3 dispersion correction with Becke-Johnson damping.',
+  'L-OPT': 'Geometry optimization with L-BFGS in Cartesian coordinates -- for very large systems.',
+  'L-OPTH': 'L-BFGS optimization of hydrogen positions only.',
+  'EXTOPT': 'Geometry optimization driven by an external program (ORCA only supplies energies/gradients).',
+  'NMR': 'NMR shieldings (and couplings) -- see %eprnmr.',
+  'EPR': 'EPR parameters (g-tensor, hyperfine) -- see %eprnmr.',
+  'RIJK': 'RI approximation for both Coulomb and exchange (use with a /JK auxiliary basis).',
+  'COSX': 'Seminumerical (chain-of-spheres) exchange.',
   'D3ZERO': 'DFT-D3 dispersion correction with zero damping.',
   'CPCM': 'Conductor-like Polarizable Continuum Model for implicit solvation -- use as CPCM(solvent).',
 

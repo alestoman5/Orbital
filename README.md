@@ -20,19 +20,79 @@ Syntax highlighting, structural diagnostics, and autocompletion for
 - **Autocompletion**:
   - method/functional and basis-set names after `!`
   - block names after `%`
-  - common block options while inside a `%block ... end` region
+  - inside a `%block ... end` region, that block's own options with a short
+    description (`%geom`, `%scf`, `%tddft`/`%cis`, `%cpcm`, `%freq`, `%irc`,
+    `%neb`, `%mdci`, `%casscf`, `%eprnmr`, `%output`, `%pal`, `%md`); other
+    blocks get a generic list
   - coordinate block types (`xyz`, `xyzfile`, `int`, `gzmt`) after `*`
-- **Snippets**: `orca-sp`, `orca-optfreq`, `orca-tddft`, `orca-optts`,
-  `orca-pal`, `orca-constraints`, `orca-cpcm` (type the prefix in a `.inp`
-  file and hit Tab/Enter).
-- **Hover**: hovering a recognized simple-input keyword or a `%block`
-  name shows a short description.
-- **`.out` run status** (early support): while an `.inp` file is active,
-  a status bar item tracks its matching `.out` file (same name, same
-  folder) and shows `running`, `converged`, or `failed` as ORCA writes to
-  it, re-parsing on change (debounced ~1.5s). More output parsing (SCF/
-  optimization/frequency detail, Avogadro hand-off) is in progress — see
-  [Known limitations](#known-limitations).
+- **Chemistry-aware diagnostics** (`orcaInp.diagnostics.semantic`):
+  charge/multiplicity parity (inline atoms or a readable `xyzfile`), atom
+  order against `orcaInp.referenceAtomOrder`, several job types on the `!`
+  line, `OptTS` without a starting Hessian, `Freq` on a non-optimized
+  inline geometry, `%tddft` without `NRoots`, several orbital basis sets,
+  and (opt-in) `%maxcore × nprocs` vs. this machine's memory.
+- **Snippets**: `orca-sp`, `orca-optfreq`, `orca-optfreq-tight`,
+  `orca-tddft`, `orca-optts`, `orca-irc`, `orca-nebts`, `orca-scan`,
+  `orca-goat`, `orca-engrad`, `orca-eom-ccsd`, `orca-steom`, `orca-dlpno`,
+  `orca-moread`, `orca-pal`, `orca-constraints`, `orca-cpcm` (type the
+  prefix in a `.inp` file and hit Tab/Enter).
+- **Hover**: hovering a recognized simple-input keyword, a `%block` name or
+  a block option shows a short description. In `.out` files, hovering a
+  number with an energy unit (`Eh`, `eV`, `nm`, `cm**-1`, `kcal/mol`,
+  `kJ/mol`) shows it converted to the other units.
+- **`.out` run status**: while an `.inp` (or `.out`) file is active, a status
+  bar item tracks its output (`job.out` or `job.inp.out`) and reads the
+  verdict from the log itself: running, failed (abort, SCF or optimizer
+  not converged), **saddle point** (imaginary modes after `Opt`), TS with the
+  right/wrong number of imaginary modes, or minimum. T1/D1 diagnostics
+  above 0.02/0.05 are flagged. Click it for the actions that fit the run.
+
+### Frequencies, saddle points and Wigner sampling
+
+- **Saddle point → displaced restart.** When an optimization finishes with
+  an imaginary mode, a notification offers to displace the geometry along
+  the most negative mode (default: the atom that moves most moves 0.15 Å,
+  `orcaInp.ts.maxDisplacement`) in `+` or both directions. It writes
+  `job_disp.xyz` + `job_disp.inp`, a copy of the input with only the
+  coordinate block replaced by `* xyzfile`. Modes come from `job.hess` (or
+  the `.out` NORMAL MODES). Frequencies above `orcaInp.ts.imagThreshold`
+  (−20 cm⁻¹) count as numerical noise.
+- **TS → IRC.** After an `OptTS` + `Freq` with exactly one imaginary mode,
+  a new `job_irc.inp` reuses the TS geometry and Hessian
+  (`%irc InitHess read, Hess_Filename "job.hess"`).
+- **Export Molden (normal modes)** writes the layout SHARC's `ORCA_freq.py`
+  produces and `wigner.py` reads. From a `.out`, the output is identical,
+  line for line, to `ORCA_freq.py`'s (checked on a 24-atom Opt+Freq run).
+  Saddle points are refused unless you insist.
+- **Wigner readiness report**: normal termination, no imaginary modes,
+  3N−6 (3N−5) modes, soft modes below 200 cm⁻¹ that may be anharmonic, and
+  per mode the ratio of quantum (Wigner) to classical position variance,
+  x·coth x with x = ħω/2kT.
+
+### Working with many runs
+
+- **ORCA Runs view** (Explorer): every `.out` in the workspace with its
+  verdict, energy and problems; a filter shows only problem runs. It reads
+  the log, not exit codes.
+- **Basis-set variants**: copies an `.inp` into one folder per basis set
+  (default aug-cc-pVDZ, def2-SVPD, ma-def2-SVP, def2-SVP), optionally with
+  a `VeryTightOpt`/`VeryTightSCF` twin, and copies the `xyzfile` along.
+- **Compare final geometries**: bonds, angles and dihedrals (e.g.
+  `O-O: 2-3`, `C-O-O: 1-2-3`, from `.orca-watch.json` or
+  `orcaInp.watchedCoordinates`) across all outputs in a folder, as a
+  table and `geometry_comparison.csv`.
+- **Export for PyNEAppLES**: reads the electric-dipole absorption table of
+  every per-geometry output, skips unfinished/empty runs or runs with the
+  wrong number of states (and says why), and writes the
+  `calc_spectrum_v2.py` input (energy in eV, transition dipole in au, with
+  |μ| taken from the 9-decimal fosc). It then prints the command line with
+  the right `-n`.
+- **Spectrum preview**: stick spectrum plus Gaussian broadening for one
+  output, or an NEA-style average (Silverman bandwidth) over a folder,
+  with maximum, centroid, FWHM and integral, in eV or nm. This is a quick
+  look only: PyNEAppLES remains the tool for bootstrap intervals.
+- **Boltzmann weights** of conformers from `Final Gibbs free energy`
+  (select several `.out` files in the Explorer).
 
 ## Screenshots
 
@@ -70,9 +130,10 @@ variables (inside `%scf`, `%tddft`, `%mdci`, `%casscf`, ...) that aren't
 practical to enumerate or keep in sync by hand. What's covered
 comprehensively is the "simple input" line (everything after `!`),
 since that's a closed, well-documented list and the part people type —
-and mistype — the most. Block *contents* only get light-touch coverage
-(`BLOCK_OPTIONS` in `keywords.ts`) and aren't flagged as unknown if
-unrecognized, to avoid false positives.
+and mistype — the most. Block *contents* get curated per-block options
+for the everyday blocks (`BLOCK_OPTIONS_BY_BLOCK` in `keywords.ts`) plus a
+generic fallback list (`BLOCK_OPTIONS`). They are never flagged as
+unknown, to avoid false positives.
 
 ## Installation
 
@@ -110,21 +171,40 @@ settings:
 "orcaInp.diagnostics.unknownKeywordSeverity": "off"
 ```
 
+Other settings (all under `orcaInp.`, see the Settings UI for details):
+`diagnostics.semantic`, `diagnostics.memoryCheck`, `referenceAtomOrder`,
+`ts.autoPrompt`, `ts.maxDisplacement`, `ts.imagThreshold`, `ts.useMoread`,
+`wigner.temperature`, `wigner.softModeThreshold`, `variants.basisSets`,
+`watchedCoordinates`, `pyneapples.pattern`,
+`spectrum.singleGeometryBandwidth`, `boltzmann.temperature`,
+`runs.exclude`, `runs.maxFiles`.
+
+For a project with a fixed atom order it helps to put this in the
+workspace's `.vscode/settings.json`:
+
+```json
+"orcaInp.referenceAtomOrder": "C O O H H",
+"orcaInp.watchedCoordinates": ["O-O: 2-3", "C-O: 1-2", "C-O-O: 1-2-3"]
+```
+
 ## Known limitations
 
 - Nested `%block` regions (e.g. `%geom ... Constraints ... end ... end`) are
   handled correctly by the diagnostics (unclosed/stray `end` checks), but
   syntax *highlighting* treats the first `end` it meets as the block close,
   so nested blocks can highlight a little oddly.
-- `.out` parsing currently covers termination status, the final single-
-  point energy, geometry-optimization convergence cycles, the final
-  Cartesian geometry, total run time, and `Warning:` lines. Frequencies,
-  thermochemistry, an imaginary-frequency diagnostic, an Avogadro
-  hand-off, and a richer summary view are planned but not implemented
-  yet. The geometry-convergence table and SCF-iteration parsers are
-  best-effort (not verified against a real ORCA 6.x run in the
-  environment this was built in) — see the doc comments in
-  `src/outparser/sections.ts` for specifics.
+- `.out` parsing covers termination status, final energy, SCF/optimizer
+  convergence banners, geometry-optimization cycles, the final geometry
+  (Å and bohr), vibrational frequencies, normal modes, the IR table,
+  thermochemistry, the electric-dipole absorption table (ORCA 5 and 6
+  layouts), T1/D1 diagnostics, the echoed input, run time and `Warning:`
+  lines. The frequency, normal-mode, IR, absorption, thermochemistry and
+  termination parsers were checked against real ORCA 6 outputs. The
+  geometry-convergence table, SCF-iteration and T1/D1 parsers are still
+  best-effort; see the doc comments in `src/outparser/sections.ts`.
+- The absorption parser reads the plain electric-dipole table only (not
+  the SOC-corrected or velocity-gauge ones).
+- An Avogadro hand-off is not implemented yet.
 
 ## License
 

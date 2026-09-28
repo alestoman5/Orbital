@@ -1,5 +1,10 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { isKnownSimpleKeyword } from './keywords';
+import { FindingSeverity, semanticFindings } from './semantic';
+import { parseOrcaInput, parseXyz } from './chem/inputFile';
 
 const BLOCK_START_RE = /^\s*%([A-Za-z][A-Za-z0-9_]*)/;
 const BLOCK_END_RE = /^\s*end\b/i;
@@ -156,5 +161,46 @@ export function lintDocument(
     ));
   }
 
+  if (config.get<boolean>('diagnostics.semantic', true)) {
+    diagnostics.push(...semanticDiagnostics(doc, config));
+  }
+
   collection.set(doc.uri, diagnostics);
+}
+
+const FINDING_SEVERITY: Record<FindingSeverity, vscode.DiagnosticSeverity> = {
+  error: vscode.DiagnosticSeverity.Error,
+  warning: vscode.DiagnosticSeverity.Warning,
+  information: vscode.DiagnosticSeverity.Information
+};
+
+/** Reads the element symbols of an "* xyzfile" next to the .inp, if possible. */
+function readXyzFileAtoms(doc: vscode.TextDocument, file: string | undefined): string[] | undefined {
+  const fsPath = (doc.uri as { fsPath?: string }).fsPath;
+  if (!file || !fsPath) {
+    return undefined;
+  }
+  try {
+    const full = path.isAbsolute(file) ? file : path.join(path.dirname(fsPath), file);
+    return parseXyz(fs.readFileSync(full, 'utf8')).map(a => a.symbol);
+  } catch {
+    return undefined; // not there (yet) — skip the xyzfile-based checks
+  }
+}
+
+function semanticDiagnostics(doc: vscode.TextDocument, config: vscode.WorkspaceConfiguration): vscode.Diagnostic[] {
+  const text = doc.getText();
+  const refSetting = config.get<string>('referenceAtomOrder', '') ?? '';
+  const referenceAtomOrder = refSetting.trim().length > 0 ? refSetting.trim().split(/[\s,]+/) : undefined;
+  const coords = parseOrcaInput(text).coords;
+  const findings = semanticFindings(text, {
+    referenceAtomOrder,
+    xyzFileAtoms: coords?.file ? readXyzFileAtoms(doc, coords.file) : undefined,
+    totalMemoryMB: config.get<boolean>('diagnostics.memoryCheck', false) ? os.totalmem() / (1024 * 1024) : undefined
+  });
+  return findings.map(f => new vscode.Diagnostic(
+    doc.lineAt(Math.max(0, Math.min(f.line, doc.lineCount - 1))).range,
+    f.message,
+    FINDING_SEVERITY[f.severity]
+  ));
 }

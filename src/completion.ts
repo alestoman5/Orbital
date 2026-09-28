@@ -3,7 +3,8 @@ import {
   RUNTYPE_KEYWORDS, ALGORITHMIC_KEYWORDS, MISC_STRUCTURE_KEYWORDS,
   RELATIVISTIC_KEYWORDS, NEB_KEYWORDS, WAVEFUNCTION_METHOD_KEYWORDS,
   DFT_FUNCTIONAL_KEYWORDS, BASIS_KEYWORDS, AUX_BASIS_KEYWORDS,
-  ECP_KEYWORDS, BLOCK_NAMES, BLOCK_OPTIONS, KEYWORD_DOCS, BLOCK_DOCS
+  ECP_KEYWORDS, BLOCK_NAMES, BLOCK_OPTIONS, BLOCK_OPTIONS_BY_BLOCK,
+  KEYWORD_DOCS, BLOCK_DOCS
 } from './keywords';
 
 function item(
@@ -20,22 +21,32 @@ function item(
   return it;
 }
 
-function isInsideOpenBlock(doc: vscode.TextDocument, line: number): boolean {
-  // Walk upward: if we find an unmatched "%block" before hitting the start
-  // of file (counting nested end/% pairs), we're inside a block.
+/**
+ * Name (lower-case) of the %block the given line sits in, or undefined when
+ * outside any block. Walks upward counting nested end/% pairs, so an
+ * inner "Constraints ... end" sub-block doesn't end the enclosing %geom.
+ * One-line blocks ("%pal nprocs 4 end") are closed on their own line.
+ */
+export function enclosingBlock(doc: vscode.TextDocument, line: number): string | undefined {
   let depth = 0;
   for (let i = line - 1; i >= 0; i--) {
     const text = doc.lineAt(i).text;
-    if (/^\s*end\b/i.test(text)) {
-      depth++;
-    } else if (/^\s*%[A-Za-z]/.test(text)) {
+    const block = /^\s*%([A-Za-z][A-Za-z0-9_]*)/.exec(text);
+    if (block) {
+      if (/\bend\s*$/i.test(text)) {
+        continue; // one-line block, already closed
+      }
       if (depth === 0) {
-        return true;
+        return block[1].toLowerCase();
       }
       depth--;
+    } else if (/^\s*end\b/i.test(text)) {
+      depth++;
+    } else if (/^\s*(Constraints|Scan|Nuclei)\b/i.test(text) && !/\bend\s*$/i.test(text) && depth > 0) {
+      depth--; // opener of a sub-block whose "end" we already counted
     }
   }
-  return false;
+  return undefined;
 }
 
 export class OrcaCompletionProvider implements vscode.CompletionItemProvider {
@@ -74,8 +85,16 @@ export class OrcaCompletionProvider implements vscode.CompletionItemProvider {
       );
     }
 
-    // Inside an open %block ... end region -> offer common block options
-    if (isInsideOpenBlock(doc, position.line)) {
+    // Inside an open %block ... end region -> offer that block's options,
+    // or the generic list for blocks without a curated entry
+    const block = enclosingBlock(doc, position.line);
+    if (block !== undefined) {
+      const specific = BLOCK_OPTIONS_BY_BLOCK[block];
+      if (specific) {
+        return specific.map(o =>
+          item(o.name, vscode.CompletionItemKind.Property, `%${block} option`, o.doc)
+        );
+      }
       return BLOCK_OPTIONS.map(o =>
         item(o, vscode.CompletionItemKind.Property, 'ORCA block option')
       );

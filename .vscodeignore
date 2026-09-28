@@ -8,3 +8,7 @@ tsconfig.json
 node_modules/**
 .git/**
 docs/**
+test/**
+.mocharc.json
+.github/**
+*.vsix
