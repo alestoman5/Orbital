@@ -15,7 +15,9 @@
 //     wording could be off): geometry-convergence table, SCF iteration log.
 //     If real output disagrees, these are the two parsers to re-check first.
 
-import { GeometryAtom, OptCycle, OptCycleMetric, OrcaStatus, ScfCycle } from './types';
+import { Excitation, GeometryAtom, OptCycle, OptCycleMetric, OrcaStatus, ScfCycle } from './types';
+import { columnsOf, parseColumnBlockMatrix } from '../chem/hess';
+import { EV_TO_CM1 } from '../chem/elements';
 
 export interface SectionResult<T> {
   value: T;
@@ -25,7 +27,8 @@ export interface SectionResult<T> {
 // --- 1. Termination status --------------------------------------------
 
 const NORMAL_TERMINATION_MARKER = '****ORCA TERMINATED NORMALLY****';
-const ABORT_MARKER = 'ABORTING THE RUN';
+// ORCA 5 prints "ABORTING THE RUN"; ORCA 6 prints "... aborting the run" (lower case).
+const ABORT_MARKER_RE = /aborting the run/i;
 
 /**
  * HIGH confidence. Scans forward from `startIndex` for ORCA's normal-
@@ -43,7 +46,7 @@ export function parseTerminationStatus(lines: string[], startIndex: number): Sec
     if (line.includes(NORMAL_TERMINATION_MARKER)) {
       return { value: 'normal-termination', nextIndex: i + 1 };
     }
-    if (line.includes(ABORT_MARKER)) {
+    if (ABORT_MARKER_RE.test(line)) {
       return { value: 'error', nextIndex: i + 1 };
     }
   }
@@ -192,6 +195,50 @@ export function parseCartesianCoordinatesBlock(
   return { value: atoms, nextIndex: i };
 }
 
+// --- 4b. CARTESIAN COORDINATES (A.U.) block --------------------------------
+
+export const CARTESIAN_AU_HEADER_RE = /^\s*CARTESIAN COORDINATES \(A\.U\.\)\s*$/;
+const AU_ATOM_LINE_RE =
+  /^\s*\d+\s+([A-Za-z]{1,3})\s+-?\d+\.\d+\s+\d+\s+(\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s+(-?\d+\.\d+)\s*$/;
+
+/**
+ * HIGH confidence. The bohr-unit twin of the Ångström block, with masses:
+ *   CARTESIAN COORDINATES (A.U.)
+ *   ----------------------------
+ *     NO LB      ZA    FRAG     MASS         X           Y           Z
+ *      0 N     7.0000    0    14.007    0.171609   -0.001087    0.113020
+ * Kept because SHARC's ORCA_freq.py writes these exact (6-decimal bohr)
+ * values into Molden files; converting the Å block instead differs in the
+ * last digit. Rows end at the first non-matching line.
+ */
+export function parseCartesianBohrBlock(
+  lines: string[],
+  startIndex: number
+): SectionResult<{ symbol: string; mass: number; xBohr: number; yBohr: number; zBohr: number }[]> {
+  if (!CARTESIAN_AU_HEADER_RE.test(lines[startIndex])) {
+    return { value: [], nextIndex: startIndex + 1 };
+  }
+  const atoms: { symbol: string; mass: number; xBohr: number; yBohr: number; zBohr: number }[] = [];
+  let i = startIndex + 1;
+  for (; i < lines.length; i++) {
+    const m = AU_ATOM_LINE_RE.exec(lines[i]);
+    if (m) {
+      atoms.push({
+        symbol: m[1],
+        mass: parseFloat(m[2]),
+        xBohr: parseFloat(m[3]),
+        yBohr: parseFloat(m[4]),
+        zBohr: parseFloat(m[5])
+      });
+      continue;
+    }
+    if (atoms.length > 0 || i - startIndex > 4) {
+      break;
+    }
+  }
+  return { value: atoms, nextIndex: i };
+}
+
 // --- 5. TOTAL RUN TIME ---------------------------------------------------
 
 const RUN_TIME_RE =
@@ -269,4 +316,253 @@ export function parseScfIterations(lines: string[], startIndex: number): Section
     cycles.push({ cycle: parseInt(row[1], 10), energy: parseFloat(row[2]), deltaE: parseFloat(row[3]) });
   }
   return { value: cycles, nextIndex: i };
+}
+
+// --- 7. VIBRATIONAL FREQUENCIES ------------------------------------------
+
+export const VIB_FREQ_HEADER_RE = /^\s*VIBRATIONAL FREQUENCIES\s*$/;
+const VIB_FREQ_ROW_RE = /^\s*(\d+):\s+(-?\d+\.\d+)\s+cm\*\*-1/;
+
+/**
+ * HIGH confidence. Expects `lines[startIndex]` to be the "VIBRATIONAL
+ * FREQUENCIES" title, followed by a dashed underline, a "Scaling factor
+ * for frequencies" line and then one row per Cartesian dof:
+ *      0:         0.00 cm**-1
+ *      6:      -312.45 cm**-1 ***imaginary mode***
+ * Imaginary modes are printed as negative numbers. Stops at the first
+ * non-row line after the rows start.
+ */
+export function parseVibrationalFrequencies(lines: string[], startIndex: number): SectionResult<number[]> {
+  if (!VIB_FREQ_HEADER_RE.test(lines[startIndex])) {
+    return { value: [], nextIndex: startIndex + 1 };
+  }
+  const freqs: number[] = [];
+  let i = startIndex + 1;
+  for (; i < lines.length; i++) {
+    const row = VIB_FREQ_ROW_RE.exec(lines[i]);
+    if (row) {
+      freqs[parseInt(row[1], 10)] = parseFloat(row[2]);
+      continue;
+    }
+    if (freqs.length > 0 || i - startIndex > 8) {
+      break; // table done, or preamble much longer than expected
+    }
+  }
+  return { value: Array.from(freqs, f => (f === undefined ? NaN : f)), nextIndex: i };
+}
+
+// --- 7b. IR SPECTRUM ------------------------------------------------------
+
+export const IR_SPECTRUM_HEADER_RE = /^\s*IR SPECTRUM\s*$/;
+const IR_ROW_RE = /^\s*(\d+):\s+(-?\d+\.\d+)\s+(\d+\.\d+)/;
+
+/**
+ * HIGH confidence. Rows of the "IR SPECTRUM" table,
+ *   "  6:     25.38   0.000013    0.07  0.000164  ( 0.000003  0.012801 -0.000088)",
+ * keyed by mode index; returns the eps column (L/(mol*cm)), which is what
+ * SHARC's ORCA_freq.py writes into the Molden [INT] section. Modes without
+ * a row (translations/rotations) are 0.
+ */
+export function parseIrSpectrum(lines: string[], startIndex: number): SectionResult<number[]> {
+  if (!IR_SPECTRUM_HEADER_RE.test(lines[startIndex])) {
+    return { value: [], nextIndex: startIndex + 1 };
+  }
+  const eps: number[] = [];
+  let sawRow = false;
+  let i = startIndex + 1;
+  for (; i < lines.length; i++) {
+    const row = IR_ROW_RE.exec(lines[i]);
+    if (row) {
+      eps[parseInt(row[1], 10)] = parseFloat(row[3]);
+      sawRow = true;
+      continue;
+    }
+    if (sawRow || i - startIndex > 8) {
+      break;
+    }
+  }
+  return { value: Array.from(eps, e => (e === undefined ? 0 : e)), nextIndex: i };
+}
+
+// --- 8. NORMAL MODES ------------------------------------------------------
+
+export const NORMAL_MODES_HEADER_RE = /^\s*NORMAL MODES\s*$/;
+
+/**
+ * HIGH confidence for the layout (same column-block matrix as the .hess
+ * file's $normal_modes, 6 columns per block in .out). Expects
+ * `lines[startIndex]` to be the "NORMAL MODES" title; `nDof` (3N) comes
+ * from the preceding VIBRATIONAL FREQUENCIES table. Returns modes[k] =
+ * 3N-long Cartesian displacement vector of mode k.
+ */
+export function parseNormalModes(lines: string[], startIndex: number, nDof: number): SectionResult<number[][]> {
+  if (!NORMAL_MODES_HEADER_RE.test(lines[startIndex]) || nDof <= 0) {
+    return { value: [], nextIndex: startIndex + 1 };
+  }
+  const { matrix, nextIndex } = parseColumnBlockMatrix(lines, startIndex + 1, nDof, nDof);
+  return { value: columnsOf(matrix), nextIndex };
+}
+
+// --- 9. Thermochemistry (single lines) -------------------------------------
+
+export type ThermoKey = 'enthalpy' | 'entropy' | 'gibbs' | 'temperatureK';
+
+const THERMO_LINE_RES: { key: ThermoKey; re: RegExp }[] = [
+  { key: 'enthalpy', re: /^\s*Total Enthalpy\s+\.\.\.\s+(-?\d+\.\d+)\s+Eh/ },
+  { key: 'entropy', re: /^\s*Total entropy correction\s+\.\.\.\s+(-?\d+\.\d+)\s+Eh/ },
+  { key: 'gibbs', re: /^\s*Final Gibbs free energy\s+\.\.\.\s+(-?\d+\.\d+)\s+Eh/ },
+  { key: 'temperatureK', re: /^\s*Temperature\s+\.\.\.\s+(\d+\.\d+)\s+K/ }
+];
+
+/**
+ * HIGH confidence. ORCA's THERMOCHEMISTRY section prints one quantity per
+ * line ("Total Enthalpy   ...   -76.29... Eh", "Final Gibbs free energy
+ * ...", "Temperature ... 298.15 K"). Checks only `lines[startIndex]`; the
+ * caller merges the per-line results.
+ */
+export function parseThermoLine(
+  lines: string[],
+  startIndex: number
+): SectionResult<{ key: ThermoKey; value: number } | undefined> {
+  const line = lines[startIndex];
+  for (const { key, re } of THERMO_LINE_RES) {
+    const m = re.exec(line);
+    if (m) {
+      return { value: { key, value: parseFloat(m[1]) }, nextIndex: startIndex + 1 };
+    }
+  }
+  return { value: undefined, nextIndex: startIndex + 1 };
+}
+
+// --- 10. ABSORPTION SPECTRUM (electric dipole) ------------------------------
+
+export const ABSORPTION_HEADER_RE = /^\s*ABSORPTION SPECTRUM VIA TRANSITION ELECTRIC DIPOLE MOMENTS\s*$/;
+const NUM = '(-?\\d+(?:\\.\\d+)?(?:[eE][-+]?\\d+)?)';
+// ORCA 6.x: "  0-1A  ->  1-1A    4.271398   34451.2   290.3   0.012345678   0.12345   0.10000   0.20000   0.30000"
+const ABS_ROW_ORCA6_RE = new RegExp(
+  `^\\s*(\\S+)\\s*->\\s*(\\S+)\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s*$`
+);
+// ORCA 5.x: "   1   34451.2    290.3   0.012345678   0.12345   0.10000   0.20000   0.30000"
+const ABS_ROW_ORCA5_RE = new RegExp(
+  `^\\s*(\\d+)\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s+${NUM}\\s*$`
+);
+
+/**
+ * HIGH confidence for the ORCA 6 layout (transition, E[eV], E[cm-1],
+ * λ[nm], fosc, D2, DX, DY, DZ — the same columns the claude_chem NEA
+ * scripts parse) and the ORCA 5 layout (state, E[cm-1], λ, fosc, T2, TX,
+ * TY, TZ). Only the plain electric-dipole table matches — "SOC CORRECTED
+ * ..." and velocity-gauge tables have different titles. Skips the column
+ * header and dashes, then reads rows until the first non-row line.
+ */
+export function parseAbsorptionSpectrum(lines: string[], startIndex: number): SectionResult<Excitation[]> {
+  if (!ABSORPTION_HEADER_RE.test(lines[startIndex])) {
+    return { value: [], nextIndex: startIndex + 1 };
+  }
+  const rows: Excitation[] = [];
+  let i = startIndex + 1;
+  for (; i < lines.length; i++) {
+    const line = lines[i];
+    const m6 = ABS_ROW_ORCA6_RE.exec(line);
+    if (m6) {
+      const [, , to, ev, cm, nm, f, d2, dx, dy, dz] = m6;
+      const stateNum = parseInt(to, 10);
+      rows.push({
+        state: Number.isFinite(stateNum) ? stateNum : rows.length + 1,
+        label: to,
+        energyEv: parseFloat(ev),
+        energyCm1: parseFloat(cm),
+        wavelengthNm: parseFloat(nm),
+        fosc: parseFloat(f),
+        d2: parseFloat(d2),
+        dx: parseFloat(dx),
+        dy: parseFloat(dy),
+        dz: parseFloat(dz)
+      });
+      continue;
+    }
+    const m5 = ABS_ROW_ORCA5_RE.exec(line);
+    if (m5) {
+      const [, st, cm, nm, f, d2, dx, dy, dz] = m5;
+      rows.push({
+        state: parseInt(st, 10),
+        energyEv: parseFloat(cm) / EV_TO_CM1,
+        energyCm1: parseFloat(cm),
+        wavelengthNm: parseFloat(nm),
+        fosc: parseFloat(f),
+        d2: parseFloat(d2),
+        dx: parseFloat(dx),
+        dy: parseFloat(dy),
+        dz: parseFloat(dz)
+      });
+      continue;
+    }
+    if (rows.length > 0 || i - startIndex > 8) {
+      break;
+    }
+  }
+  return { value: rows, nextIndex: i };
+}
+
+// --- 11. Single-line status markers ------------------------------------------
+
+export type StatusMarker =
+  | { kind: 't1'; value: number }
+  | { kind: 'd1'; value: number }
+  | { kind: 'scf'; converged: boolean }
+  | { kind: 'opt'; converged: boolean };
+
+const T1_RE = /^\s*T1 diagnostic\s*(?:\.\.\.)?\s*(\d+\.\d+)/i;
+const D1_RE = /^\s*D1 diagnostic\s*(?:\.\.\.)?\s*(\d+\.\d+)/i;
+const SCF_CONVERGED_RE = /SCF CONVERGED AFTER\s+\d+\s+CYCLES/i;
+const SCF_NOT_CONVERGED_RE = /SCF NOT CONVERGED AFTER/i;
+const OPT_CONVERGED_RE = /THE OPTIMIZATION HAS CONVERGED/i;
+const OPT_NOT_CONVERGED_RE = /The optimization did not converge/i;
+
+/**
+ * HIGH confidence for the SCF/optimizer banners ("SCF CONVERGED AFTER 12
+ * CYCLES", "SCF NOT CONVERGED AFTER 125 CYCLES", "THE OPTIMIZATION HAS
+ * CONVERGED", "The optimization did not converge but reached the maximum
+ * number of optimization cycles"). BEST-EFFORT for the MDCI diagnostics
+ * wording ("T1 diagnostic ... 0.0123", "D1 diagnostic ... 0.0456") — not
+ * verified against a real ORCA 6.x CCSD run. Checks only `lines[startIndex]`.
+ */
+export function parseStatusMarker(lines: string[], startIndex: number): SectionResult<StatusMarker | undefined> {
+  const line = lines[startIndex];
+  let m: RegExpExecArray | null;
+  let value: StatusMarker | undefined;
+  if ((m = T1_RE.exec(line))) {
+    value = { kind: 't1', value: parseFloat(m[1]) };
+  } else if ((m = D1_RE.exec(line))) {
+    value = { kind: 'd1', value: parseFloat(m[1]) };
+  } else if (SCF_NOT_CONVERGED_RE.test(line)) {
+    value = { kind: 'scf', converged: false };
+  } else if (SCF_CONVERGED_RE.test(line)) {
+    value = { kind: 'scf', converged: true };
+  } else if (OPT_CONVERGED_RE.test(line)) {
+    value = { kind: 'opt', converged: true };
+  } else if (OPT_NOT_CONVERGED_RE.test(line)) {
+    value = { kind: 'opt', converged: false };
+  }
+  return { value, nextIndex: startIndex + 1 };
+}
+
+// --- 12. Input echo ------------------------------------------------------------
+
+const INPUT_ECHO_RE = /^\|\s*\d+>\s?(.*)$/;
+
+/**
+ * HIGH confidence. ORCA reproduces the input deck near the top of the .out
+ * as "|  1> ! PBE aug-cc-pVDZ TightOpt Freq". Collects every such line (in
+ * order) with the prefix stripped, scanning from startIndex to the end.
+ */
+export function parseInputEcho(lines: string[], startIndex: number): SectionResult<string[]> {
+  const echo: string[] = [];
+  for (let i = startIndex; i < lines.length; i++) {
+    const m = INPUT_ECHO_RE.exec(lines[i]);
+    if (m) {
+      echo.push(m[1]);
+    }
+  }
+  return { value: echo, nextIndex: lines.length };
 }

@@ -4,13 +4,26 @@
 
 import { JobSegment, ParsedOrcaOutput } from './types';
 import {
+  ABSORPTION_HEADER_RE,
+  CARTESIAN_AU_HEADER_RE,
+  IR_SPECTRUM_HEADER_RE,
+  NORMAL_MODES_HEADER_RE,
   OPT_CYCLE_HEADER_RE,
+  VIB_FREQ_HEADER_RE,
+  parseAbsorptionSpectrum,
+  parseCartesianBohrBlock,
   parseCartesianCoordinatesBlock,
   parseFinalSinglePointEnergy,
+  parseInputEcho,
+  parseIrSpectrum,
+  parseNormalModes,
   parseOptCycle,
   parseScfIterations,
+  parseStatusMarker,
   parseTerminationStatus,
+  parseThermoLine,
   parseTotalRunTime,
+  parseVibrationalFrequencies,
   parseWarningLine
 } from './sections';
 
@@ -104,6 +117,15 @@ function parseJobSegment(segment: string[]): JobSegment {
       continue;
     }
 
+    if (CARTESIAN_AU_HEADER_RE.test(line)) {
+      const { value, nextIndex } = parseCartesianBohrBlock(segment, i);
+      if (value.length > 0) {
+        job.finalGeometryBohr = value;
+      }
+      i = nextIndex;
+      continue;
+    }
+
     if (SCF_HEADER_RE.test(line)) {
       const { value, nextIndex } = parseScfIterations(segment, i);
       if (value.length > 0) {
@@ -122,6 +144,63 @@ function parseJobSegment(segment: string[]): JobSegment {
       continue;
     }
 
+    if (VIB_FREQ_HEADER_RE.test(line)) {
+      const { value, nextIndex } = parseVibrationalFrequencies(segment, i);
+      if (value.length > 0) {
+        job.frequenciesCm1 = value;
+      }
+      i = nextIndex;
+      continue;
+    }
+
+    if (IR_SPECTRUM_HEADER_RE.test(line)) {
+      const { value, nextIndex } = parseIrSpectrum(segment, i);
+      if (value.length > 0) {
+        job.irEpsilon = value;
+      }
+      i = nextIndex;
+      continue;
+    }
+
+    if (NORMAL_MODES_HEADER_RE.test(line)) {
+      const nDof = job.frequenciesCm1?.length ?? (job.finalGeometry?.length ?? 0) * 3;
+      const { value, nextIndex } = parseNormalModes(segment, i, nDof);
+      if (value.length > 0) {
+        job.normalModes = value;
+      }
+      i = nextIndex;
+      continue;
+    }
+
+    if (ABSORPTION_HEADER_RE.test(line)) {
+      // Later tables (e.g. a second TD-DFT step) overwrite earlier ones.
+      const { value, nextIndex } = parseAbsorptionSpectrum(segment, i);
+      if (value.length > 0) {
+        job.excitations = value;
+      }
+      i = nextIndex;
+      continue;
+    }
+
+    const thermo = parseThermoLine(segment, i).value;
+    if (thermo) {
+      job.thermo = { ...(job.thermo ?? {}), [thermo.key]: thermo.value };
+      i++;
+      continue;
+    }
+
+    const marker = parseStatusMarker(segment, i).value;
+    if (marker) {
+      switch (marker.kind) {
+        case 't1': job.t1Diagnostic = marker.value; break;
+        case 'd1': job.d1Diagnostic = marker.value; break;
+        case 'scf': job.scfConverged = marker.converged; break;
+        case 'opt': job.optConverged = marker.converged; break;
+      }
+      i++;
+      continue;
+    }
+
     i++;
   }
 
@@ -136,6 +215,7 @@ export function parseOrcaOutput(text: string): ParsedOrcaOutput {
 
   const { value: status } = parseTerminationStatus(lines, 0);
   const { value: totalRunTimeSeconds } = parseTotalRunTime(lines, 0);
+  const { value: inputEcho } = parseInputEcho(lines, 0);
 
-  return { status, jobs, totalRunTimeSeconds };
+  return { status, jobs, totalRunTimeSeconds, inputEcho };
 }

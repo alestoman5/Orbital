@@ -26,6 +26,13 @@ describe('parseTerminationStatus', () => {
     assert.strictEqual(value, 'error');
   });
 
+  it('recognizes the ORCA 6 lower-case abort line', () => {
+    const lines = toLines(
+      `[file orca_main/main_input_check.cpp, line 10734]: Error (ORCA_MAIN): ... aborting the run\n`
+    );
+    assert.strictEqual(parseTerminationStatus(lines, 0).value, 'error');
+  });
+
   it('degrades to "running" when the file has content but no terminal marker (truncated mid-write)', () => {
     const lines = toLines(`Program Version 6.0.0\nSCF ITERATIONS\n  0    -76.01   0.0\n`);
     const { value } = parseTerminationStatus(lines, 0);
