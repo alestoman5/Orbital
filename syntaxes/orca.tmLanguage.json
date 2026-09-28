@@ -6,6 +6,7 @@
     { "include": "#comment" },
     { "include": "#simple-input-line" },
     { "include": "#block-region" },
+    { "include": "#coordinate-file" },
     { "include": "#coordinate-block" },
     { "include": "#numbers" },
     { "include": "#strings" }
@@ -75,8 +76,17 @@
       ]
     },
 
+    "coordinate-file": {
+      "match": "^\\s*(\\*)\\s*(xyzfile|gzmtfile|pdbfile)\\b(.*)$",
+      "captures": {
+        "1": { "name": "punctuation.definition.coordinate-block.orca" },
+        "2": { "name": "keyword.control.coordinate-type.orca" },
+        "3": { "patterns": [{ "include": "#numbers" }, { "include": "#comment" }] }
+      }
+    },
+
     "coordinate-block": {
-      "begin": "^\\s*(\\*)\\s*(xyz|xyzfile|int|gzmt|internal)?",
+      "begin": "^\\s*(\\*)\\s*(?:(xyz|internal|int|gzmt)\\b)?",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.coordinate-block.orca" },
         "2": { "name": "keyword.control.coordinate-type.orca" }

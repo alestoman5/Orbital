@@ -17,6 +17,8 @@ import {
 } from './features/batchCommands';
 import { RunsTreeProvider } from './features/runsTree';
 import { showSpectrumPreview } from './features/spectrumPanel';
+import { showDatPlot } from './features/mdPlot';
+import { neaCommand, neaOpenOutputs, neaOverview } from './features/neaRuns';
 import { OutUnitHoverProvider } from './features/unitHover';
 import { loadOutput, runFilesFor, targetPath } from './features/io';
 import { summarizeRun } from './features/runSummary';
@@ -79,6 +81,10 @@ export function activate(context: vscode.ExtensionContext): void {
     ['orcaInp.exportPyneapples', (uri?: vscode.Uri) => exportPyneapples(uri)],
     ['orcaInp.boltzmannWeights', (uri?: vscode.Uri, uris?: vscode.Uri[]) => boltzmannWeightsCommand(uri, uris)],
     ['orcaInp.previewSpectrum', (uri?: vscode.Uri) => showSpectrumPreview(uri)],
+    ['orcaInp.plotDat', (uri?: vscode.Uri) => showDatPlot(uri)],
+    ['orcaInp.neaOverview', (uri?: vscode.Uri) => neaOverview(uri)],
+    ['orcaInp.neaOpenOutputs', (uri?: vscode.Uri) => neaOpenOutputs(uri)],
+    ['orcaInp.neaCommand', (uri?: vscode.Uri, uris?: vscode.Uri[]) => neaCommand(uri, uris)],
     ['orcaInp.runActions', (uri?: vscode.Uri) => runActions(uri)],
     ['orcaInp.runs.refresh', () => runsTree.refresh()],
     ['orcaInp.runs.toggleProblemsOnly', () => runsTree.toggleProblemsOnly()],

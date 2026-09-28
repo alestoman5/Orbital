@@ -8,9 +8,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { Stick, silvermanBandwidth } from '../chem/spectrum';
+import { findGeomSets, readGeomSet } from '../chem/neaRun';
 import { findOutFiles, loadOutput, runFilesFor, targetPath } from './io';
 
-interface SpectrumData {
+export interface SpectrumData {
   title: string;
   sticks: Stick[];
   nGeometries: number;
@@ -21,6 +22,10 @@ interface SpectrumData {
 async function collect(uri?: vscode.Uri): Promise<SpectrumData | undefined> {
   const p = targetPath(uri);
   if (p && fs.existsSync(p) && fs.statSync(p).isDirectory()) {
+    const fromResults = await collectResultJson(p);
+    if (fromResults !== null) {
+      return fromResults;
+    }
     const outs = await findOutFiles(vscode.Uri.file(p));
     const sticks: Stick[] = [];
     let n = 0;
@@ -59,6 +64,37 @@ async function collect(uri?: vscode.Uri): Promise<SpectrumData | undefined> {
   };
 }
 
+/**
+ * PySCF ADC results of the uv-vis NEA scripts (geom_NNNN/result.json).
+ * null = not such a directory (fall back to .out files); undefined = cancelled or empty.
+ */
+async function collectResultJson(folder: string): Promise<SpectrumData | undefined | null> {
+  const sets = findGeomSets(folder);
+  if (sets.length === 0) {
+    return null;
+  }
+  let dir = sets[0];
+  if (sets.length > 1) {
+    const pick = await vscode.window.showQuickPick(sets.map(d => path.relative(folder, d)), { title: 'Geometry set' });
+    if (!pick) {
+      return undefined;
+    }
+    dir = path.join(folder, pick);
+  }
+  const s = readGeomSet(dir);
+  if (s.nOk === 0) {
+    return undefined;
+  }
+  const label = path.relative(folder, dir);
+  return {
+    title: `${path.basename(folder)}${label ? '/' + label : ''} — ${s.nOk} geometries (result.json)`,
+    sticks: s.sticks,
+    nGeometries: s.nOk,
+    bandwidth: silvermanBandwidth(s.sticks),
+    skipped: s.byStatus['not converged'].length + s.byStatus.unreadable.length + s.byStatus['not started'].length
+  };
+}
+
 export async function showSpectrumPreview(uri?: vscode.Uri): Promise<void> {
   const data = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Window, title: 'Reading excitations…' },
@@ -76,7 +112,7 @@ export async function showSpectrumPreview(uri?: vscode.Uri): Promise<void> {
   panel.webview.html = spectrumHtml(data, panel.webview.cspSource);
 }
 
-function nonce(): string {
+export function nonce(): string {
   let s = '';
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 32; i++) {
@@ -85,7 +121,7 @@ function nonce(): string {
   return s;
 }
 
-function spectrumHtml(data: SpectrumData, cspSource: string): string {
+export function spectrumHtml(data: SpectrumData, cspSource: string): string {
   const n = nonce();
   const payload = JSON.stringify(data).replace(/</g, '\\u003c');
   return `<!DOCTYPE html>

@@ -110,7 +110,7 @@ export const ALGORITHMIC_KEYWORDS = [
   'NOPRINTMOS', 'PRINTBASIS', 'PRINTGAP', 'ALLPOP', 'NOPOP', 'MULLIKEN',
   'NOMULLIKEN', 'LOEWDIN', 'NOLOEWDIN', 'MAYER', 'NOMAYER', 'NPA', 'NBO',
   'NONPA', 'NONBO', 'REDUCEDPOP', 'NOREDUCEDPOP', 'UNO', 'AIM', 'XYZFILE',
-  'PDBFILE'
+  'PDBFILE', 'CHELPG', 'HIRSHFELD', 'MBIS'
 ];
 
 // ---------------------------------------------------------------------
@@ -237,6 +237,7 @@ export const KNOWN_PATTERN_REGEXES = [
   /^CPCM\([A-Za-z0-9_-]+\)$/i,
   /^SMD\([A-Za-z0-9_-]+\)$/i,
   /^CPCMC\([A-Za-z0-9_-]+\)$/i,
+  /^CPCMX\([A-Za-z0-9_-]+\)$/i,
   /^ALPB\([A-Za-z0-9_-]+\)$/i,
   /^PAL\d+$/i,
   /^SCFCONV\d+$/i,
