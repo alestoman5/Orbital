@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { GEOM_STATUSES, countXyzFrames, findGeomSets, readGeomSet } from '../chem/neaRun';
 import { openFile, pickFolder, showMarkdown, targetPath } from './io';
+import { NeaScript, buildNeaCommand } from '../inputs/nea';
 
 function runFolder(uri?: vscode.Uri): string | undefined {
   const p = targetPath(uri);
@@ -108,9 +109,6 @@ async function findScriptsDir(): Promise<string | undefined> {
   return hits.length > 0 ? path.dirname(hits[0].fsPath) : undefined;
 }
 
-const q = (s: string) => (/^[\w@%+=:,./-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`);
-const stem = (p: string) => path.basename(p).replace(/\.[^.]*$/, '');
-
 /** Builds a from_geometry / from_ensemble / compare_ensembles command and types it into a terminal (not run). */
 export async function neaCommand(uri?: vscode.Uri, uris?: vscode.Uri[]): Promise<void> {
   const scripts = await findScriptsDir();
@@ -140,29 +138,18 @@ export async function neaCommand(uri?: vscode.Uri, uris?: vscode.Uri[]): Promise
     }
     inputs = picked.map(u => u.fsPath);
   }
-  const rel = (p: string) => q(path.relative(root, p) || '.');
-  const args: string[] = [];
-  let outName = stem(inputs[0]);
+  let sampling: 'wigner' | 'md' | undefined;
   if (script.label === 'from_geometry.py') {
-    const sampling = await vscode.window.showQuickPick(['wigner', 'md'], { title: 'Sampling' });
-    if (!sampling) {
+    const picked = await vscode.window.showQuickPick(['wigner', 'md'], { title: 'Sampling' });
+    if (!picked) {
       return;
     }
-    outName += `_${sampling}`;
-    args.push(rel(inputs[0]), '--sampling', sampling, '-n', '1000');
-    args.push(...(sampling === 'wigner'
-      ? ['--sample-method', 'PBE', '--sample-basis', 'aug-cc-pVDZ', '-T', '300']
-      : ['--skip', '0', '--stride', '1', '--beads', '1']));
-  } else if (compare) {
-    args.push(...inputs.map(p => `${stem(p)}=${rel(p)}`));
-    outName = 'compare';
-  } else {
-    args.push(rel(inputs[0]));
+    sampling = picked as 'wigner' | 'md';
   }
-  args.push('-o', q(`runs/${outName}`), '--method', q('adc(3)'), '--basis', 'aug-cc-pVDZ', '--nstates', '2', '-j', '30');
+  const command = buildNeaCommand({ script: script.label as NeaScript, root, inputs, sampling });
   const cmd = await vscode.window.showInputBox({
     title: `Edit, then Enter to type it into a terminal in ${root} (it is not run)`,
-    value: `python scripts/${script.label} ${args.join(' ')}`,
+    value: command,
     ignoreFocusOut: true
   });
   if (!cmd) {
