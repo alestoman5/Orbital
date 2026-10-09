@@ -240,16 +240,16 @@ export const view: TabView = {
         columns: [
           {
             key: 'label', label: 'Set', render: g => h('div.calcs-setcell', { dataset: { gid: g.id }, title: g.dir },
-              badge(KIND[g.kind].label, KIND[g.kind].tone), h('span.calcs-label', null, g.label))
+              badge(KIND[g.kind].label, KIND[g.kind].tone), labelEl(g.label))
           },
           { key: 'status', label: 'Status', width: '30%', render: statusCell, sortValue: g => (g.total ? g.counts.ok / g.total : 0) },
           { key: 'ok', label: 'ok / total', numeric: true, sortValue: g => g.counts.ok, render: g => h('span', null, fmtInt(g.counts.ok), h('span.muted', null, ` / ${fmtInt(g.total)}`)) },
           { key: 'medianTimeS', label: 'Median', numeric: true, title: 'median wall time of the ok items', sortValue: g => g.medianTimeS ?? -1, render: g => fmtDuration(g.medianTimeS) },
           { key: 'maxTimeS', label: 'Max', numeric: true, sortValue: g => g.maxTimeS ?? -1, render: g => fmtDuration(g.maxTimeS) },
-          {
-            key: 'method', label: 'Method / basis', sortValue: g => `${g.method ?? '~'} ${g.basis ?? ''}`,
-            render: g => (g.method || g.basis ? h('span.mono', null, [g.method, g.basis].filter(Boolean).join(' / ')) : h('span.muted', null, '–'))
-          }
+          ...(!r.groups.some(g => g.method || g.basis) ? [] : [{
+            key: 'method', label: 'Method / basis', sortValue: (g: GroupRow) => `${g.method ?? '~'} ${g.basis ?? ''}`,
+            render: (g: GroupRow) => (g.method || g.basis ? h('span.mono', null, [g.method, g.basis].filter(Boolean).join(' / ')) : h('span.muted', null, '–'))
+          }])
         ]
       });
       tableHost = table;
@@ -440,6 +440,12 @@ export const view: TabView = {
     };
   }
 };
+
+/** Path label: parent folders muted, last part strong. */
+function labelEl(label: string): HTMLElement {
+  const i = label.lastIndexOf('/');
+  return h('span.calcs-label', null, i > 0 ? h('span.calcs-label-dir', null, label.slice(0, i + 1)) : null, label.slice(i + 1));
+}
 
 const plural = (n: number, w: string) => `${fmtInt(n)} ${w}${n === 1 ? '' : 's'}`;
 

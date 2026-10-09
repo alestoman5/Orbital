@@ -235,7 +235,8 @@ export const view: TabView = {
       const res = await busy(undefined, () => ctx.rpc<{ ok: boolean; message: string }>('kill', { pid: r.pid, signal }));
       if (!res) return;
       ctx.toast(res.message, res.ok ? 'success' : 'error');
-      if (res.ok && signal === 'TERM') terminated.add(r.pid);
+      // Offer Force kill next, also when a graceful stop was refused (Windows console programs).
+      if (signal === 'TERM') terminated.add(r.pid);
       setTimeout(() => void refreshProcs(), 1200);
     }
 

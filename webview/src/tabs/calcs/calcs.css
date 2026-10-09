@@ -30,11 +30,13 @@
 
 [data-tab="calcs"] .calcs-kpi-skel { min-height: 76px; }
 
-[data-tab="calcs"] .calcs-setcell { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+[data-tab="calcs"] .calcs-setcell { display: flex; align-items: center; gap: var(--space-2); min-width: 240px; }
+[data-tab="calcs"] .calcs-label-dir { color: var(--muted); }
+[data-tab="calcs"] .table td.num { white-space: nowrap; }
 [data-tab="calcs"] .calcs-setcell .badge { flex: none; min-width: 46px; text-align: center; }
 [data-tab="calcs"] .calcs-label { font-family: var(--font-mono); font-size: var(--font-size-xs); overflow-wrap: anywhere; color: var(--fg-strong); }
 
-[data-tab="calcs"] .calcs-statuscell { display: flex; flex-direction: column; gap: 4px; min-width: 160px; }
+[data-tab="calcs"] .calcs-statuscell { display: flex; flex-direction: column; gap: 4px; min-width: 120px; }
 [data-tab="calcs"] .calcs-counts { display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: var(--font-size-xs); color: var(--muted); font-variant-numeric: tabular-nums; }
 [data-tab="calcs"] .calcs-counts span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 [data-tab="calcs"] .calcs-counts i { width: 7px; height: 7px; border-radius: 2px; background: var(--tone); }

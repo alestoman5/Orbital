@@ -8,7 +8,7 @@
 [data-tab="runs"] .runs-machine { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--space-4); }
 [data-tab="runs"] .runs-machine > .grid,
 [data-tab="runs"] .runs-machine .card-body > .grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; }
-[data-tab="runs"] .runs-history { height: 150px; }
+[data-tab="runs"] .runs-history { height: 128px; }
 @media (max-width: 1100px) {
   [data-tab="runs"] .runs-machine { grid-template-columns: minmax(0, 1fr); }
 }
