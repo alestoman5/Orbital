@@ -1,0 +1,1227 @@
+{
+ "values": [
+  {
+   "text": "1e-3",
+   "type": "float",
+   "ok": 0.001
+  },
+  {
+   "text": " 2.5 ",
+   "type": "float",
+   "ok": 2.5
+  },
+  {
+   "text": "1,2,3",
+   "type": "float",
+   "ok": [
+    1.0,
+    2.0,
+    3.0
+   ]
+  },
+  {
+   "text": "1, 2 ,3",
+   "type": "int",
+   "ok": [
+    1,
+    2,
+    3
+   ]
+  },
+  {
+   "text": "log:-8,0,9",
+   "type": "float",
+   "ok": [
+    1e-08,
+    1e-07,
+    1e-06,
+    1e-05,
+    0.0001,
+    0.001,
+    0.01,
+    0.1,
+    1.0
+   ]
+  },
+  {
+   "text": "log:-10,0,11",
+   "type": "float",
+   "ok": [
+    1e-10,
+    1e-09,
+    1e-08,
+    1e-07,
+    1e-06,
+    1e-05,
+    0.0001,
+    0.001,
+    0.01,
+    0.1,
+    1.0
+   ]
+  },
+  {
+   "text": "log:0,3,4",
+   "type": "int",
+   "ok": [
+    1,
+    10,
+    100,
+    1000
+   ]
+  },
+  {
+   "text": "log:-2,2,5",
+   "type": "float",
+   "ok": [
+    0.01,
+    0.1,
+    1.0,
+    10.0,
+    100.0
+   ]
+  },
+  {
+   "text": "log:1,2,3.7",
+   "type": "float",
+   "ok": [
+    10.0,
+    31.6228,
+    100.0
+   ]
+  },
+  {
+   "text": "log: -3, -1, 7",
+   "type": "float",
+   "ok": [
+    0.001,
+    0.00215443,
+    0.00464159,
+    0.01,
+    0.0215443,
+    0.0464159,
+    0.1
+   ]
+  },
+  {
+   "text": "",
+   "type": "int?",
+   "ok": null
+  },
+  {
+   "text": "  ",
+   "type": "int?",
+   "ok": null
+  },
+  {
+   "text": "23",
+   "type": "int?",
+   "ok": 23
+  },
+  {
+   "text": "2.7",
+   "type": "int",
+   "ok": 2
+  },
+  {
+   "text": "-2.7",
+   "type": "int",
+   "ok": -2
+  },
+  {
+   "text": "1e3",
+   "type": "int",
+   "ok": 1000
+  },
+  {
+   "text": "1_000",
+   "type": "float",
+   "ok": 1000.0
+  },
+  {
+   "text": ".5",
+   "type": "float",
+   "ok": 0.5
+  },
+  {
+   "text": "5.",
+   "type": "float",
+   "ok": 5.0
+  },
+  {
+   "text": "+3",
+   "type": "float",
+   "ok": 3.0
+  },
+  {
+   "text": "-0.5",
+   "type": "int",
+   "ok": 0
+  },
+  {
+   "text": "0.1,0.2,0.30000000000000004",
+   "type": "float",
+   "ok": [
+    0.1,
+    0.2,
+    0.30000000000000004
+   ]
+  },
+  {
+   "text": "log:-5,-1,13",
+   "type": "float",
+   "ok": [
+    1e-05,
+    2.15443e-05,
+    4.64159e-05,
+    0.0001,
+    0.000215443,
+    0.000464159,
+    0.001,
+    0.00215443,
+    0.00464159,
+    0.01,
+    0.0215443,
+    0.0464159,
+    0.1
+   ]
+  },
+  {
+   "text": "log:-7,3,21",
+   "type": "float",
+   "ok": [
+    1e-07,
+    3.16228e-07,
+    1e-06,
+    3.16228e-06,
+    1e-05,
+    3.16228e-05,
+    0.0001,
+    0.000316228,
+    0.001,
+    0.00316228,
+    0.01,
+    0.0316228,
+    0.1,
+    0.316228,
+    1.0,
+    3.16228,
+    10.0,
+    31.6228,
+    100.0,
+    316.228,
+    1000.0
+   ]
+  },
+  {
+   "text": "x",
+   "type": "float",
+   "error": "ValueError"
+  },
+  {
+   "text": "",
+   "type": "float",
+   "error": "ValueError"
+  },
+  {
+   "text": "1,,2",
+   "type": "float",
+   "error": "ValueError"
+  },
+  {
+   "text": "log:1,2",
+   "type": "float",
+   "error": "ValueError"
+  },
+  {
+   "text": "log:0,1,1",
+   "type": "float",
+   "error": "ZeroDivisionError"
+  }
+ ],
+ "configs": {
+  "mbtr_krr_grid": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": 0.0,
+      "max": 2.5,
+      "n": 150,
+      "sigma": 0.05,
+      "scale": 0.5,
+      "threshold": 0.001,
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": [
+       1e-08,
+       1e-07,
+       1e-06,
+       1e-05,
+       0.0001,
+       0.001,
+       0.01,
+       0.1,
+       1.0
+      ],
+      "gamma": [
+       0.0001,
+       0.001
+      ]
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 8
+   }
+  },
+  "test_count": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "2211.7",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": 0.0,
+      "max": 2.5,
+      "n": 150,
+      "sigma": 0.05,
+      "scale": 0.5,
+      "threshold": 0.001,
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": [
+       1e-08,
+       1e-07,
+       1e-06,
+       1e-05,
+       0.0001,
+       0.001,
+       0.01,
+       0.1,
+       1.0
+      ],
+      "gamma": [
+       0.0001,
+       0.001
+      ]
+     }
+    },
+    "split": {
+     "test_size": 2211,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 8
+   }
+  },
+  "n_mol_blank_jobs_clamped": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "99"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": null,
+     "column": "E"
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": 0.0,
+      "max": 2.5,
+      "n": 150,
+      "sigma": 0.05,
+      "scale": 0.5,
+      "threshold": 0.001,
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": [
+       1e-08,
+       1e-07,
+       1e-06,
+       1e-05,
+       0.0001,
+       0.001,
+       0.01,
+       0.1,
+       1.0
+      ],
+      "gamma": [
+       0.0001,
+       0.001
+      ]
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 16
+   }
+  },
+  "jobs_low": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "0"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": 0.0,
+      "max": 2.5,
+      "n": 150,
+      "sigma": 0.05,
+      "scale": 0.5,
+      "threshold": 0.001,
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": [
+       1e-08,
+       1e-07,
+       1e-06,
+       1e-05,
+       0.0001,
+       0.001,
+       0.01,
+       0.1,
+       1.0
+      ],
+      "gamma": [
+       0.0001,
+       0.001
+      ]
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 1
+   }
+  },
+  "cm_auto_atoms": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "CM",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "permutation": "eigenspectrum",
+      "n_atoms_max": ""
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "CM",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "permutation": "eigenspectrum",
+      "n_atoms_max": null
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": [
+       1e-08,
+       1e-07,
+       1e-06,
+       1e-05,
+       0.0001,
+       0.001,
+       0.01,
+       0.1,
+       1.0
+      ],
+      "gamma": [
+       0.0001,
+       0.001
+      ]
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 8
+   }
+  },
+  "soap": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "SOAP",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "r_cut": "4.5",
+      "n_max": "6",
+      "l_max": "3",
+      "sigma": "0.5",
+      "average": "inner"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "SOAP",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "r_cut": 4.5,
+      "n_max": 6,
+      "l_max": 3,
+      "sigma": 0.5,
+      "average": "inner"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": [
+       1e-08,
+       1e-07,
+       1e-06,
+       1e-05,
+       0.0001,
+       0.001,
+       0.01,
+       0.1,
+       1.0
+      ],
+      "gamma": [
+       0.0001,
+       0.001
+      ]
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 8
+   }
+  },
+  "gpr_optimize": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "GPR",
+     "grid": false,
+     "params": {
+      "kernel": "Matern",
+      "length_scale": "10",
+      "alpha": "1e-6",
+      "optimize": true
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": 0.0,
+      "max": 2.5,
+      "n": 150,
+      "sigma": 0.05,
+      "scale": 0.5,
+      "threshold": 0.001,
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "GPR",
+     "grid": false,
+     "params": {
+      "kernel": "Matern",
+      "length_scale": 10.0,
+      "alpha": 1e-06,
+      "optimize": true
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 8
+   }
+  },
+  "xgb": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "XGBoost",
+     "grid": false,
+     "params": {
+      "n_estimators": "100",
+      "max_depth": "4.9",
+      "learning_rate": "0.05"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "ok": {
+    "name": "my run",
+    "data": {
+     "source": "custom",
+     "n_mol": 100,
+     "column": "E"
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": 0.0,
+      "max": 2.5,
+      "n": 150,
+      "sigma": 0.05,
+      "scale": 0.5,
+      "threshold": 0.001,
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "XGBoost",
+     "grid": false,
+     "params": {
+      "n_estimators": 100,
+      "max_depth": 4,
+      "learning_rate": 0.05
+     }
+    },
+    "split": {
+     "test_size": 0.2,
+     "seed": 42,
+     "cv": 5,
+     "curve": [
+      100,
+      300,
+      1000
+     ]
+    },
+    "n_jobs": 8
+   }
+  },
+  "list_without_grid": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": false,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "error": "ValueError"
+  },
+  "bad_choice": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "poly",
+      "alpha": "1",
+      "gamma": "1"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "error": "ValueError"
+  },
+  "rep_list": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "distance",
+      "min": "0,1",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "none"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "error": "ValueError"
+  },
+  "bad_float": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "KRR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "abc",
+      "gamma": "1"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "error": "ValueError"
+  },
+  "unknown_model": {
+   "form": {
+    "name": "  my run  ",
+    "data": {
+     "source": "custom",
+     "xyz": "XYZ",
+     "csv": "CSV",
+     "column": " E ",
+     "n_mol": "100",
+     "qm7b_target": ""
+    },
+    "rep": {
+     "name": "MBTR",
+     "variance": true,
+     "scale": false,
+     "params": {
+      "function": "inverse_distance",
+      "min": "0.0",
+      "max": "2.5",
+      "n": "150",
+      "sigma": "0.05",
+      "scale": "0.5",
+      "threshold": "1e-3",
+      "normalization": "l2"
+     }
+    },
+    "model": {
+     "name": "SVR",
+     "grid": true,
+     "params": {
+      "kernel": "rbf",
+      "alpha": "log:-8,0,9",
+      "gamma": "1e-4,1e-3"
+     }
+    },
+    "split": {
+     "test_size": "0.2",
+     "seed": "42",
+     "cv": "5",
+     "curve": "100, 300,,1000"
+    },
+    "n_jobs": "8"
+   },
+   "error": "ValueError"
+  }
+ }
+}

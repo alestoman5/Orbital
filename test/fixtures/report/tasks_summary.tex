@@ -1,0 +1,439 @@
+% Very short summary, one subsection per assigned task.
+% Compile with: tectonic tasks_summary.tex   (conda env `tex`; pdflatex also works)
+\documentclass[11pt,a4paper]{article}
+
+% Czech diacritics need different handling per engine. Under XeTeX (which is what tectonic runs)
+% the inputenc+T1 combination silently DROPS every hacek/krouzek character from the PDF
+% ("bezpecny" comes out as "bezpeny"), so there fontspec with a Unicode font is required.
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{lmodern}
+\else
+  % XeTeX (tectonic): the T1/EC Latin Modern bitmaps in the tectonic bundle have no Latin
+  % Extended-A, so the carons have to come from the OpenType files, named explicitly -
+  % \setmainfont{Latin Modern Roman} resolves to something that only covers Latin-1.
+  \usepackage{fontspec}
+  \setmainfont{lmroman10-regular.otf}[BoldFont=lmroman10-bold.otf,
+    ItalicFont=lmroman10-italic.otf, BoldItalicFont=lmroman10-bolditalic.otf]
+  \setsansfont{lmsans10-regular.otf}[BoldFont=lmsans10-bold.otf,
+    ItalicFont=lmsans10-oblique.otf]
+  \setmonofont{lmmono10-regular.otf}[BoldFont=lmmonolt10-bold.otf,
+    ItalicFont=lmmono10-italic.otf]
+\fi
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\usepackage{caption}   % for \caption* in the task 3 tables
+\usepackage{float}     % [H]: pin every float where it is written - with [htbp] the task 2
+                       % histograms floated off into the middle of task 3
+
+\graphicspath{{figures/}}
+\setlength{\parskip}{0.3em}
+\setlength{\emergencystretch}{3em}   % long \texttt paths/keywords otherwise overflow the margin
+
+\title{CH$_2$OO ground-state sampling --- task summary}
+\author{Aleš Toman}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+How to reproduce the results: \texttt{NOTES.md} in each stage directory.
+
+\section*{Task 1: Opt+freq PBE, 7 basis sets}
+
+\begin{itemize}\itemsep2pt
+  \item \texttt{PBE <basis> TightOpt Freq TightSCF}, ORCA 6.1.1; no imaginary frequencies for any of the 7 bases
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lSSccc}
+\toprule
+Basis & {Basis fns} & {1 core [s]} & C--O [\AA] & O--O [\AA] & $\angle$COO [$^\circ$] \\
+\midrule
+aug-cc-pVDZ & 87 & 48.0 & 1.2828 & 1.3425 & 119.15 \\
+def2-SVPD   & 82 & 19.2 & 1.2776 & 1.3346 & 120.04 \\
+ma-def2-SVP & 64 & 14.3 & 1.2783 & 1.3336 & 120.59 \\
+def2-SVP    & 52 & 11.3 & 1.2830 & 1.3205 & 120.64 \\
+jul-cc-pV(D+d)Z & 79 & 22.5 & 1.2829 & 1.3424 & 119.18 \\
+jun-cc-pV(D+d)Z & 64 & 18.4 & 1.2837 & 1.3431 & 119.61 \\
+cc-pVDZ     & 52 & 15.2 & 1.2880 & 1.3314 & 119.62 \\
+experiment (McCarthy 2013) & {--} & {--} & 1.2689 & 1.3405 & 117.91 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{itemize}\itemsep2pt
+  \item aug-cc-pVDZ is more expensive than def2-SVPD at almost the same number of functions: general contraction, more primitives
+\end{itemize}
+
+\clearpage
+\section*{Task 2: Wigner sampling, 300\,K, $n = 100\,000$}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lccc}
+\toprule
+Basis & O--O [\AA] & C--O [\AA] & $\angle$COO [$^\circ$] \\
+\midrule
+aug-cc-pVDZ & $1.3434 \pm 0.0455$ & $1.2840 \pm 0.0418$ & $119.12 \pm 4.10$ \\
+def2-SVPD   & $1.3358 \pm 0.0453$ & $1.2789 \pm 0.0414$ & $120.00 \pm 4.14$ \\
+ma-def2-SVP & $1.3350 \pm 0.0454$ & $1.2795 \pm 0.0416$ & $120.54 \pm 4.14$ \\
+def2-SVP    & $1.3216 \pm 0.0440$ & $1.2844 \pm 0.0415$ & $120.60 \pm 4.11$ \\
+jul-cc-pV(D+d)Z & $1.3434 \pm 0.0455$ & $1.2841 \pm 0.0419$ & $119.15 \pm 4.10$ \\
+jun-cc-pV(D+d)Z & $1.3442 \pm 0.0458$ & $1.2849 \pm 0.0418$ & $119.58 \pm 4.13$ \\
+cc-pVDZ     & $1.3325 \pm 0.0446$ & $1.2891 \pm 0.0419$ & $119.61 \pm 4.09$ \\
+\bottomrule
+\end{tabular}
+\caption*{mean $\pm$ sd; same seed (16661) for all bases $\Rightarrow$ paired ensembles}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{hist_OO.png}\\
+\includegraphics[width=0.49\textwidth]{hist_CO.png}\hfill
+\includegraphics[width=0.49\textwidth]{hist_COO_angle.png}
+\caption{O--O, C--O and $\angle$COO, 7 bases.}
+\end{figure}
+
+\begin{itemize}\itemsep2pt
+  \item The basis shifts the centre, not the width: $\sigma_{\mathrm{O-O}}$ = 0.044--0.046\,\AA\ for all
+  \item def2-SVP (no diffuse functions) has O--O shorter by 0.022\,\AA; def2-SVPD and ma-def2-SVP recover $\sim$2/3 of the shift
+\end{itemize}
+
+\clearpage
+\section*{Task 3: ADC(3)/aug-cc-pVDZ, PySCF vs.\ Psi4, and CC3 in eT (1 geometry)}
+
+\begin{itemize}\itemsep2pt
+  \item RHF, 3 singlets, all-electron; Psi4 1.11 calls \textbf{adcc} for ADC(3) $\Rightarrow$ comparison of \texttt{pyscf.adc} vs.\ adcc
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{cSSSSS}
+\toprule
+State & {PySCF $E$ [eV]} & {Psi4 $E$ [eV]} & {$\Delta E$ [$\mu$eV]} & {PySCF $f$} & {Psi4 $f$} \\
+\midrule
+1 & 2.789868 & 2.789871 & 3.5 & 0.0000134 & 0.0000141 \\
+2 & 3.740163 & 3.740167 & 3.9 & 0.14728   & 0.16268   \\
+3 & 6.634507 & 6.634506 & 1.2 & 0.0000022 & 0.0000097 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcSSc}
+\toprule
+Program & Cores & {ADC(3) [s]} & {Total [s]} & \% CPU \\
+\midrule
+PySCF       & 1 & 202.2 & 203.2 & 99 \\
+PySCF       & 8 & 171.0 & 171.2 & 797 \\
+Psi4 + adcc & 1 & 146.8 & 148.0 & 99 \\
+Psi4 + adcc & 8 & 120.3 & 121.4 & 594 \\
+eT CC3      & 1 & {--} & 959.5 & 100 \\
+eT CC3      & 8 & {--} & 285.3 & 798 \\
+\bottomrule
+\end{tabular}
+\hspace{1em}
+\begin{tabular}{cSS}
+\toprule
+State & {$\Delta E_{\mathrm{FC-AE}}$ [meV]} & {$\Delta f$} \\
+\midrule
+1 & 0.79 & 1.6e-7 \\
+2 & 0.15 & 1.3e-5 \\
+\bottomrule
+\end{tabular}
+\caption*{Left: timings (eT CC3: frozen core, 2 states, wall time); right: effect of frozen core (PySCF, 1 core, 2 states; ADC(3) 113.8 $\to$ 64.5\,s)}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{cSSSS}
+\toprule
+State & {eT CC3 $E$ [eV]} & {eT CC3 $f$} & {PySCF ADC(3) $E$ [eV]} & {PySCF ADC(3) $f$} \\
+\midrule
+1 & 2.412435 & 0.0000314 & 2.790659 & 0.0000136 \\
+2 & 3.804234 & 0.14254   & 3.740316 & 0.14729   \\
+\bottomrule
+\end{tabular}
+\caption*{eT CC3 (EOM, length gauge, 1 and 8 threads identical to $10^{-11}$\,eV) and PySCF ADC(3), both frozen core, 2 singlets}
+\end{table}
+
+\begin{itemize}\itemsep2pt
+  \item Energies agree to $\sim$4\,$\mu$eV; $f$ of the bright state differs by 10\,\% (adcc computes the transition moment at the ADC(2) level)
+  \item PySCF with \texttt{approx\_trans\_moments = False}
+  \item Parallel speed-up $\sim$1.2$\times$ on 8 cores $\Rightarrow$ run the ensemble as single-core jobs
+  \item Production: 2 states + frozen core
+\end{itemize}
+
+\clearpage
+\section*{Task 4: NEA spectrum, geometries from 7 bases}
+
+\begin{itemize}\itemsep2pt
+  \item Wigner $n = 1000$ (seed 16661, paired), ADC(3)/aug-cc-pVDZ, 2 states, frozen core, default PySCF convergence; 7000/7000 converged
+  \item Spectrum: PyNEAppLES, Gaussian KDE (Silverman), 95\,\% CI from bootstrap
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Geometry & $\langle r_{\mathrm{OO}}\rangle$ [\AA] & $\langle E_{\mathrm{S_2}}\rangle$ [eV] & $\lambda_{\max}$ & centroid & FWHM & max/exp \\
+ & & & [nm] & [nm] & [nm] & \\
+\midrule
+PBE/aug-cc-pVDZ & 1.3432 & $3.646 \pm 0.011$ & 334.4 & 343.2 & 72 & 1.48 \\
+PBE/def2-SVPD   & 1.3354 & $3.757 \pm 0.011$ & 325.0 & 334.5 & 75 & 1.49 \\
+PBE/ma-def2-SVP & 1.3359 & $3.766 \pm 0.011$ & 319.8 & 334.5 & 72 & 1.44 \\
+PBE/def2-SVP    & 1.3197 & $3.817 \pm 0.011$ & 310.3 & 330.0 & 69 & 1.51 \\
+PBE/jul-cc-pV(D+d)Z & 1.3425 & $3.662 \pm 0.010$ & 328.3 & 342.1 & 75 & 1.47 \\
+PBE/jun-cc-pV(D+d)Z & 1.3441 & $3.672 \pm 0.011$ & 332.8 & 342.0 & 77 & 1.41 \\
+PBE/cc-pVDZ     & 1.3330 & $3.701 \pm 0.011$ & 327.4 & 339.9 & 76 & 1.46 \\
+experiment (Ting 2014) & -- & -- & 337.8 & 342.4 & 84 & 1 \\
+\bottomrule
+\end{tabular}
+\caption*{band within the experimental window 276--438\,nm}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{spectrum_comparison.png}
+\caption{Spectra from smaller-basis geometries (colour) vs.\ aug-cc-pVDZ and experiment; bands = 95\,\% CI.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{spectrum_comparison_norm.png}
+\caption{As above, every computed spectrum and its CI band scaled by $\max(y_{\mathrm{exp}})/\max(y_{\mathrm{calc}})$ (shape comparison).}
+\end{figure}
+
+\begin{itemize}\itemsep2pt
+  \item Smaller-basis geometries vs.\ aug-cc-pVDZ: centroid 1--13\,nm blue-shifted, $\langle E_{\mathrm{S_2}}\rangle$ 0.02--0.17\,eV higher (SE 0.011\,eV)
+  \item Ordering of $\langle E_{\mathrm{S_2}}\rangle$ is the reverse of the ordering of O--O (task 2)
+  \item $\lambda_{\max}$: two halves of the same set differ by up to 10\,nm
+  \item aug-cc-pVDZ vs.\ experiment: centroid 343.2 vs.\ 342.4\,nm, FWHM 72 vs.\ 84\,nm, maximum $1.48\times$, integral $1.35\times$
+  \item Convergence checked
+\end{itemize}
+
+\clearpage
+\section*{Task 5: MD sampling (classical MD, GLE, PI+GLE) vs.\ Wigner}
+
+\begin{itemize}\itemsep2pt
+  \item ABIN + ORCA, PES PBE/aug-cc-pVDZ, 300\,K, 26\,ps per run, PI+GLE with 4 beads; no drift after 2\,ps equilibration
+  \item 1000 geometries per set (\texttt{PickGeoms.sh}), ADC(3) and KDE as in task 4; 3000/3000 converged
+  \item CI of MD spectra from block bootstrap (\texttt{cbb}, blocks of 10 frames $\approx$ 240\,fs)
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccc}
+\toprule
+Set & O--O [\AA] & $\langle E_{\mathrm{S_2}}\rangle$ [eV] & $\lambda_{\max}$ & centroid & FWHM & max/exp & int./exp \\
+ & & & [nm] & [nm] & [nm] & & \\
+\midrule
+Wigner      & $1.3434 \pm 0.0455$ & $3.646 \pm 0.011$ & 334.4 & 343.2 & 72 & 1.48 & 1.35 \\
+classical MD & $1.3472 \pm 0.0314$ & $3.652 \pm 0.008$ & 335.7 & 341.2 & 52 & 2.21 & 1.41 \\
+GLE         & $1.3530 \pm 0.0468$ & $3.551 \pm 0.017$ & 347.5 & 351.1 & 80 & 1.29 & 1.33 \\
+PI+GLE      & $1.3487 \pm 0.0462$ & $3.576 \pm 0.011$ & 333.6 & 350.5 & 83 & 1.31 & 1.36 \\
+experiment  & -- & -- & 337.8 & 342.4 & 84 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\caption*{O--O: mean $\pm$ sd; $\langle E_{\mathrm{S_2}}\rangle$: mean $\pm$ SE; band within the window 276--438\,nm}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{hist_md_OO.png}
+\caption{O--O: Wigner ($n = 100\,000$) and MD (1000 geometries each).}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{spectrum_md_vs_wigner.png}
+\caption{Spectra from MD geometries (colour) vs.\ Wigner and experiment; bands = 95\,\% CI.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{spectrum_md_vs_wigner_norm.png}
+\caption{As above, every computed spectrum and its CI band scaled by $\max(y_{\mathrm{exp}})/\max(y_{\mathrm{calc}})$ (shape comparison).}
+\end{figure}
+
+\begin{itemize}\itemsep2pt
+  \item Classical MD vs.\ Wigner: O--O sd 31\,\% smaller, FWHM 52 vs.\ 72\,nm, maximum $2.21$ vs.\ $1.48\times$ experiment
+  \item GLE, PI+GLE vs.\ Wigner: O--O sd equal, mean 0.005--0.010\,\AA\ longer; $\langle E_{\mathrm{S_2}}\rangle$ 0.07--0.10\,eV lower; centroid 7--8\,nm red-shifted; FWHM 80--83\,nm
+  \item Integral/experiment 1.33--1.41 for all sets
+  \item One trajectory per method; Wigner and MD geometries are not paired
+\end{itemize}
+
+\clearpage
+\section*{Task 6: Wigner vs.\ GLE vs.\ PI+GLE, $n = 5000$}
+
+\begin{itemize}\itemsep2pt
+  \item Wigner (PBE/aug-cc-pVDZ, seed 16661); GLE, PI+GLE runs extended to 99\,ps, 5000 frames each after 2\,ps
+  \item ADC(3) and KDE as in task 4; 15\,000/15\,000 converged
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lccccccc}
+\toprule
+Set & O--O [\AA] & $\langle E_{\mathrm{S_2}}\rangle$ [eV] & $\lambda_{\max}$ & centroid & FWHM & max/exp & int./exp \\
+ & & & [nm] & [nm] & [nm] & & \\
+\midrule
+Wigner     & $1.3439 \pm 0.0460$ & $3.645 \pm 0.005$ & 333.2 & 343.5 & 75 & 1.44 & 1.34 \\
+GLE        & $1.3511 \pm 0.0456$ & $3.566 \pm 0.005$ & 343.7 & 349.9 & 77 & 1.40 & 1.35 \\
+PI+GLE     & $1.3517 \pm 0.0461$ & $3.560 \pm 0.005$ & 335.7 & 350.7 & 81 & 1.32 & 1.35 \\
+experiment & -- & -- & 337.8 & 342.4 & 84 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\caption*{O--O: mean $\pm$ sd; $\langle E_{\mathrm{S_2}}\rangle$: mean $\pm$ SE; band within the window 276--438\,nm}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{sampling_5000.png}
+\caption{Spectra from 5000 geometries each and experiment; bands = 95\,\% CI.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{sampling_5000_norm.png}
+\caption{As above, scaled by $\max(y_{\mathrm{exp}})/\max(y_{\mathrm{calc}})$}
+\end{figure}
+
+\begin{itemize}\itemsep2pt
+  \item GLE matrices: parameters not documented (gle4md)
+\end{itemize}
+
+\clearpage
+\section*{Task 7: Basis of the excited-state calculation}
+
+\begin{itemize}\itemsep2pt
+  \item The 1000 PBE/aug-cc-pVDZ Wigner geometries of task 4; ADC(3) in aug-cc-pVDZ, def2-SVPD, ma-def2-SVP, jul-cc-pV(D+d)Z, jun-cc-pV(D+d)Z; 4000/4000 converged
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+ADC(3) basis & $\langle E_{\mathrm{S_2}}\rangle$ [eV] & $\lambda_{\max}$ & centroid & FWHM & max/exp & int./exp \\
+ & & [nm] & [nm] & [nm] & & \\
+\midrule
+aug-cc-pVDZ & $3.646 \pm 0.011$ & 334.4 & 343.2 & 72 & 1.48 & 1.35 \\
+def2-SVPD   & $3.668 \pm 0.011$ & 332.5 & 341.4 & 72 & 1.49 & 1.36 \\
+ma-def2-SVP & $3.631 \pm 0.011$ & 334.9 & 344.3 & 76 & 1.54 & 1.46 \\
+jul-cc-pV(D+d)Z & $3.651 \pm 0.011$ & 333.7 & 342.7 & 72 & 1.49 & 1.36 \\
+jun-cc-pV(D+d)Z & $3.578 \pm 0.011$ & 339.6 & 348.6 & 78 & 1.51 & 1.46 \\
+experiment  & -- & 337.8 & 342.4 & 84 & 1 & 1 \\
+\bottomrule
+\end{tabular}
+\caption*{band within the window 276--438\,nm}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{exc_basis.png}
+\caption{Top: spectra with ADC(3) in five bases on the same geometries and experiment. Bottom: difference from aug-cc-pVDZ; bands = 95\,\% CI of the difference.}
+\end{figure}
+
+\begin{itemize}\itemsep2pt
+  \item Share of the grid where the 95\,\% CI of the difference contains 0: 100\,\% for def2-SVPD, ma-def2-SVP and jul-cc-pV(D+d)Z, 46\,\% for jun-cc-pV(D+d)Z
+\end{itemize}
+
+\clearpage
+\section*{Task 8: MBTR on QM7b, comparison of regression models}
+
+\begin{itemize}\itemsep2pt
+  \item Same train/test split (5000/2211) and 5-fold CV for all models
+  \item Targets (QM7b, Montavon et al.\ 2013): PBE0 atomization energy [kcal/mol], ZINDO first excitation energy [eV]; MAE in the same units
+  \item GPR (internal, pure RBF): kernel RBF only (no amplitude, no WhiteKernel), length scale from the log marginal likelihood, $\alpha$ fixed at the GridSearch optimum, best of 3 starting length scales (1, 10, 100)
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccrl}
+\toprule
+Model & CV MAE & Test MAE & Test $R^2$ & Training & Optimal parameters \\
+\midrule
+GPR (internal)           & --    & 4.60  & 0.9894 & 1323\,s & $4.9^2 \cdot \mathrm{RBF}(l{=}105) + \mathrm{White}(\sigma^2{=}6.02\mathrm{e}{-5})$ \\
+GPR (internal, pure RBF) & --    & 8.78  & 0.9653 & 709\,s  & $\alpha = 10^{-6}$, $\mathrm{RBF}(l{=}36.4)$ \\
+GPR (GridSearch)         & 4.47  & 4.26  & 0.9954 & 744\,s  & $\alpha = 10^{-6}$, $\mathrm{RBF}(l{=}300)$ \\
+KRR (RBF)                & 5.90  & 5.72  & 0.9762 & 176\,s  & $\alpha = 10^{-5}$, $\gamma = 10^{-5}$ \\
+Ridge                    & 26.72 & 25.79 & 0.9732 & 7\,s    & $\alpha = 3162.3$ \\
+Lasso                    & 20.98 & 21.74 & 0.9807 & 36\,s   & $\alpha = 1.0$ \\
+\bottomrule
+\end{tabular}
+\caption*{atomization energy [kcal/mol]}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccrl}
+\toprule
+Model & CV MAE & Test MAE & Test $R^2$ & Training & Optimal parameters \\
+\midrule
+GPR (internal)           & --    & 0.243 & 0.9559 & 1908\,s & $0.986^2 \cdot \mathrm{RBF}(l{=}18.8) + \mathrm{White}(\sigma^2{=}0.0128)$ \\
+GPR (internal, pure RBF) & --    & 0.270 & 0.9392 & 525\,s  & $\alpha = 10^{-3}$, $\mathrm{RBF}(l{=}13.3)$ \\
+GPR (GridSearch)         & 0.274 & 0.258 & 0.9537 & 753\,s  & $\alpha = 10^{-3}$, $\mathrm{RBF}(l{=}30)$ \\
+KRR (RBF)                & 0.338 & 0.307 & 0.8910 & 174\,s  & $\alpha = 10^{-3}$, $\gamma = 10^{-3}$ \\
+Ridge                    & 1.130 & 0.783 & 0.7151 & 6\,s    & $\alpha = 316.2$ \\
+Lasso                    & 0.821 & 0.816 & 0.6938 & 29\,s   & $\alpha = 0.0316$ \\
+\bottomrule
+\end{tabular}
+\caption*{energy of the first excited state [eV]}
+\end{table}
+
+\begin{itemize}\itemsep2pt
+  \item Prediction on the 2211 test molecules, \texttt{return\_std=False} / \texttt{True}: GPR (internal, pure RBF) 25.0 / 25.5\,s and 23.3 / 23.7\,s, GPR (GridSearch) 25.1 / 25.7\,s and 26.5 / 25.6\,s (atomization / excitation)
+\end{itemize}
+
+\section*{Timings of excited-state methods, CH$_2$OO vs.\ CH$_3$CH$_3$COO (results of Štěpán)}
+
+\begin{itemize}\itemsep2pt
+  \item 1 core; computed by Štěpán Sršeň, not reproduced here
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{llcc}
+\toprule
+Method & Basis & CH$_2$OO & CH$_3$CH$_3$COO \\
+\midrule
+ADC(3), Psi4  & aug-cc-pVDZ     & 1\,min  & 19\,min \\
+ADC(3), PySCF & aug-cc-pVDZ     & 1\,min  & 31\,min \\
+CC3           & aug-cc-pVDZ     & 14\,min & 25\,h \\
+CC3           & jul-cc-pV(D+d)Z & 10\,min & 11\,h \\
+CC3           & jun-cc-pV(D+d)Z & 3\,min  & 5\,h \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section*{Data and plotting}
+
+\begin{itemize}\itemsep2pt
+  \item All spectra as text: \texttt{05-spectrum/spectra\_txt/}
+  \item \texttt{05-spectrum/plot\_gui.py}: interactive plotting of any selection
+\end{itemize}
+
+\end{document}
