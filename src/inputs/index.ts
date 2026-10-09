@@ -10,3 +10,5 @@ export * from './catalog';
 export * from './orca';
 export * from './pyscf';
 export * from './templates';
+export * from './batch';
+export * from './batchFs';
