@@ -19,6 +19,7 @@ import {
   stopRun
 } from '../../src/ml/runs';
 import { isAlive } from '../../src/ml/proc';
+import { buildConfig, defaultForm, MODEL_NAMES, REP_NAMES } from '../../src/ml/spec';
 import type { MlConfig } from '../../src/ml/spec';
 
 const FIX = path.join(__dirname, '../fixtures/ml');
@@ -134,6 +135,27 @@ describe('ml/runs: listing and reading fixture runs', () => {
   let dir: string;
   beforeEach(() => { dir = tmpDir(); });
   afterEach(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 200 }));
+
+  it('configs from buildConfig pass the worker\'s validate_config (schema in sync)', () => {
+    const configs = [];
+    for (const rep of REP_NAMES) {
+      for (const model of MODEL_NAMES) {
+        const f = defaultForm(rep, model);
+        f.data = { xyz: '/d/m.xyz', csv: '/d/y.csv', column: '1', header: true, n_mol: '50' };
+        if (rep === 'precomputed') f.rep.params = { path: '/d/X.npy' };
+        f.model.grid = true;
+        f.split.curve = '10, 20';
+        const r = buildConfig(f, { cacheDir: '/cache' });
+        assert.deepStrictEqual(r.errors, [], `${rep}/${model}`);
+        configs.push(r.config);
+      }
+    }
+    const py = 'import sys, json; sys.path.insert(0, sys.argv[1]); import ml_worker as w; '
+      + 'print(json.dumps([w.validate_config(c) for c in json.load(sys.stdin)]))';
+    const res = spawnSync(PYTHON, ['-c', py, path.join(__dirname, '../../python')], { input: JSON.stringify(configs), encoding: 'utf8' });
+    assert.strictEqual(res.status, 0, res.stderr);
+    assert.deepStrictEqual(JSON.parse(res.stdout), configs.map(() => []));
+  });
 
   it('checkEnvironment parses the JSON line of --check', async () => {
     const env = await checkEnvironment(PYTHON, FAKE);
