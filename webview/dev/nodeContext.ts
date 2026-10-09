@@ -16,7 +16,48 @@ export interface DevOptions {
 }
 
 const natural = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-const matches = (p: string, glob: string) => (path as any).matchesGlob(p.replace(/\\/g, '/'), glob) as boolean;
+const globCache = new Map<string, RegExp>();
+/** Glob -> RegExp (**, *, ?, {a,b}, [..]), compiled once: path.matchesGlob per file made listings take seconds. */
+export function globToRegExp(glob: string): RegExp {
+  let re = globCache.get(glob);
+  if (re) {
+    return re;
+  }
+  let out = '';
+  let depth = 0;
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === '*') {
+      if (glob[i + 1] === '*') {
+        const slash = glob[i + 2] === '/';
+        out += slash ? '(?:.*/)?' : '.*';
+        i += slash ? 2 : 1;
+      } else {
+        out += '[^/]*';
+      }
+    } else if (c === '?') {
+      out += '[^/]';
+    } else if (c === '{') {
+      depth++;
+      out += '(?:';
+    } else if (c === '}' && depth > 0) {
+      depth--;
+      out += ')';
+    } else if (c === ',' && depth > 0) {
+      out += '|';
+    } else if (c === '[' && glob.indexOf(']', i) > i) {
+      const end = glob.indexOf(']', i);
+      out += glob.slice(i, end + 1);
+      i = end;
+    } else {
+      out += /[.+^$()|\\\]]/.test(c) ? `\\${c}` : c;
+    }
+  }
+  re = new RegExp(`^${out}$`, process.platform === 'win32' ? 'i' : '');
+  globCache.set(glob, re);
+  return re;
+}
+const matches = (p: string, glob: string) => globToRegExp(glob).test(p.replace(/\\/g, '/'));
 
 /** Defaults of every orcaInp.* setting from package.json and contrib/*.json, overridden by `overrides`. */
 export function loadSettings(extensionPath: string, overrides: Record<string, unknown>): Record<string, unknown> {
@@ -61,14 +102,18 @@ export function createNodeContext(tab: TabId, o: DevOptions): HostContext {
       const base = options.base ?? o.workspace;
       const exclude = options.exclude ?? config('runs.exclude', '**/{node_modules,.git}/**');
       const found: string[] = [];
-      const files = (fs as any).globSync(include, {
+      const full = (d: fs.Dirent) => path.join((d as any).parentPath ?? (d as any).path, d.name);
+      const entries = (fs as any).globSync(include, {
         cwd: base,
-        exclude: (p: string) => matches(typeof p === 'string' ? p : String(p), exclude) || matches(`${p}/`, exclude)
-      }) as string[];
-      for (const rel of files) {
-        const abs = path.join(base, rel);
-        if (!matches(rel, exclude) && fs.statSync(abs, { throwIfNoEntry: false })?.isFile()) {
-          found.push(abs);
+        withFileTypes: true,
+        exclude: (d: fs.Dirent) => {
+          const rel = path.relative(base, full(d));
+          return matches(rel, exclude) || matches(`${rel}/`, exclude);
+        }
+      }) as fs.Dirent[];
+      for (const d of entries) {
+        if (d.isFile()) {
+          found.push(full(d));
           if (options.max && found.length >= options.max) {
             break;
           }

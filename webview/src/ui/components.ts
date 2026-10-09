@@ -206,6 +206,10 @@ export interface TableOptions<R> {
   /** Checkbox column; called with the selected keys. */
   selectable?: { selected: Set<string>; onChange(selected: Set<string>): void };
   onRowClick?: (row: R) => void;
+  /** Key of the row to highlight as selected (e.g. the row whose details are shown). */
+  selectedKey?: string;
+  /** Extra CSS classes per row. */
+  rowClass?: (row: R) => string;
   empty?: string;
   /** Text filter box above the table matching this string per row. */
   filterText?: (row: R) => string;
@@ -255,7 +259,7 @@ export function dataTable<R>(o: TableOptions<R>): HTMLElement {
       }, c.label, sort?.key === c.key ? h('span.sort', null, sort.dir === 1 ? '▲' : '▼') : null)));
     const body = rows.map(r => {
       const key = o.rowKey(r);
-      return h('tr', { class: [o.onRowClick ? 'clickable' : '', sel?.selected.has(key) ? 'selected' : ''].join(' '), onclick: o.onRowClick ? () => o.onRowClick!(r) : undefined },
+      return h('tr', { class: [o.onRowClick ? 'clickable' : '', sel?.selected.has(key) || o.selectedKey === key ? 'selected' : '', o.rowClass?.(r) ?? ''].join(' '), onclick: o.onRowClick ? () => o.onRowClick!(r) : undefined },
         sel ? h('td.sel', { onclick: (e: Event) => e.stopPropagation() }, h('input', {
           type: 'checkbox', checked: sel.selected.has(key),
           onchange: (e: Event) => {
