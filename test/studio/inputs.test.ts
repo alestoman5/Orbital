@@ -286,7 +286,7 @@ describe('inputs tab host', () => {
       assert.strictEqual(r.found, true);
       assert.strictEqual(r.placeholder, undefined);
       const rel = path.join('mols', 'ch2oo.xyz');
-      assert.strictEqual(r.command, `python scripts/from_geometry.py ${/\\/.test(rel) ? `'${rel}'` : rel} --sampling md -n 500 --skip 100 --stride 2 --beads 1 -o runs/ch2oo_md --method 'adc(3)' --basis aug-cc-pVDZ --nstates 2 -j 8`);
+      assert.strictEqual(r.command, `python scripts/from_geometry.py ${rel.split(path.sep).join('/')} --sampling md -n 500 --skip 100 --stride 2 --beads 1 -o runs/ch2oo_md --method 'adc(3)' --basis aug-cc-pVDZ --nstates 2 -j 8`);
     });
 
     it('finds the scripts by searching, compares several sets, and clamps numbers', async () => {
