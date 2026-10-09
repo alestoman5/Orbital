@@ -323,7 +323,7 @@ export const view: TabView = {
       const figure = (): Figure => ({
         panels: [{
           x: { label: `t / ${unit}`, zero: false },
-          y: { label: 'count' },
+          y: { label: 'count', format: v => (Number.isInteger(v) ? String(v) : '') },
           legend: 'none',
           series: [
             { type: 'histogram', edges: t.edges.map(e => e / scale), values: t.values, style: 'filled', label: 'ok' },

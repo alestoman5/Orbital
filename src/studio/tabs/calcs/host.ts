@@ -65,7 +65,7 @@ export function timeStats(sorted: number[]): TimeStats | undefined {
   // Freedman–Diaconis bin width, clamped to 8..60 bins.
   const iqr = quantile(sorted, 0.75) - quantile(sorted, 0.25);
   let bins = iqr > 0 ? Math.ceil((max - min) / (2 * iqr * Math.cbrt(n))) : Math.ceil(Math.sqrt(n));
-  bins = Math.max(Math.min(15, n), Math.min(80, bins || 1));
+  bins = Math.max(Math.min(15, Math.max(5, 2 * n)), Math.min(80, bins || 1));
   const span = max - min || Math.max(1, Math.abs(max) * 0.1);
   const lo = max === min ? min - span / 2 : min;
   const width = span / bins;
