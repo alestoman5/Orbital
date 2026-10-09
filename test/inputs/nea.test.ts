@@ -93,7 +93,7 @@ describe('inputs: buildNeaCommand', () => {
   it('builds the documented default command', () => {
     const cmd = buildNeaCommand({ script: 'from_geometry.py', root, inputs: [mol], sampling: 'wigner' });
     assert.strictEqual(cmd, [
-      'python scripts/from_geometry.py', shellQuote(path.relative(root, mol)), // backslashes get quoted on Windows, as in neaCommand
+      'python scripts/from_geometry.py', path.relative(root, mol).split(path.sep).join('/'), // always forward slashes: the command runs in a POSIX shell
       '--sampling wigner -n 1000 --sample-method PBE --sample-basis aug-cc-pVDZ -T 300',
       "-o runs/ch2oo_wigner --method 'adc(3)' --basis aug-cc-pVDZ --nstates 2 -j 30"
     ].join(' '));

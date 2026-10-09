@@ -43,7 +43,8 @@ export function neaArgs(o: NeaCommandOptions): string[] {
   if (o.inputs.length === 0) {
     throw new Error('buildNeaCommand: no input path.');
   }
-  const rel = (p: string) => shellQuote(path.relative(o.root, p) || '.');
+  // Forward slashes: the command runs in a POSIX shell even when built on Windows.
+  const rel = (p: string) => shellQuote(path.relative(o.root, p).split(path.sep).join('/') || '.');
   const args: string[] = [];
   let outName = stem(o.inputs[0]);
   if (o.script === 'from_geometry.py') {
