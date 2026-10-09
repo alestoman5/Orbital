@@ -16,6 +16,7 @@
 
 import { spawn, execFile } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { isAlive, killTree } from './proc';
 import type { MlConfig } from './spec';
@@ -342,8 +343,7 @@ export function startRun(pythonPath: string, workerPath: string, runDir: string,
     let child;
     const fail = (e: Error) => {
       try {
-        fs.writeSync(log, `could not start ${pythonPath}: ${e.message}
-`);
+        fs.writeSync(log, `could not start ${pythonPath}: ${e.message}\n`);
         fs.closeSync(log);
       } catch { /* already closed */ }
       mergeStatus(runDir, { state: 'failed', step: `could not start python: ${e.message}`, error: e.message });
@@ -351,7 +351,7 @@ export function startRun(pythonPath: string, workerPath: string, runDir: string,
     };
     try {
       child = spawn(pythonPath, [workerPath, config], {
-        cwd: runDir,
+        cwd: os.tmpdir(),   // neutral: Windows cannot delete a folder that is a live process's cwd
         detached: true,
         windowsHide: true,
         stdio: ['ignore', log, log],

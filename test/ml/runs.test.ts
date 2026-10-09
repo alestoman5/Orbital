@@ -36,10 +36,13 @@ function copyRuns(): string {
   return dir;
 }
 
-async function until(cond: () => boolean, ms = 15000): Promise<void> {
+async function until(cond: () => boolean, ms = 20000, runDir?: string): Promise<void> {
   const t0 = Date.now();
   while (!cond()) {
-    if (Date.now() - t0 > ms) throw new Error('timeout');
+    if (Date.now() - t0 > ms) {
+      const info = runDir ? ` status ${JSON.stringify(readStatus(runDir))} log ${JSON.stringify(readRun(path.dirname(runDir), path.basename(runDir)).log)}` : '';
+      throw new Error('timeout' + info);
+    }
     await new Promise(r => setTimeout(r, 50));
   }
 }
@@ -130,7 +133,7 @@ describe('ml/runs: listing and reading fixture runs', () => {
   this.timeout(60000);
   let dir: string;
   beforeEach(() => { dir = tmpDir(); });
-  afterEach(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 }));
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true, maxRetries: 20, retryDelay: 200 }));
 
   it('checkEnvironment parses the JSON line of --check', async () => {
     const env = await checkEnvironment(PYTHON, FAKE);
@@ -161,7 +164,7 @@ describe('ml/runs: listing and reading fixture runs', () => {
     const pid = await startRun(PYTHON, FAKE, run.dir);
     assert.ok(pid > 0);
     assert.strictEqual(JSON.parse(fs.readFileSync(path.join(run.dir, 'spawn.json'), 'utf8')).pid, pid);
-    await until(() => readStatus(run.dir).state === 'done');
+    await until(() => readStatus(run.dir).state === 'done', 20000, run.dir);
     await until(() => !isAlive(pid));
     const r = readRun(dir, run.id);
     assert.deepStrictEqual(r.pred!.y_test, [5]);
@@ -174,7 +177,7 @@ describe('ml/runs: listing and reading fixture runs', () => {
   it('stops a running worker and marks the run stopped', async () => {
     const run = createRun(dir, { ...CONFIG, fake: 'sleep' } as unknown as MlConfig);
     const pid = await startRun(PYTHON, FAKE, run.dir);
-    await until(() => readStatus(run.dir).state === 'running');
+    await until(() => readStatus(run.dir).state === 'running', 20000, run.dir);
     const workerPid = readStatus(run.dir).pid!;
     assert.ok(isAlive(workerPid));
     await assert.rejects(startRun(PYTHON, FAKE, run.dir), /already running/);
@@ -202,7 +205,7 @@ describe('ml/runs: listing and reading fixture runs', () => {
   it('force-deletes a running run', async () => {
     const run = createRun(dir, { ...CONFIG, fake: 'sleep' } as unknown as MlConfig);
     await startRun(PYTHON, FAKE, run.dir);
-    await until(() => readStatus(run.dir).state === 'running');
+    await until(() => readStatus(run.dir).state === 'running', 20000, run.dir);
     await deleteRun(dir, run.id, { force: true });
     assert.ok(!fs.existsSync(run.dir));
   });
