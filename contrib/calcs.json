@@ -1,0 +1,11 @@
+{
+  "configuration": {
+    "orcaInp.studio.calcGlobs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["**/result.json", "**/*.out"],
+      "description": "Globs (relative to each workspace folder) of calculation results the Studio's Calculations tab scans: PySCF geom_NNNN/result.json sets, ORCA .out files, and other .json files with a boolean \"converged\" key. Paths matching orcaInp.runs.exclude are skipped."
+    }
+  },
+  "notes": "Redirect orcaInp.neaOverview to the Calculations tab: openStudio(extensionUri, 'calcs', { folder: <absolute folder path> }) — the folder is the NEA working directory (what runFolder(uri) returns today; a file path is also accepted, its directory is used). The tab scopes the scan to that folder and selects its first calculation set; the folder must lie inside a workspace folder (folders outside the workspace are only accepted after 'Add folder…'). Host methods on channel 'calcs': scan, group, problems, failedList, addFolder, settings; events: 'progress', 'changed'. The tab reuses orcaInp.runs.exclude (findFiles' default exclude) and needs no new commands."
+}
