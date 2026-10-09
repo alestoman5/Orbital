@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbital chart engine gallery</title>
+<!--
+  Build:  npx esbuild webview/dev/charts-gallery.ts --bundle --outfile=out/webview-dev/gallery.js --format=iife
+            --loader:.woff2=file --loader:.woff=file --asset-names=assets/[name]-[hash]
+  Serve:  node webview/dev/server.mjs --port 5201 --workspace ../../uv-vis
+  Open:   http://localhost:5201/webview/dev/charts.html?theme=dark|light|hc&preset=screen|publication&only=<id>&checks=1
+-->
+<link rel="stylesheet" href="/out/webview-dev/gallery.css">
+</head>
+<body>
+<div id="app" data-asset-base="/out/webview-dev/"></div>
+<script src="/dev-client.js"></script>
+<script src="/out/webview-dev/gallery.js"></script>
+</body>
+</html>
