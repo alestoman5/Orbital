@@ -1,4 +1,5 @@
 // Formatting helpers of the calcs and runs tabs (durations, sizes, ages).
+// Header-button spinner too (both tabs).
 
 /** 42 s, 3.1 min, 2.4 h, 3.2 d. */
 export function fmtDuration(s: number | undefined | null): string {
@@ -53,4 +54,10 @@ export function pct(part: number, total: number): string {
   if (part === 0) return '0';
   const v = (100 * part) / total;
   return v > 0 && v < 0.1 ? '<0.1' : v > 99.9 && v < 100 ? '>99.9' : v.toFixed(v < 10 ? 1 : 0);
+}
+
+/** Spinning icon on a header button while work runs (keyframes `calcs-spin` in calcs.css; both tabs' CSS is in the bundle). */
+export function spin(btn: HTMLElement, on: boolean): void {
+  const ic = btn.querySelector<SVGElement>('svg');
+  if (ic) ic.style.animation = on ? 'calcs-spin 0.9s linear infinite' : '';
 }

@@ -1,0 +1,52 @@
+/* Runs tab. Every selector is scoped to the tab root; the header actions
+   live outside it and use inline styles. */
+
+[data-tab="runs"] { display: flex; flex-direction: column; gap: var(--space-4); }
+[data-tab="runs"] [hidden] { display: none !important; }
+
+[data-tab="runs"] .runs-procs { display: flex; flex-direction: column; gap: var(--space-4); }
+[data-tab="runs"] .runs-machine { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--space-4); }
+[data-tab="runs"] .runs-machine > .grid,
+[data-tab="runs"] .runs-machine .card-body > .grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; }
+[data-tab="runs"] .runs-history { height: 150px; }
+@media (max-width: 1100px) {
+  [data-tab="runs"] .runs-machine { grid-template-columns: minmax(0, 1fr); }
+}
+
+[data-tab="runs"] .runs-cmd {
+  font-family: var(--font-mono); font-size: var(--font-size-xs);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw;
+}
+[data-tab="runs"] .runs-hot { color: var(--warn); font-weight: 600; }
+[data-tab="runs"] .table td .btn { white-space: nowrap; }
+
+[data-tab="runs"] .runs-logs { display: grid; grid-template-columns: minmax(300px, 2fr) minmax(0, 3fr); gap: var(--space-4); align-items: start; }
+@media (max-width: 1100px) {
+  [data-tab="runs"] .runs-logs { grid-template-columns: minmax(0, 1fr); }
+}
+[data-tab="runs"] .runs-logname { display: flex; flex-direction: column; min-width: 0; }
+[data-tab="runs"] .runs-logbase { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fg-strong); }
+[data-tab="runs"] .runs-logdir { font-size: var(--font-size-xs); color: var(--muted); overflow-wrap: anywhere; }
+[data-tab="runs"] .runs-fresh { color: var(--ok); font-weight: 600; }
+
+[data-tab="runs"] .runs-viewer { position: sticky; top: 0; min-width: 0; }
+[data-tab="runs"] .runs-viewer .card-head { flex-wrap: wrap; gap: var(--space-2); }
+[data-tab="runs"] .runs-viewer .card-actions { flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+[data-tab="runs"] .runs-search { display: flex; align-items: center; gap: var(--space-2); }
+[data-tab="runs"] .runs-search .input { width: 160px; }
+[data-tab="runs"] .runs-matches { font-size: var(--font-size-xs); color: var(--muted); white-space: nowrap; }
+[data-tab="runs"] .runs-log {
+  margin: 0; padding: var(--space-3);
+  height: min(68vh, 720px); overflow: auto;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font-mono); font-size: var(--font-size-xs); line-height: 1.5;
+  white-space: pre; color: var(--fg);
+}
+[data-tab="runs"] .runs-log mark { background: color-mix(in srgb, var(--warn) 45%, transparent); color: var(--fg-strong); border-radius: 2px; }
+[data-tab="runs"] .table td:has(> .runs-cmd) { max-width: 0; width: 50%; }
+[data-tab="runs"] .runs-cmd { max-width: none; }
+[data-tab="runs"] .table td.num { white-space: nowrap; }
+[data-tab="runs"] .table th.left { text-align: left; }
+[data-tab="runs"] .table td:has(> .runs-logname) { max-width: 0; width: 100%; }
+[data-tab="runs"] .runs-logdir { overflow-wrap: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; direction: rtl; text-align: left; }
+[data-tab="runs"] .runs-logdir > span { direction: ltr; unicode-bidi: isolate; }

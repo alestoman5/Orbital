@@ -10,7 +10,7 @@ import {
 } from '../../ui/components';
 import { Child, h, mount } from '../../ui/dom';
 import { ChartHandle, Figure, figureToolbar, render } from '../../charts';
-import { durationUnit, fmtDuration, fmtInt, fmtTime, pct } from './format';
+import { durationUnit, fmtDuration, fmtInt, fmtTime, pct, spin } from './format';
 
 const STATUSES: CalcStatusName[] = ['ok', 'not converged', 'error', 'running', 'unreadable', 'not started'];
 export const STATUS_TONE: Record<CalcStatusName, Tone> = {
@@ -440,12 +440,6 @@ export const view: TabView = {
     };
   }
 };
-
-/** Spinning icon on a header button while work runs (keyframes in calcs.css). */
-export function spin(btn: HTMLElement, on: boolean): void {
-  const ic = btn.querySelector<SVGElement>('svg');
-  if (ic) ic.style.animation = on ? 'calcs-spin 0.9s linear infinite' : '';
-}
 
 const plural = (n: number, w: string) => `${fmtInt(n)} ${w}${n === 1 ? '' : 's'}`;
 

@@ -1,0 +1,22 @@
+{
+  "configuration": {
+    "orcaInp.studio.processPattern": {
+      "type": "string",
+      "default": "(^|[\\\\/\\s\"'])(orca(_\\w+)?|xtb|crest|g16|g09|gaussian|cp2k(\\.\\w+)?|abin|psi4|mpirun|mpiexec|srun|pyscf)(\\.exe)?(?=$|[\\s\"'])|python[\\d.]*(\\.exe)?[\"']?\\s.*(pyscf|run_|ml_worker|from_geometry|from_ensemble|compare_ensembles)",
+      "description": "Regular expression (case-insensitive) matched against \"<process name> <command line>\" to pick the calculation processes the Studio's Runs tab lists: by default ORCA (orca, orca_*), xtb, crest, Gaussian, CP2K, ABIN, Psi4, mpirun/srun, and Python running PySCF or run_*/ml_worker/from_geometry/from_ensemble/compare_ensembles scripts."
+    },
+    "orcaInp.studio.logGlobs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["**/*.log", "**/*.out", "**/output"],
+      "description": "Globs of log files the Studio's Runs tab lists (the 50 most recently modified are shown)."
+    },
+    "orcaInp.studio.logExcludeGlobs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": ["**/geom_*/**"],
+      "description": "Globs left out of the Runs tab's log list, in addition to orcaInp.runs.exclude (default: the per-geometry directories of ensembles)."
+    }
+  },
+  "notes": "Runs tab host methods (channel 'runs'): processes, machine, queue, kill {pid, signal: 'TERM'|'KILL'}, logs, tail {path, lines, since}, settings. onNavigate args: { log: <absolute path> } opens the Logs sub-tab with that file's tail, { sub: 'procs' | 'logs' } switches the sub-tab. Process listing spawns ps (Linux/macOS) or powershell.exe -NoProfile (Windows) every 5 s while the tab is visible; squeue is tried once and its absence cached."
+}
