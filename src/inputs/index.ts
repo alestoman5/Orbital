@@ -12,3 +12,4 @@ export * from './pyscf';
 export * from './templates';
 export * from './batch';
 export * from './batchFs';
+export * from './nea';
