@@ -4,7 +4,6 @@
 // directly (./spec, ./orca, ./pyscf, ./templates, ./batch, ./highlight,
 // ./catalog) rather than this index.
 
-
 export * from './spec';
 export * from './catalog';
 export * from './orca';
@@ -13,3 +12,4 @@ export * from './templates';
 export * from './batch';
 export * from './batchFs';
 export * from './nea';
+export * from './highlight';
