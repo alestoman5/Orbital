@@ -1,0 +1,200 @@
+/* Geometries tab. Every selector is scoped to [data-tab="geom"]; colors come
+   from tokens.css (element colors of the molecule sketch are set inline as
+   element identity, like the chart palette). */
+
+[data-tab="geom"] .geom-body > [hidden] { display: none; }
+[data-tab="geom"] .geom-hint { font-size: var(--font-size-sm); }
+[data-tab="geom"] .geom-pending { color: var(--muted); opacity: 0.6; }
+[data-tab="geom"] .geom-badges { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+[data-tab="geom"] .geom-warn { display: flex; flex-direction: column; gap: var(--space-2); }
+[data-tab="geom"] .geom-warn[hidden] { display: none; }
+
+/* library table */
+[data-tab="geom"] .geom-file { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; align-items: baseline; gap: 8px; min-width: 0; }
+[data-tab="geom"] .geom-file b { font-weight: 550; color: var(--fg-strong); }
+[data-tab="geom"] .geom-file .muted { font-size: var(--font-size-xs); }
+
+/* coordinate chips */
+[data-tab="geom"] .geom-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+[data-tab="geom"] .geom-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 4px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 120ms, background 120ms;
+}
+[data-tab="geom"] .geom-chip:hover { background: var(--surface-3); }
+[data-tab="geom"] .geom-chip:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+[data-tab="geom"] .geom-chip.on { border-color: var(--accent); background: var(--accent-soft); }
+[data-tab="geom"] .geom-chip.on2 { border-color: var(--accent-2); background: var(--accent-2-soft); }
+[data-tab="geom"] .geom-chip-kind {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface-0);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+}
+[data-tab="geom"] .geom-chip-kind.angle { color: var(--accent-2); }
+[data-tab="geom"] .geom-chip-kind.dihedral { color: var(--warn); }
+[data-tab="geom"] .geom-chip-label { font-weight: 600; color: var(--fg-strong); }
+[data-tab="geom"] .geom-chip-atoms { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--muted); }
+[data-tab="geom"] .geom-chip-unit { font-size: var(--font-size-xs); color: var(--muted); }
+[data-tab="geom"] .geom-chip-axis {
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--surface-0);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--fg-strong);
+}
+[data-tab="geom"] .geom-chip-x {
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+[data-tab="geom"] .geom-chip-x:hover { background: var(--surface-3); color: var(--bad); }
+[data-tab="geom"] .geom-add { display: flex; gap: var(--space-2); }
+[data-tab="geom"] .geom-add .input { flex: 1; min-width: 0; }
+
+/* atom picker */
+[data-tab="geom"] .geom-sketch-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: radial-gradient(ellipse at 50% 40%, var(--surface-2), var(--surface-0) 75%);
+}
+[data-tab="geom"] .geom-sketch { width: 100%; max-height: 220px; overflow: visible; }
+[data-tab="geom"] .geom-bonds line { stroke: var(--muted); stroke-width: 5; stroke-linecap: round; opacity: 0.55; }
+[data-tab="geom"] .geom-bonds line.on { stroke: var(--accent); opacity: 0.9; }
+[data-tab="geom"] .geom-pickpath { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+[data-tab="geom"] .geom-atom { cursor: pointer; outline: none; }
+[data-tab="geom"] .geom-atom .ball { stroke: color-mix(in srgb, var(--bg) 55%, var(--fg)); stroke-width: 1; transition: stroke-width 100ms; }
+[data-tab="geom"] .geom-atom:hover .ball,
+[data-tab="geom"] .geom-atom:focus-visible .ball { stroke: var(--accent); stroke-width: 2.5; }
+[data-tab="geom"] .geom-atom .ring { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+[data-tab="geom"] .geom-atom .lbl { font-size: 10px; font-weight: 700; pointer-events: none; }
+[data-tab="geom"] .geom-atom .order { fill: var(--accent); }
+[data-tab="geom"] .geom-atom .order-n { font-size: 9.5px; font-weight: 700; fill: var(--on-accent); pointer-events: none; }
+[data-tab="geom"] .geom-pick-preview { font-size: var(--font-size-sm); min-height: 18px; }
+[data-tab="geom"] .geom-pick-preview b { font-variant-numeric: tabular-nums; color: var(--fg-strong); }
+
+[data-tab="geom"] .geom-atoms {
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+[data-tab="geom"] .geom-atoms table { width: 100%; border-collapse: collapse; font-size: var(--font-size-xs); }
+[data-tab="geom"] .geom-atoms th {
+  position: sticky;
+  top: 0;
+  padding: 4px 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-weight: 600;
+  text-align: right;
+}
+[data-tab="geom"] .geom-atoms th:nth-child(2), [data-tab="geom"] .geom-atoms td:nth-child(2) { text-align: left; }
+[data-tab="geom"] .geom-atoms td { padding: 3px 8px; border-top: 1px solid var(--border); text-align: right; }
+[data-tab="geom"] .geom-atoms td.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+[data-tab="geom"] .geom-atoms tr { cursor: pointer; }
+[data-tab="geom"] .geom-atoms tbody tr:hover { background: var(--surface-2); }
+[data-tab="geom"] .geom-atoms tr.on { background: var(--accent-soft); }
+[data-tab="geom"] .geom-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: -1px;
+  box-shadow: 0 0 0 1px var(--border-strong);
+}
+[data-tab="geom"] .geom-pickno {
+  display: inline-grid;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+
+/* options */
+[data-tab="geom"] .geom-opts { display: flex; flex-direction: column; gap: var(--space-3); }
+[data-tab="geom"] .geom-range-row { display: flex; align-items: center; gap: var(--space-2); }
+[data-tab="geom"] .geom-range { flex: 1; accent-color: var(--accent); }
+[data-tab="geom"] .geom-range-val { min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: var(--font-size-sm); }
+
+/* plot card */
+[data-tab="geom"] .geom-plot-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+}
+[data-tab="geom"] .geom-plot-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+[data-tab="geom"] .geom-plot-controls select { max-width: 280px; }
+[data-tab="geom"] .geom-plot-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); font-size: var(--font-size-sm); }
+[data-tab="geom"] .geom-plot-wrap { position: relative; }
+[data-tab="geom"] .geom-plot { height: 420px; }
+[data-tab="geom"] .geom-plot.empty { height: auto; min-height: 240px; display: grid; place-items: center; }
+[data-tab="geom"] .geom-plot-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(1.5px);
+  border-radius: var(--radius-sm);
+  z-index: 2;
+}
+[data-tab="geom"] .geom-plot-overlay[hidden] { display: none; }
+[data-tab="geom"] .geom-progress {
+  width: min(360px, 80%);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--glass);
+  box-shadow: var(--shadow-pop);
+}
+[data-tab="geom"] .geom-progress-label { font-size: var(--font-size-sm); margin-bottom: var(--space-2); }
+[data-tab="geom"] .geom-progress-bar { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
+[data-tab="geom"] .geom-progress-bar span { display: block; height: 100%; background: var(--accent-grad); transition: width 200ms var(--ease); }
+[data-tab="geom"] .geom-coordcell .muted { font-size: var(--font-size-xs); }
+
+/* trajectory */
+[data-tab="geom"] .geom-dat-title { font-weight: 600; color: var(--fg-strong); }
+[data-tab="geom"] .geom-dat-plot { min-height: 200px; }
+[data-tab="geom"] .geom-dat-hint { margin-top: var(--space-2); }
+[data-tab="geom"] .geom-col-list { display: flex; flex-direction: column; gap: 4px; }
+[data-tab="geom"] .geom-check { display: flex; align-items: center; gap: 8px; font-size: var(--font-size-sm); cursor: pointer; }
+[data-tab="geom"] .geom-check input { accent-color: var(--accent); }
+[data-tab="geom"] .geom-datfiles .table td { padding-top: 5px; padding-bottom: 5px; }
+
+/* tables: keep numbers on one line; Greek symbols in headers must not be uppercased (τ → Τ) */
+[data-tab="geom"] .geom-summary td,
+[data-tab="geom"] .geom-lib td.num { white-space: nowrap; }
+[data-tab="geom"] .geom-summary th { text-transform: none; letter-spacing: 0.01em; }

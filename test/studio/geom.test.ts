@@ -171,7 +171,7 @@ describe('geom tab host', () => {
         rows.push(`${t.toFixed(2)} ${(-189.4 + 2e-6 * t + 1e-4 * Math.sin(i)).toExponential(10)} ${300 + 5 * Math.cos(i / 3)}`);
       }
       rows.push('garbage line');
-      fs.writeFileSync(dat, rows.join('\n'));
+      fs.writeFileSync(dat, rows.join('\n') + '\n');
     });
 
     it('detects numeric column files', async () => {
@@ -193,6 +193,15 @@ describe('geom tab host', () => {
       assert.strictEqual(e.stats.n, 1001);
       assert.ok(e.x.length <= 200 && !r.full);
       assert.ok(Math.abs(e.stats.delta - ((-189.4 + 2e-6 * 500 + 1e-4 * Math.sin(1000)) - (-189.4))) < 1e-8);
+    });
+
+    it('ignores a cut-off last line of a file still being written', async () => {
+      const cut = path.join(tmp, 'cut.dat');
+      fs.writeFileSync(cut, '# t[fs] E\n0.5 -0.1894E+03\n1.0 -0.1894E+03\n1.5 -0.1');
+      const r = await call<DatViewResult>('datView', { path: cut }, ctx);
+      assert.strictEqual(r.partialTail, true);
+      assert.strictEqual(r.totalRows, 2);
+      assert.ok(Math.abs(r.series[0].stats.delta) < 1e-12);
     });
 
     it('restricts statistics to the visible range', async () => {

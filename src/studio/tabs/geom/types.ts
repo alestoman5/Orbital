@@ -41,6 +41,8 @@ export interface DatInfo {
   columns: string[];
   rows: number;
   skipped: number;
+  /** The last line had no line break (file cut off or still being written) and was ignored. */
+  partialTail: boolean;
   error?: string;
 }
 
@@ -258,6 +260,8 @@ export interface DatViewResult {
   rows: number;
   totalRows: number;
   skipped: number;
+  /** An unterminated last line was ignored. */
+  partialTail: boolean;
   /** Median x step. */
   dx: number;
   /** x column is in fs (slopes are per ps). */
@@ -273,4 +277,10 @@ export interface DatViewResult {
 export interface GeomNavigateArgs {
   xyz?: string[];
   dat?: string;
+  /** Optional view presets (deep links, dev screenshots). */
+  specs?: string[];
+  mode?: DistMode;
+  coord?: number;
+  coord2?: number;
+  kde?: boolean;
 }

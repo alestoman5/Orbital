@@ -76,7 +76,7 @@ const MAX_DAT_BYTES = 512 * 1024 * 1024;
 
 const trajectories = new TrajectoryCache(24);
 const xyzInfoCache = new Map<string, { key: string; info: XyzInfo }>();
-const datCache = new Map<string, { key: string; table: DatTable; monotonic: boolean }>();
+const datCache = new Map<string, { key: string; table: DatTable; monotonic: boolean; partialTail: boolean }>();
 /** Files the user picked through the dialog (allowed even outside the workspace). */
 const picked = new Set<string>();
 
@@ -206,7 +206,7 @@ export function xyzInfoOf(p: string): XyzInfo {
   return info;
 }
 
-function loadDat(p: string): { table: DatTable; monotonic: boolean } {
+function loadDat(p: string): { table: DatTable; monotonic: boolean; partialTail: boolean } {
   const key = fileKey(p);
   const hit = datCache.get(p);
   if (hit && hit.key === key) {
@@ -217,13 +217,20 @@ function loadDat(p: string): { table: DatTable; monotonic: boolean } {
   if (fs.statSync(p).size > MAX_DAT_BYTES) {
     throw new Error(`${path.basename(p)} is larger than ${MAX_DAT_BYTES >> 20} MB.`);
   }
-  const table = parseDat(fs.readFileSync(p, 'utf8'));
+  let text = fs.readFileSync(p, 'utf8');
+  // a file still being written (or cut off) ends inside a line: "-0.1" of "-0.1894E+03" would parse as a number
+  const lastNl = text.lastIndexOf('\n');
+  const partialTail = lastNl >= 0 && lastNl < text.length - 1 && text.slice(lastNl + 1).trim() !== '';
+  if (partialTail) {
+    text = text.slice(0, lastNl + 1);
+  }
+  const table = parseDat(text);
   const x = table.data[0] ?? [];
   let monotonic = true;
   for (let i = 1; i < x.length && monotonic; i++) {
     monotonic = x[i] >= x[i - 1];
   }
-  const entry = { key, table, monotonic };
+  const entry = { key, table, monotonic, partialTail };
   datCache.set(p, entry);
   while (datCache.size > 12) {
     datCache.delete(datCache.keys().next().value as string);
@@ -233,11 +240,11 @@ function loadDat(p: string): { table: DatTable; monotonic: boolean } {
 
 export function datInfoOf(p: string): DatInfo {
   try {
-    const { table } = loadDat(p);
+    const { table, partialTail } = loadDat(p);
     const rows = table.data[0]?.length ?? 0;
-    return { path: p, ok: table.columns.length >= 2 && rows >= 2, columns: table.columns, rows, skipped: table.skipped };
+    return { path: p, ok: table.columns.length >= 2 && rows >= 2, columns: table.columns, rows, skipped: table.skipped, partialTail };
   } catch (e) {
-    return { path: p, ok: false, columns: [], rows: 0, skipped: 0, error: e instanceof Error ? e.message : String(e) };
+    return { path: p, ok: false, columns: [], rows: 0, skipped: 0, partialTail: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
 
@@ -388,7 +395,7 @@ async function distributions(p: DistParams, ctx: HostContext): Promise<DistResul
 
 export function datView(p: DatViewParams, ctx: HostContext): DatViewResult {
   const file = checkFile(p?.path, ctx);
-  const { table, monotonic } = loadDat(file);
+  const { table, monotonic, partialTail } = loadDat(file);
   const rowsTotal = table.data[0]?.length ?? 0;
   if (table.columns.length < 2 || rowsTotal < 2) {
     throw new Error(`${path.basename(file)}: need at least two numeric columns and two rows.`);
@@ -426,6 +433,7 @@ export function datView(p: DatViewParams, ctx: HostContext): DatViewResult {
     rows: i1 - i0,
     totalRows: rowsTotal,
     skipped: table.skipped,
+    partialTail,
     dx: medianStep(x),
     fs: isFs(table.columns[0]),
     full: i1 - i0 <= maxPoints,
@@ -474,7 +482,7 @@ export const host: TabHost = {
         try {
           out.push(datInfoOf(checkFile(raw, ctx)));
         } catch (e) {
-          out.push({ path: raw, ok: false, columns: [], rows: 0, skipped: 0, error: e instanceof Error ? e.message : String(e) });
+          out.push({ path: raw, ok: false, columns: [], rows: 0, skipped: 0, partialTail: false, error: e instanceof Error ? e.message : String(e) });
         }
       }
       return out;
