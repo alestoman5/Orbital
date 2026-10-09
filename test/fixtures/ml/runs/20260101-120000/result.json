@@ -1,0 +1,1 @@
+{"n_features":150,"time_features_s":1.5,"n_train":80,"n_test":20,"best_params":{"kernel":"rbf","alpha":0.001,"gamma":0.0001},"cv_mae":0.21,"time_fit_s":0.3,"train":{"mae":0.1,"rmse":0.15,"r2":0.99},"test":{"mae":0.2,"rmse":0.3,"r2":0.95},"time_predict_s":0.01,"curve":[{"n":40,"test_mae":0.3},{"n":80,"test_mae":0.2}],"warnings":[]}
