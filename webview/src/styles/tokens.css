@@ -1,0 +1,89 @@
+/* Design tokens of Orbital Studio. Dark-first, derived from the VS Code theme
+   variables so the studio sits naturally in any theme; the accent pair is the
+   two phases of an orbital (cyan +, violet −). Tabs use these variables only —
+   no raw colors in tab CSS. */
+
+:root {
+  --font-ui: 'Inter', var(--vscode-font-family, system-ui), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', var(--vscode-editor-font-family, ui-monospace), ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-size: 13px;
+  --font-size-sm: 12px;
+  --font-size-xs: 11px;
+
+  --bg: var(--vscode-editor-background, #0e1016);
+  --fg: var(--vscode-foreground, #d5d8e0);
+  --fg-strong: var(--vscode-editor-foreground, #eceef3);
+  --muted: var(--vscode-descriptionForeground, #8a90a2);
+
+  --surface-0: var(--bg);
+  --surface-1: color-mix(in srgb, var(--fg) 3%, var(--bg));
+  --surface-2: color-mix(in srgb, var(--fg) 5.5%, var(--bg));
+  --surface-3: color-mix(in srgb, var(--fg) 9%, var(--bg));
+  --border: color-mix(in srgb, var(--fg) 11%, transparent);
+  --border-strong: color-mix(in srgb, var(--fg) 20%, transparent);
+
+  --accent: #38bdf8;
+  --accent-2: #a78bfa;
+  --accent-grad: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-2-soft: color-mix(in srgb, var(--accent-2) 14%, transparent);
+  --on-accent: #06121c;
+
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --bad: #f87171;
+  --info: var(--accent);
+
+  --focus: var(--vscode-focusBorder, var(--accent));
+  --input-bg: var(--vscode-input-background, var(--surface-2));
+  --input-fg: var(--vscode-input-foreground, var(--fg));
+  --input-border: var(--vscode-input-border, var(--border-strong));
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  --shadow: 0 1px 0 0 color-mix(in srgb, #fff 4%, transparent) inset, 0 10px 30px -18px rgb(0 0 0 / 0.7);
+  --shadow-pop: 0 12px 40px -12px rgb(0 0 0 / 0.6);
+  --glass: color-mix(in srgb, var(--surface-2) 82%, transparent);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --rail-width: 212px;
+  color-scheme: dark;
+}
+
+body.vscode-light {
+  --accent: #0284c7;
+  --accent-2: #7c3aed;
+  --on-accent: #ffffff;
+  --ok: #059669;
+  --warn: #b45309;
+  --bad: #dc2626;
+  --surface-1: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
+  --surface-2: color-mix(in srgb, var(--fg) 4.5%, var(--bg));
+  --border: color-mix(in srgb, var(--fg) 12%, transparent);
+  --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 10px 30px -20px rgb(15 23 42 / 0.35);
+  --shadow-pop: 0 16px 40px -16px rgb(15 23 42 / 0.35);
+  color-scheme: light;
+}
+
+body.vscode-high-contrast {
+  --border: var(--vscode-contrastBorder, #6fc3df);
+  --border-strong: var(--vscode-contrastBorder, #6fc3df);
+  --surface-1: var(--bg);
+  --surface-2: var(--bg);
+  --surface-3: var(--bg);
+  --shadow: none;
+  --shadow-pop: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --ease: linear; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

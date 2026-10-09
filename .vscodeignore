@@ -12,3 +12,8 @@ test/**
 .mocharc.json
 .github/**
 *.vsix
+webview/**
+contrib/**
+esbuild.mjs
+out/webview-dev/**
+**/*.tsbuildinfo

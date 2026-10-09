@@ -28,7 +28,9 @@
   "main": "./out/extension.js",
   "activationEvents": [
     "onLanguage:orca-inp",
-    "workspaceContains:**/*.out"
+    "workspaceContains:**/*.out",
+    "onCommand:orcaInp.openStudio",
+    "onWebviewPanel:orbitalStudio"
   ],
   "contributes": {
     "commands": [
@@ -45,6 +47,7 @@
       { "command": "orcaInp.neaOverview", "title": "NEA Run Overview", "category": "NEA" },
       { "command": "orcaInp.neaOpenOutputs", "title": "Open NEA Run Outputs", "category": "NEA" },
       { "command": "orcaInp.neaCommand", "title": "Build NEA Script Command", "category": "NEA", "icon": "$(terminal)" },
+      { "command": "orcaInp.openStudio", "title": "Open Orbital Studio", "category": "Orbital", "icon": "$(beaker)" },
       { "command": "orcaInp.runActions", "title": "Actions for This Run", "category": "ORCA" },
       { "command": "orcaInp.runs.refresh", "title": "Refresh", "category": "ORCA", "icon": "$(refresh)" },
       { "command": "orcaInp.runs.toggleProblemsOnly", "title": "Show Only Problem Runs", "category": "ORCA", "icon": "$(filter)" },
@@ -235,17 +238,26 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && tsc -p webview --noEmit && node esbuild.mjs",
     "watch": "tsc -watch -p ./",
+    "watch:webview": "node esbuild.mjs --watch",
+    "typecheck:webview": "tsc -p webview --noEmit",
+    "dev:webview": "node webview/dev/server.mjs",
     "test": "mocha",
     "package": "vsce package"
   },
   "devDependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.x",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^2.24.0",
+    "esbuild": "^0.28.2",
+    "jspdf": "^4.2.1",
     "mocha": "^11.8.0",
+    "pdfjs-dist": "^6.4.299",
+    "svg2pdf.js": "^2.8.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.0"
   }

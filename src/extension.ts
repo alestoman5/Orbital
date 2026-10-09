@@ -22,6 +22,7 @@ import { neaCommand, neaOpenOutputs, neaOverview } from './features/neaRuns';
 import { OutUnitHoverProvider } from './features/unitHover';
 import { loadOutput, runFilesFor, targetPath } from './features/io';
 import { summarizeRun } from './features/runSummary';
+import { registerStudio } from './studio/panel';
 
 const LANGUAGE_ID = 'orca-inp';
 
@@ -64,6 +65,8 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(new OutputStatusBar());
+
+  registerStudio(context);
 
   const runsTree = new RunsTreeProvider();
   context.subscriptions.push(
