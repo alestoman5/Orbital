@@ -7,3 +7,6 @@
 
 export * from './spec';
 export * from './catalog';
+export * from './orca';
+export * from './pyscf';
+export * from './templates';
