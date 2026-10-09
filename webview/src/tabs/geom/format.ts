@@ -9,7 +9,7 @@ export function sig(v: number | undefined, n = 4): string {
   const a = Math.abs(v);
   if (a < 1e-3 || a >= 1e6) {
     const [m, e] = v.toExponential(n - 1).split('e');
-    return `${m}×10${superscript(e.replace('+', ''))}`;
+    return `${m.replace('-', '−')}×10${superscript(e.replace('+', ''))}`;
   }
   const d = Math.max(0, n - 1 - Math.floor(Math.log10(a)));
   return v.toFixed(Math.min(d, 10)).replace('-', '−');

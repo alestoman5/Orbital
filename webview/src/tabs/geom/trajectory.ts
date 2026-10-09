@@ -413,7 +413,15 @@ export function trajectoryView(ctx: ViewContext): SubView {
     const xu = unitOfX(d);
     type Row = DatViewResult['series'][number];
     const columns: Column<Row>[] = [
-      { key: 'name', label: 'Column' },
+      {
+        key: 'name', label: 'Column',
+        render: s => {
+          // drift vs noise: the fitted change over the range compared with the sd
+          const span = (d.xRange[1] - d.xRange[0]) * s.stats.slopeX;
+          const drifts = s.stats.sd > 0 && Math.abs(span) > s.stats.sd;
+          return h('span.geom-colname', null, s.name, drifts ? badge('drift > sd', 'warn') : null);
+        }
+      },
       { key: 'slope', label: `Slope per ${d.fs ? 'ps' : xu || 'x unit'}`, numeric: true, render: s => sig(s.stats.slope, 3), sortValue: s => s.stats.slope, title: d.fs ? 'Least-squares slope per ps (time column in fs)' : 'Least-squares slope per x unit' },
       { key: 'delta', label: 'End − start', numeric: true, render: s => sig(s.stats.delta, 3), sortValue: s => s.stats.delta },
       {
@@ -431,8 +439,10 @@ export function trajectoryView(ctx: ViewContext): SubView {
         }
       },
       {
-        key: 'tau', label: 'τ_int', numeric: true, sortValue: s => s.stats.tau, title: 'Integrated autocorrelation time (rows, and in x units)',
-        render: s => h('span', null, sig(s.stats.tau, 3), d.dx > 0 && Number.isFinite(s.stats.tau) ? h('span.muted', null, ` (${sig(s.stats.tau * d.dx, 3)} ${xu})`) : null)
+        key: 'tau', label: 'τ_int', numeric: true, sortValue: s => s.stats.tau, title: 'Integrated autocorrelation time (hover for rows)',
+        render: s => d.dx > 0 && xu && Number.isFinite(s.stats.tau)
+          ? h('span', { title: `${sig(s.stats.tau, 3)} rows` }, `${sig(s.stats.tau * d.dx, 3)} ${xu}`)
+          : h('span', null, `${sig(s.stats.tau, 3)} rows`)
       },
       { key: 'sem', label: 'SEM (τ-corrected)', numeric: true, render: s => sig(s.stats.sem, 2), sortValue: s => s.stats.sem },
       {

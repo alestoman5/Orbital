@@ -152,6 +152,18 @@ describe('geom tab host', () => {
       assert.ok(Math.abs(mass - 1) < 1e-9);
     });
 
+    it('suggests a stride above 2·10⁵ frames and decimates the trace', async () => {
+      const big = path.join(tmp, 'big.xyz');
+      fs.writeFileSync(big, '2\n\nH 0 0 0\nH 0 0 0.74\n'.repeat(200_001));
+      const r = await call<DistResult>('distributions', { files: [big], specs: ['HH: 1-2'], mode: 'trace', coord: 0 }, ctx);
+      assert.strictEqual(r.files[0].frames, 200_001);
+      assert.strictEqual(r.suggestedStride, 3);
+      assert.ok((r.plot as TracePlot).series[0].x.length <= 4000);
+      const s = await call<DistResult>('distributions', { files: [big], specs: ['HH: 1-2'], mode: 'histogram', coord: 0, stride: 3 }, ctx);
+      assert.strictEqual(s.files[0].sampled, 66_667);
+      assert.strictEqual(s.suggestedStride, undefined);
+    }).timeout(20000);
+
     it('posts progress events and flags out-of-range indices', async () => {
       const log: string[] = [];
       const r = await call<DistResult>('distributions', { files: [three], specs: ['far: 1-9'], mode: 'histogram', coord: 0 }, fakeContext([FIXTURES], {}, log));

@@ -198,3 +198,8 @@
 [data-tab="geom"] .geom-summary td,
 [data-tab="geom"] .geom-lib td.num { white-space: nowrap; }
 [data-tab="geom"] .geom-summary th { text-transform: none; letter-spacing: 0.01em; }
+[data-tab="geom"] .geom-colname { display: inline-flex; align-items: center; gap: 6px; }
+[data-tab="geom"] .geom-summary td .geom-colname { white-space: normal; flex-wrap: wrap; }
+@media (max-width: 1100px) {
+  [data-tab="geom"] .geom-file .muted { display: none; }
+}

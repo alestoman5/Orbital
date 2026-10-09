@@ -388,7 +388,7 @@ export function distributionsView(ctx: ViewContext): SubView {
     const v = kind ? measurePicked(m.atoms, pick) : undefined;
     const name = kind ? `${kind === 'bond' ? 'r' : kind === 'angle' ? '∠' : 'φ'}(${pickLabel(m.atoms, pick)})` : '';
     const preview = kind
-      ? h('div.geom-pick-preview', null, h('span', null, name, ' = ', h('b', null, v === undefined ? '–' : kind === 'bond' ? `${v.toFixed(4)} Å` : `${v.toFixed(2)}°`)), h('span.muted', null, ' frame 1'))
+      ? h('div.geom-pick-preview', null, h('span', null, name, ' = ', h('b', null, v === undefined ? '–' : kind === 'bond' ? `${fixed(v, 4)} Å` : `${fixed(v, 2)}°`)), h('span.muted', null, ' frame 1'))
       : h('div.geom-pick-preview.muted', null, pick.length ? `${pickLabel(m.atoms, pick)} — pick ${pick.length === 1 ? 'at least one more atom' : ''}` : 'Click 2–4 atoms: bond, angle, dihedral.');
     mount(pickHost,
       h('div.geom-sketch-wrap', null, moleculeSketch(m, pick, togglePick)),
@@ -474,6 +474,12 @@ export function distributionsView(ctx: ViewContext): SubView {
     try {
       const r = await ctx.rpc<DistResult>('distributions', params);
       if (my !== seq) return;
+      // library labels are unique across the workspace ("PIGLE_PBEPBE/geoms.xyz", not "geoms.xyz")
+      const lab = (p: string, fallback: string) => library.find(f => f.path === p)?.label ?? fallback;
+      r.files.forEach(f => (f.label = lab(f.path, f.label)));
+      r.summary.forEach(s => (s.label = lab(s.path, s.label)));
+      if (r.plot?.kind === '2d') r.plot.label = lab(r.plot.path, r.plot.label);
+      else r.plot?.series.forEach(s => (s.label = lab(s.path, s.label)));
       result = r;
       computeError = undefined;
     } catch (e) {
@@ -607,7 +613,7 @@ export function distributionsView(ctx: ViewContext): SubView {
       { key: 'min', label: 'Min', numeric: true, render: row => fixed(row.min, d(row)) },
       { key: 'max', label: 'Max', numeric: true, render: row => fixed(row.max, d(row)) },
       { key: 'tau', label: 'τ_int', numeric: true, render: row => sig(row.tau, 3), title: 'Integrated autocorrelation time in sampled frames (0.5 = uncorrelated)' },
-      { key: 'sem', label: 'SEM (τ-corrected)', numeric: true, render: row => sig(row.sem, 2), title: 'sd · sqrt(2 τ_int / n)' },
+      { key: 'sem', label: 'SEM (τ-corrected)', numeric: true, render: row => fixed(row.sem, d(row) + 1), title: 'sd · sqrt(2 τ_int / n)' },
       {
         key: 'flags', label: 'Checks', sortValue: row => fileInfo(row.path)?.orderMismatches ?? 0,
         render: row => {
