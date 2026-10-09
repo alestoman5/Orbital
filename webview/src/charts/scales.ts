@@ -103,6 +103,12 @@ export function linearTicks(min: number, max: number, maxTicks = 6): Ticks {
   for (let guard = 0; guard < 40 && countFor(lo, hi, step) > limit; guard++) {
     step = nextStep(step);
   }
+  // short axes: never fewer than two labelled ticks
+  for (let guard = 0; guard < 6 && countFor(lo, hi, step) < 2; guard++) {
+    const e = Math.floor(Math.log10(step) + 1e-9);
+    const m = Math.round(step / 10 ** e);
+    step = (m === 1 ? 0.5 : m === 2 ? 1 : 2) * 10 ** e;
+  }
   if (countFor(lo, hi, step) < 4) {
     const e = Math.floor(Math.log10(step) + 1e-9);
     const quarter = 2.5 * 10 ** (Math.abs(step / 10 ** e - 5) < 1e-9 ? e : e - 1);

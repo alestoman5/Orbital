@@ -51,6 +51,11 @@ describe('charts: scales', () => {
     }
   });
 
+  it('keeps at least two major ticks on short axes', () => {
+    assert.ok(linearTicks(-4.1e-18, 2.6e-18, 3).major.length >= 2);
+    assert.ok(linearTicks(0.31, 0.39, 2).major.length >= 2);
+  });
+
   it('uses a 2.5 step only when 1-2-5 would leave fewer than 4 ticks', () => {
     assert.strictEqual(linearTicks(0, 1.3, 6).step, 0.25);
     assert.strictEqual(linearTicks(0, 10, 6).step, 2);
