@@ -336,8 +336,9 @@ select.input { padding-right: 24px; cursor: pointer; }
   color: var(--muted);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  /* sentence case, not uppercase: headers carry units and symbols (λmax / nm, R², τ_int) */
+  text-align: left;
   white-space: nowrap;
   cursor: pointer;
   user-select: none;

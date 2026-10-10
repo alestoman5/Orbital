@@ -61,7 +61,7 @@ describe('geom tab host', () => {
       const r = await call<ParseResult>('parse', { specs: ['O-O: 2-3', 'COO: 1-2-3', 'HCOO: 4-1-2-3', 'bad', 'x: 1'], file: three }, ctx);
       assert.deepStrictEqual(r.coords.map(c => [c.label, c.kind, c.unit, c.axis]), [
         ['O-O', 'bond', 'Å', 'r(O2–O3) / Å'],
-        ['COO', 'angle', '°', '∠(C1–O2–O3) / °'],
+        ['COO', 'angle', '°', 'θ(C1–O2–O3) / °'],
         ['HCOO', 'dihedral', '°', 'φ(H4–C1–O2–O3) / °']
       ]);
       assert.strictEqual(r.errors.length, 2);
@@ -197,7 +197,7 @@ describe('geom tab host', () => {
     it('reports the slope per ps for an fs time axis, end − start and decimates', async () => {
       const r = await call<DatViewResult>('datView', { path: dat, maxPoints: 200 }, ctx);
       assert.strictEqual(r.xLabel, 't / fs');
-      assert.deepStrictEqual(r.series.map(s => s.axis), ['E-potential', 'T / K']);
+      assert.deepStrictEqual(r.series.map(s => s.axis), ['E_{pot} / E_{h}', 'T / K']);
       const e = r.series[0];
       assert.strictEqual(e.stats.slopeUnit, 'ps');
       assert.ok(Math.abs(e.stats.slope - 2e-3) < 2e-5, String(e.stats.slope));
@@ -252,7 +252,8 @@ describe('geom analysis helpers', () => {
   it('labels axes from column names', () => {
     assert.strictEqual(axisFromName('Time[fs]'), 't / fs');
     assert.strictEqual(axisFromName('E-pot[eV]'), 'E-pot / eV');
-    assert.strictEqual(axisFromName('E-Total'), 'E-Total');
+    assert.strictEqual(axisFromName('E-Total'), 'E_{tot} / E_{h}');
+    assert.strictEqual(axisFromName('Conserved_quantity_of_thermostat'), 'Conserved_quantity_of_thermostat');
   });
 
   it('infers bonds and projects a linear molecule onto its axis', () => {

@@ -57,6 +57,7 @@ export function buildToolbar(o: FigureToolbarOptions): HTMLElement {
     syncCustom();
   });
   unitSel.classList.add('figure-toolbar-unit');
+  unitSel.setAttribute('aria-label', 'Size unit');
   const custom = h('div.figure-toolbar-custom', null, wIn, h('span.muted', null, '×'), hIn, unitSel);
   const sizeOptions = [
     ...Object.entries(JOURNAL_SIZES).map(([k, s]) => ({ value: k, label: s.label })),
@@ -76,6 +77,7 @@ export function buildToolbar(o: FigureToolbarOptions): HTMLElement {
   });
   sizeSel.classList.add('figure-toolbar-size');
   sizeSel.title = 'Figure size (publication preview and exports)';
+  sizeSel.setAttribute('aria-label', 'Figure size');
   custom.hidden = sizeKey(size) !== CUSTOM;
   syncCustom();
 
@@ -85,8 +87,23 @@ export function buildToolbar(o: FigureToolbarOptions): HTMLElement {
     changed();
   });
 
+  // The tab may size the figure itself (a default per mode); export what the preview shows
+  // and keep the size picker showing it too.
+  const syncSize = () => {
+    const fs = o.figure().size;
+    if (fs && (Math.abs(fs.widthIn - size.widthIn) > 1e-3 || Math.abs(fs.heightIn - size.heightIn) > 1e-3)) {
+      size = { widthIn: fs.widthIn, heightIn: fs.heightIn };
+      sizeSel.value = sizeKey(size);
+      custom.hidden = sizeKey(size) !== CUSTOM;
+      syncCustom();
+    }
+  };
+
   // --- export ------------------------------------------------------------------------------
-  const exportOpts = () => ({ size, preset: 'publication' as Preset });
+  const exportOpts = () => {
+    syncSize();
+    return { size, preset: 'publication' as Preset };
+  };
   const save = async (ext: string, data: string, encoding: 'utf8' | 'base64', filterName: string) => {
     const path = await host.studio('saveFile', { defaultName: `${o.name}.${ext}`, data, encoding, filters: { [filterName]: [ext] } });
     if (path) {
@@ -182,10 +199,11 @@ export function buildToolbar(o: FigureToolbarOptions): HTMLElement {
     host.toast('Figure sent to the report', 'success');
   }));
 
-  return h('div.figure-toolbar', { role: 'toolbar', 'aria-label': 'Figure' },
+  const bar = h('div.figure-toolbar', { role: 'toolbar', 'aria-label': 'Figure', onpointerenter: syncSize, onfocusin: syncSize },
     presetSwitch,
     h('div.figure-toolbar-sizes', null, sizeSel, custom),
     h('span.figure-toolbar-spacer'),
     wrap,
     sendBtn);
+  return bar;
 }

@@ -1,7 +1,7 @@
 /* Spectra tab. Every selector is scoped to the tab; colors only from tokens.css
    (series swatches get their color inline from the chart engine palette). */
 
-[data-tab="spectra"] .sp-root { padding: var(--space-4); }
+[data-tab="spectra"] .sp-root { padding: 0; } /* the tab root already pads, like every other tab */
 [data-tab="spectra"] .sp-side,
 [data-tab="spectra"] .sp-main { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
 [data-tab="spectra"] .sp-main { gap: var(--space-4); }
@@ -60,7 +60,6 @@
 /* chart */
 [data-tab="spectra"] .sp-chart { height: 440px; position: relative; }
 [data-tab="spectra"] .sp-chart.tall { height: 560px; }
-[data-tab="spectra"] .sp-chart:has(.chart.publication) { height: auto; min-height: 240px; }
 [data-tab="spectra"] .sp-chart > .empty,
 [data-tab="spectra"] .sp-chart > .skeleton { height: 100%; box-sizing: border-box; }
 [data-tab="spectra"] .sp-chart-card .card-body { display: flex; flex-direction: column; gap: var(--space-3); }
@@ -87,8 +86,6 @@
 
 body.vscode-high-contrast [data-tab="spectra"] .sp-ref.on .sp-ref-dot { border-color: var(--focus); }
 
-/* units and Greek letters must keep their case in headers */
-[data-tab="spectra"] .sp-stats-card .table th { text-transform: none; letter-spacing: 0; }
 [data-tab="spectra"] .sp-kpis { display: flex; flex-direction: column; gap: var(--space-2); }
 [data-tab="spectra"] .sp-kpi-caption { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--muted); min-width: 0; }
 [data-tab="spectra"] .sp-kpi-caption > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

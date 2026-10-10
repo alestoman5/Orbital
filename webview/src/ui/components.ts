@@ -244,7 +244,7 @@ export function dataTable<R>(o: TableOptions<R>): HTMLElement {
     const allOn = sel && rows.length > 0 && rows.every(r => sel.selected.has(o.rowKey(r)));
     const head = h('tr', null,
       sel ? h('th.sel', null, h('input', {
-        type: 'checkbox', checked: allOn, title: 'Select all shown',
+        type: 'checkbox', checked: allOn, title: 'Select all shown', 'aria-label': 'Select all shown',
         onchange: (e: Event) => {
           const on = (e.target as HTMLInputElement).checked;
           rows.forEach(r => (on ? sel.selected.add(o.rowKey(r)) : sel.selected.delete(o.rowKey(r))));
@@ -261,7 +261,7 @@ export function dataTable<R>(o: TableOptions<R>): HTMLElement {
       const key = o.rowKey(r);
       return h('tr', { class: [o.onRowClick ? 'clickable' : '', sel?.selected.has(key) || o.selectedKey === key ? 'selected' : '', o.rowClass?.(r) ?? ''].join(' '), onclick: o.onRowClick ? () => o.onRowClick!(r) : undefined },
         sel ? h('td.sel', { onclick: (e: Event) => e.stopPropagation() }, h('input', {
-          type: 'checkbox', checked: sel.selected.has(key),
+          type: 'checkbox', checked: sel.selected.has(key), 'aria-label': 'Select row',
           onchange: (e: Event) => {
             (e.target as HTMLInputElement).checked ? sel.selected.add(key) : sel.selected.delete(key);
             sel.onChange(new Set(sel.selected));

@@ -5,9 +5,9 @@
 
 import type { AxisSpec, Figure, HeatmapSeries, Panel, SecondaryAxisSpec, Series } from './api';
 import { colorAt, colormapStops, normalizer } from './colormap';
-import { factorMarkup, formatLinearTicks, formatLogTicks, labelWithFactor } from './format';
+import { factorMarkup, formatLinearTicks, formatLogTicks, labelWithFactor, withMinus } from './format';
 import { equalAspectBox, gridLayout, maxTickCount, stackLayout, type Box, type Req } from './layout';
-import { bestCorner, cornerBox, isOutside, legendEntries, legendMarkup, measureLegend, type LegendHit, type ResolvedSeries } from './legend';
+import { bestCornerScored, cornerBox, isOutside, legendEntries, legendMarkup, measureLegend, type LegendHit, type ResolvedSeries } from './legend';
 import { bandMark, f, heatmapLimits, heatmapMark, histogramMark, lineMark, ruleMark, scatterMark, sticksMark, textMark, type MarkContext } from './marks';
 import { autoDomain, logTicks, minorTicks, nextStep, Scale, secondaryTicks, ticksFor, ticksForStep, type Ticks } from './scales';
 import { escapeXml, parseRich, richExtent, richSvg, richWidth, wrapRuns, type Run } from './text';
@@ -335,7 +335,7 @@ function axisTicks(spec: AxisSpec, d: Range, length: number, horizontal: boolean
 
 function format(spec: { format?: (v: number) => string; log?: boolean }, t: Ticks): { labels: Run[][]; exponent: number } {
   if (spec.format) {
-    return { labels: t.major.map(v => parseRich(spec.format!(v))), exponent: 0 };
+    return { labels: t.major.map(v => parseRich(withMinus(spec.format!(v)))), exponent: 0 };
   }
   const r = spec.log ? formatLogTicks(t.major) : formatLinearTicks(t.major, t.step);
   return { labels: r.labels.map(parseRich), exponent: r.exponent };
@@ -354,7 +354,7 @@ function secondaryAxisTicks(spec: SecondaryAxisSpec, d: Range, length: number, t
   const spacing = theme.preset === 'publication' ? size * 3.2 : 84;
   let maxN = maxTickCount(length, spacing);
   let res = secondaryTicks(d[0], d[1], spec.toSecondary, spec.fromSecondary, maxN, spec.ticks);
-  const fmtLabels = (vals: number[], step: number) => spec.format ? vals.map(v => parseRich(spec.format!(v))) : formatLinearTicks(vals, step).labels.map(parseRich);
+  const fmtLabels = (vals: number[], step: number) => spec.format ? vals.map(v => parseRich(withMinus(spec.format!(v)))) : formatLinearTicks(vals, step).labels.map(parseRich);
   let labels = fmtLabels(res.major.map(m => m.value), res.step);
   // avoid collisions where the non-linear mapping crowds the ticks
   for (let guard = 0; guard < 5 && !spec.ticks && res.major.length > 2; guard++) {
@@ -405,6 +405,8 @@ interface PanelPlan {
   legend?: ReturnType<typeof measureLegend>;
   legendEntries: ReturnType<typeof legendEntries>;
   legendPos: NonNullable<Panel['legend']>;
+  /** Space between the frame top and an outside-top legend. */
+  legendClear?: number;
   req: Req;
 }
 
@@ -458,6 +460,9 @@ function computeReq(p: PanelPlan, box: Box, theme: Theme): Req {
   if (p.yt.factor || p.y2t?.factor) {
     top = Math.max(top, ts * 1.35) + (p.st ? ts * 1.2 : 0);
   }
+  // an outside-top legend starts at the frame's left edge, so it only has to clear the
+  // secondary axis and the ×10ⁿ factor, not half a y tick label
+  p.legendClear = p.yt.factor || p.y2t?.factor ? top : p.st ? top : 0;
   if (p.spec.title) {
     top += theme.titleSize * 1.5;
   }
@@ -514,7 +519,21 @@ function colorbarWidth(theme: Theme): number {
 
 // --- build -------------------------------------------------------------------------
 
+/** Legends covering at least this many sampled data points count as crowded. */
+const CROWDED_POINTS = 3;
+
+/**
+ * Builds the figure. In the publication preset an 'auto' legend that cannot
+ * find a free corner (it would cover data or the panel tag) moves above its
+ * panel instead, so exported figures never hide curves behind the legend.
+ */
 export function buildFigure(figure: Figure, o: BuildOptions): FigureModel {
+  const crowded = new Set<number>();
+  const model = buildFigureOnce(figure, o, new Set(), crowded);
+  return crowded.size && o.theme.preset === 'publication' ? buildFigureOnce(figure, o, crowded, new Set()) : model;
+}
+
+function buildFigureOnce(figure: Figure, o: BuildOptions, outsideTop: ReadonlySet<number>, crowded: Set<number>): FigureModel {
   const theme = o.theme;
   const panels = figure.panels;
   const resolved = resolveSeries(figure, theme, o.hidden);
@@ -544,7 +563,7 @@ export function buildFigure(figure: Figure, o: BuildOptions): FigureModel {
     const lastRow = Math.floor((n - 1) / cols);
     const hideX = sharedX && (layoutSpec.kind === 'stack' ? i < n - 1 : row < lastRow && i + cols < n);
     const hideY = sharedY && i % cols > 0;
-    const legendPos = spec.legend ?? 'auto';
+    const legendPos = outsideTop.has(i) ? 'outside-top' : spec.legend ?? 'auto';
     const entries = legendPos === 'none' ? [] : legendEntries(series, theme);
     return {
       spec, series, xd: x, yd, y2d, base: { x, y: yd, y2: y2d }, hasY2,
@@ -700,7 +719,7 @@ export function buildFigure(figure: Figure, o: BuildOptions): FigureModel {
         ly = r.y;
       } else if (p.legendPos === 'outside-top') {
         lx = r.x;
-        ly = r.y - p.req.top + (spec.title ? theme.titleSize * 1.5 : 0);
+        ly = r.y - (p.legendClear ?? 0) - theme.fontSize * 0.3 - lg.h;
       } else {
         let pos = p.legendPos;
         const fits = lg.h <= r.h * 0.92 && lg.w <= r.w * 0.8;
@@ -713,7 +732,11 @@ export function buildFigure(figure: Figure, o: BuildOptions): FigureModel {
               pts.push(r.x + ((k % 20) / 20) * tagW, r.y + (Math.floor(k / 20) / 20) * theme.tagSize * 1.8);
             }
           }
-          pos = bestCorner(pts, r, lg.w, lg.h, inset);
+          const best = bestCornerScored(pts, r, lg.w, lg.h, inset);
+          pos = best.corner;
+          if ((p.legendPos === 'auto' && best.covered >= CROWDED_POINTS) || !fits) {
+            crowded.add(i);
+          }
         }
         const b = cornerBox(pos as 'top-right', r, lg.w, lg.h, inset);
         lx = b.x;

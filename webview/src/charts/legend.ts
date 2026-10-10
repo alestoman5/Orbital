@@ -150,6 +150,11 @@ export function cornerBox(corner: Corner, rect: Box, w: number, h: number, inset
  * interleaved x, y in user units). Ties keep the order TR, TL, BR, BL.
  */
 export function bestCorner(points: ArrayLike<number>, rect: Box, w: number, h: number, inset: number): Corner {
+  return bestCornerScored(points, rect, w, h, inset).corner;
+}
+
+/** bestCorner plus the number of points the legend still covers there. */
+export function bestCornerScored(points: ArrayLike<number>, rect: Box, w: number, h: number, inset: number): { corner: Corner; covered: number } {
   let best: Corner = 'top-right';
   let bestScore = Infinity;
   const margin = Math.min(w, h) * 0.15;
@@ -169,7 +174,7 @@ export function bestCorner(points: ArrayLike<number>, rect: Box, w: number, h: n
       best = c;
     }
   }
-  return best;
+  return { corner: best, covered: bestScore };
 }
 
 export function isOutside(pos: LegendPosition | undefined): boolean {
