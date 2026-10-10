@@ -149,14 +149,18 @@ export class NeaView {
         subtitle: info?.source === 'setting' ? 'Scripts folder from orcaInp.nea.scriptsDir' : info?.source === 'search' ? 'Scripts folder found in the workspace' : undefined,
         actions: [
           button('Copy with cd', () => void navigator.clipboard.writeText(cd).then(() => this.ctx.toast('Copied', 'success')), { variant: 'ghost', title: cd }),
-          button('Copy command', () => void navigator.clipboard.writeText(r.command).then(() => this.ctx.toast('Copied', 'success')), { variant: 'primary', icon: 'copy' })
+          button('Copy command', () => void navigator.clipboard.writeText(r.command).then(() => this.ctx.toast('Copied', 'success')), { variant: 'ghost', icon: 'copy' }),
+          button('Send to terminal', () => void this.ctx.studio('runInTerminal', { command: r.command, cwd: r.cwd, name: 'NEA' })
+            .then(() => this.ctx.toast('Typed into the NEA terminal — review it, then press Enter', 'success')), {
+            variant: 'primary', icon: 'terminal', disabled: !!r.placeholder, title: 'Types the command into a terminal in the run folder (not executed)'
+          })
         ],
         class: 'ib-nea-cmd'
       },
         h('div.ib-cmd', { class: r.placeholder ? 'placeholder' : '' }, h('span.ib-cmd-prompt', { 'aria-hidden': 'true' }, '$'), h('code', null, this.colorize(r.command))),
         h('div.ib-cmd-meta', null, icon('terminal'), h('span', null, 'Run from '), h('span.mono', null, r.cwd)),
         r.placeholder ? h('div.ib-cmd-meta.muted', null, icon('info'), 'Pick an input to replace the placeholder geometry path.') : null,
-        h('div.ib-cmd-meta.muted', null, icon('info'), 'Paste it into a terminal (a "Send to terminal" button needs a studio terminal method; see the tab notes).')));
+        h('div.ib-cmd-meta.muted', null, icon('info'), '"Send to terminal" types the command without running it, so you can check it first.')));
       parts.push(card({ title: 'What it does' }, h('ol.ib-steps', null, this.steps().map(s => h('li', null, s)))));
     }
     mount(this.previewEl, parts);
