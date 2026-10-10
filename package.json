@@ -373,6 +373,34 @@
             "**/figures/*.{png,pdf}"
           ],
           "description": "Images in the workspace the Report tab offers to import into the report's figures folder."
+        },
+        "orcaInp.studio.spectraGlobs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/spectra_txt/*.dat",
+            "**/*.cross.dat"
+          ],
+          "description": "Globs (relative to each workspace folder) of NEA spectrum files listed in the Studio Spectra tab: columns x, total[, CI low, CI high, S1..SN] as written by PyNEAppLES."
+        },
+        "orcaInp.studio.experimentGlobs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*_exp.{dat,txt,csv}",
+            "**/exp*/*.{dat,txt,csv}",
+            "**/experiment*.{dat,txt,csv}"
+          ],
+          "description": "Globs of experimental two-column spectra (x, y; whitespace, tab, comma or semicolon separated), drawn dashed in the Studio Spectra tab. Any file can also be added with \"Add files…\" and toggled to experiment."
+        },
+        "orcaInp.studio.spectrumNamePattern": {
+          "type": "string",
+          "default": "^(?<sampling>.+?)-(?<geometry>.+?)_(?<method>[^-_]+)-(?<basis>.+?)_n(?<n>\\d+)$",
+          "description": "Regular expression applied to spectrum file stems in the Studio Spectra tab; every named group becomes a filterable column of the library (e.g. wigner-augccpVDZ_adc3-augccpVDZ_n1000 → sampling, geometry, method, basis, n)."
         }
       }
     }

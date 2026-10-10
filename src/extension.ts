@@ -18,7 +18,6 @@ import {
   exportPyneapples
 } from './features/batchCommands';
 import { RunsTreeProvider } from './features/runsTree';
-import { showSpectrumPreview } from './features/spectrumPanel';
 import { neaCommand, neaOpenOutputs } from './features/neaRuns';
 import { OutUnitHoverProvider } from './features/unitHover';
 import { loadOutput, runFilesFor, targetPath } from './features/io';
@@ -84,7 +83,10 @@ export function activate(context: vscode.ExtensionContext): void {
     ['orcaInp.compareGeometries', (uri?: vscode.Uri) => compareGeometries(uri)],
     ['orcaInp.exportPyneapples', (uri?: vscode.Uri) => exportPyneapples(uri)],
     ['orcaInp.boltzmannWeights', (uri?: vscode.Uri, uris?: vscode.Uri[]) => boltzmannWeightsCommand(uri, uris)],
-    ['orcaInp.previewSpectrum', (uri?: vscode.Uri) => showSpectrumPreview(uri)],
+    ['orcaInp.previewSpectrum', (uri?: vscode.Uri) => {
+      const p = targetPath(uri);
+      openStudio(context.extensionUri, 'spectra', !p ? undefined : fs.existsSync(p) && fs.statSync(p).isDirectory() ? { folder: p } : { files: [p] });
+    }],
     ['orcaInp.plotDat', (uri?: vscode.Uri) => {
       const p = targetPath(uri);
       if (p) {

@@ -226,7 +226,7 @@ export function readOut(p: string): StickSet {
 }
 
 /**
- * Folder of per-geometry .out files (spectrumPanel's quick NEA average):
+ * Folder of per-geometry .out files (quick NEA average, as the old spectrum preview did):
  * outputs that terminated normally and have an excitation table count as
  * geometries, everything else is skipped.
  */
