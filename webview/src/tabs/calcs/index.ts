@@ -9,7 +9,7 @@ import {
   Tone, badge, busy, button, callout, card, codeBlock, dataTable, emptyState, grid, icon, iconButton, kpi, segmented, select, skeleton, stackedBar
 } from '../../ui/components';
 import { Child, h, mount } from '../../ui/dom';
-import { ChartHandle, Figure, figureToolbar, render } from '../../charts';
+import { ChartHandle, Figure, FigureSize, figureToolbar, Preset, render } from '../../charts';
 import { durationUnit, fmtDuration, fmtInt, fmtTime, pct, spin } from './format';
 
 const STATUSES: CalcStatusName[] = ['ok', 'not converged', 'error', 'running', 'unreadable', 'not started'];
@@ -320,7 +320,10 @@ export const view: TabView = {
         return card({ title: 'Wall time' }, emptyState('calcs', 'No timings', r.counts.ok ? 'The ok results carry no time_*_s / TOTAL RUN TIME.' : 'No calculation finished ok yet.'));
       }
       const { unit, scale } = durationUnit(t.median);
+      let preset: Preset = 'screen';
+      let size: FigureSize = { widthIn: 3.25, heightIn: 2.2 };
       const figure = (): Figure => ({
+        preset,
         panels: [{
           x: { label: `t / ${unit}`, zero: false },
           y: { label: 'count', format: v => (Number.isInteger(v) ? String(v) : '') },
@@ -330,10 +333,16 @@ export const view: TabView = {
             { type: 'vline', value: t.median / scale, dash: 'dashed', label: 'median' }
           ]
         }],
-        size: { widthIn: 3.25, heightIn: 2.2 }
+        size
       });
       const box = h('div.calcs-chart');
-      const tb = figureToolbar({ figure, name: `times-${r.label.replace(/[^\w.-]+/g, '_')}`, host: ctx, caption: () => `Wall-time distribution of ${t.n} converged calculations (${r.label}).` });
+      const tb = figureToolbar({ figure, name: `times-${r.label.replace(/[^\w.-]+/g, '_')}`, host: ctx, caption: () => `Wall-time distribution of ${t.n} converged calculations (${r.label}).`,
+        onLayoutChange: (p, sz) => {
+          preset = p;
+          size = sz;
+          chart?.update(figure());
+        }
+      });
       requestAnimationFrame(() => {
         chart = render(box, figure(), { readout: (_p, x, y) => `${x.toPrecision(3)} ${unit}, ${Math.round(y)}` });
       });
