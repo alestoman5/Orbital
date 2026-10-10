@@ -80,7 +80,8 @@
     };
   };
   // Screenshots (?shot=1) skip the event stream: an open connection keeps headless browsers waiting forever.
-  if (!params.has('shot')) {
+  // Add &events=1 to keep host events when driving the page in real time (DevTools protocol).
+  if (!params.has('shot') || params.has('events')) {
     const es = new EventSource('/events');
     es.onmessage = e => window.postMessage(JSON.parse(e.data), '*');
   }
