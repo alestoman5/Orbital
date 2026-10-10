@@ -115,6 +115,21 @@ describe('report/compile: runCompile with a fake engine', function () {
     assert.match(r3.errors[0].message, /exited with code 2/);
   });
 
+  it('ok when the engine exits 0 and leaves an up-to-date PDF alone (latexmk: nothing to do)', async () => {
+    const tex = fake('same.tex', 'console.log("All targets are up-to-date")');
+    const out = path.join(dir, 'build');
+    fs.mkdirSync(out);
+    const old = (Date.now() - 60000) / 1000;
+    fs.utimesSync(tex, old - 10, old - 10);
+    fs.writeFileSync(path.join(out, 'same.pdf'), '%PDF-1.5');
+    fs.utimesSync(path.join(out, 'same.pdf'), old, old);
+    const r = await runCompile({ engine: 'tectonic', texPath: tex, outDir: out, executable: process.execPath });
+    assert.strictEqual(r.ok, true, r.log);
+    fs.utimesSync(tex, old + 5, old + 5);   // .tex newer than the PDF: a stale PDF is not success
+    const r2 = await runCompile({ engine: 'tectonic', texPath: tex, outDir: out, executable: process.execPath });
+    assert.strictEqual(r2.ok, false);
+  });
+
   it('times out and kills the engine', async () => {
     const tex = fake('slow.tex', 'setTimeout(() => {}, 60000)');
     const r = await runCompile({ engine: 'tectonic', texPath: tex, outDir: path.join(dir, 'b'), executable: process.execPath, timeoutMs: 800 });

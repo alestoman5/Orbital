@@ -140,6 +140,14 @@ function freshFile(file: string, since: number): string | null {
   }
 }
 
+function upToDate(pdf: string, texPath: string): boolean {
+  try {
+    return fs.statSync(pdf).mtimeMs >= fs.statSync(texPath).mtimeMs;
+  } catch {
+    return false;
+  }
+}
+
 /** Compile; never rejects (spawn failures and timeouts come back as ok = false). */
 export function runCompile(opts: CompileOptions): Promise<CompileResult> {
   const t0 = Date.now();
@@ -185,7 +193,8 @@ export function runCompile(opts: CompileOptions): Promise<CompileResult> {
         if (!errors.length) errors = parseLatexLog(output);
         if (timedOut) errors.unshift({ message: `compilation timed out after ${Math.round(timeoutMs / 1000)} s` });
       }
-      const pdfPath = freshFile(pdf, t0);
+      // latexmk exits 0 without rewriting the PDF when it is up to date: accept a PDF newer than the .tex.
+      const pdfPath = freshFile(pdf, t0) ?? (exitCode === 0 && upToDate(pdf, opts.texPath) ? pdf : null);
       const ok = !spawnError && !timedOut && exitCode === 0 && pdfPath !== null;
       if (!ok && !errors.length) errors = [{ message: `${cmd.command} exited with code ${exitCode}` }];
       resolve({ ok, log: tail(output, nTail), errors: ok ? [] : errors, pdfPath, logPath, exitCode,
