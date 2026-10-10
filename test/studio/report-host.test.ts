@@ -15,8 +15,12 @@ const PDF = Buffer.from('%PDF-1.4\n%%EOF\n');
 
 interface Fake { ctx: HostContext; ws: string; tex: string; log: string[] }
 
+const made: string[] = [];
+after(() => made.forEach(d => fs.rmSync(d, { recursive: true, force: true, maxRetries: 5 })));
+
 function fake(settings: Record<string, unknown> = {}): Fake {
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'orbital-rephost-'));
+  made.push(ws);
   const dir = path.join(ws, 'report');
   fs.mkdirSync(path.join(dir, 'figures'), { recursive: true });
   const tex = path.join(dir, 'tasks_summary.tex');

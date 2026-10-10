@@ -21,8 +21,12 @@ interface Fake {
 }
 
 /** Workspace in a temp folder, extension folder whose python/ml_worker.py is the fake worker. */
+const made: string[] = [];
+after(() => made.forEach(d => fs.rmSync(d, { recursive: true, force: true, maxRetries: 5 })));
+
 function fake(settings: Record<string, unknown> = {}): Fake {
   const ws = fs.mkdtempSync(path.join(os.tmpdir(), 'orbital-mlhost-'));
+  made.push(ws);
   const ext = path.join(ws, '_ext');
   fs.mkdirSync(path.join(ext, 'python'), { recursive: true });
   fs.copyFileSync(path.join(FIX, 'fake_worker.py'), path.join(ext, 'python', 'ml_worker.py'));
