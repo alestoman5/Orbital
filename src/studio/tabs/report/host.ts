@@ -156,7 +156,16 @@ export const host: TabHost = {
       const engine = engineOf(ctx);
       const timeoutSec = Number(ctx.config('studio.compileTimeoutSec', 240)) || 240;
       const executable = String(ctx.config('studio.latexPath', '') || '').trim() || undefined;
-      const r = await runCompile({ engine, texPath, outDir: buildDir(ctx, texPath), timeoutMs: timeoutSec * 1000, executable, tailLines: 120 });
+      const outDir = buildDir(ctx, texPath);
+      const opts = { engine, texPath, outDir, timeoutMs: timeoutSec * 1000, executable, tailLines: 120 };
+      let r = await runCompile(opts);
+      if (!r.ok && engine === 'latexmk' && /error in previous invocation/i.test(r.log)) {
+        // latexmk refuses to rerun after a failure until a source changes (e.g. a package was
+        // installed meanwhile): forget its state and compile once more
+        const fdb = path.join(outDir, path.basename(texPath).replace(/\.tex$/i, '') + '.fdb_latexmk');
+        try { fs.unlinkSync(fdb); } catch { /* none */ }
+        r = await runCompile(opts);
+      }
       const dir = path.dirname(texPath);
       return {
         ok: r.ok, engine, log: r.log, exitCode: r.exitCode, timedOut: r.timedOut, durationMs: r.durationMs, logPath: r.logPath,
