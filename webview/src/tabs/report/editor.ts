@@ -11,7 +11,7 @@ import { icon } from '../../ui/components';
 import { h, mount } from '../../ui/dom';
 import type { IconName } from '../../ui/icons';
 import { pdfThumb } from './pdf';
-import { htmlToTex, richEditable, texToHtml } from './richtext';
+import { htmlToTex, prettyTex, richEditable, texToHtml } from './richtext';
 
 export interface EditorHost {
   dirty(): void;
@@ -247,7 +247,10 @@ export function createEditor(host: EditorHost) {
     const sec = h('section.rp-section', { dataset: { section: String(si) } });
     sec.addEventListener('focusin', () => host.focusSection(si));
     if (s.heading !== false) {
-      const title = h('h2.rp-title', { contenteditable: 'plaintext-only', spellcheck: 'true', title: 'Section title (LaTeX)' }, s.title);
+      // shown typeset (thin spaces, inline math); focusing it switches to the LaTeX source
+      const title = h('h2.rp-title', { contenteditable: 'plaintext-only', spellcheck: 'true', title: 'Section title (LaTeX)', innerHTML: prettyTex(s.title) });
+      title.addEventListener('focus', () => { title.textContent = s.title; });
+      title.addEventListener('blur', () => { title.innerHTML = prettyTex(s.title); });
       title.addEventListener('input', () => { s.title = title.textContent ?? ''; changed(); });
       title.addEventListener('keydown', e => { if (e.key === 'Enter') e.preventDefault(); });
       sec.append(h('div.rp-sec-head', null,

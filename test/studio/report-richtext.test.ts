@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { escapePlain, richEditable, texToHtml } from '../../webview/src/tabs/report/richtext';
+import { escapePlain, prettyTex, richEditable, texToHtml } from '../../webview/src/tabs/report/richtext';
 import { sanitizeName } from '../../webview/src/tabs/report/names';
 import { sanitizeFigureName } from '../../src/report/compile';
 
@@ -25,5 +25,15 @@ describe('studio report: rich text', () => {
     for (const n of ['ML parity: test?', 'a/b/c.pdf', '..hidden', 'con', '', 'Spectrum (S1)']) {
       assert.strictEqual(sanitizeName(n), sanitizeFigureName(n).replace(/^_(?=con$)/, ''), n);
     }
+  });
+
+  it('renders section titles with thin spaces, dashes and simple math', () => {
+    assert.strictEqual(prettyTex('Task 2: Wigner sampling, 300\\,K, $n = 100\\,000$'),
+      'Task 2: Wigner sampling, 300 K, <span class="rp-math">n = 100 000</span>');
+    assert.strictEqual(prettyTex('CH$_2$OO vs.\\ CH$_3$ -- ok~now'),
+      'CH<span class="rp-math"><sub>2</sub></span>OO vs. CH<span class="rp-math"><sub>3</sub></span> – ok now');
+    assert.strictEqual(prettyTex('$\\lambda_{\\mathrm{max}}$ \\& 5\\% \\textbf{b} <x>'),
+      '<span class="rp-math">λ<sub>max</sub></span> &amp; 5% <b>b</b> &lt;x&gt;');
+    assert.strictEqual(prettyTex('\\unknown{x}'), '\\unknownx');
   });
 });
