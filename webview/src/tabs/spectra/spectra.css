@@ -60,7 +60,6 @@
 /* chart */
 [data-tab="spectra"] .sp-chart { height: 440px; position: relative; }
 [data-tab="spectra"] .sp-chart.tall { height: 560px; }
-[data-tab="spectra"] .sp-chart:has(.chart.publication) { height: auto; min-height: 240px; }
 [data-tab="spectra"] .sp-chart > .empty,
 [data-tab="spectra"] .sp-chart > .skeleton { height: 100%; box-sizing: border-box; }
 [data-tab="spectra"] .sp-chart-card .card-body { display: flex; flex-direction: column; gap: var(--space-3); }

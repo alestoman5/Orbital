@@ -82,6 +82,7 @@ class SpectraTab {
   private messagesEl = h('div.sp-messages');
   private chartBox = h('div.sp-chart');
   private chartCard?: HTMLElement;
+  private toolbarEl?: HTMLElement;
   private chartSubtitle = h('p.muted');
   private statsEl = h('div.sp-stats');
   private noteEl = h('p.sp-footnote.muted');
@@ -489,7 +490,7 @@ class SpectraTab {
   // --- main ----------------------------------------------------------------------------
 
   private buildMain(): void {
-    const toolbar = figureToolbar({
+    const toolbar = this.toolbarEl = figureToolbar({
       figure: () => this.figure(),
       name: 'spectra',
       host: this.ctx,
@@ -497,8 +498,12 @@ class SpectraTab {
       initialSize: this.opts.size,
       caption: () => this.caption(),
       onLayoutChange: (preset, size) => {
+        // keep the per-mode default size (taller for + Difference, 7 in for small multiples)
+        // until the user picks a size; switching the preset alone must not pin it
+        const cur = this.figure().size;
+        const picked = !cur || Math.abs(cur.widthIn - size.widthIn) > 1e-3 || Math.abs(cur.heightIn - size.heightIn) > 1e-3;
         this.opts.preset = preset;
-        this.opts.size = size;
+        if (picked) this.opts.size = size;
         this.save();
         this.drawChart();
       }
@@ -621,6 +626,8 @@ class SpectraTab {
       return;
     }
     const fig = this.figure();
+    // the toolbar re-reads the figure size on focusin (the default size depends on the mode)
+    this.toolbarEl?.dispatchEvent(new Event('focusin'));
     const multi = fig.panels.length > 1;
     this.chartBox.classList.toggle('tall', multi);
     const n = this.loaded.series.length;
