@@ -6,7 +6,7 @@ import type { HostContext } from '../../src/studio/context';
 import { host } from '../../src/studio/tabs/spectra/host';
 import { SIGMA_PREFACTOR_EV_CM2, SIGMA_PREFACTOR_SI, broadenCrossSection, energyGrid, StateStick } from '../../src/studio/tabs/spectra/crossSection';
 import { autoRange, curvesCsv, Curve } from '../../src/studio/tabs/spectra/analysis';
-import { clearCaches, globToRegExp, spectrumStem } from '../../src/studio/tabs/spectra/sources';
+import { SIGMA_PER_EPSILON, clearCaches, expandBraces, globToRegExp, preferredCopies, readNea, spectrumStem } from '../../src/studio/tabs/spectra/sources';
 import { trapezoid } from '../../src/chem/spectrumSets';
 import type { AddFilesResult, CsvResult, LibraryResult, LoadResult, StatsResult } from '../../src/studio/tabs/spectra/types';
 
@@ -155,6 +155,29 @@ describe('spectra: helpers', () => {
   it('strips PyNEAppLES suffixes from stems', () => {
     assert.strictEqual(spectrumStem('/a/absspec.wigner_x.n1000.nm.cross.dat'), 'absspec.wigner_x.n1000');
     assert.strictEqual(spectrumStem('/a/gle-x_n1000.dat'), 'gle-x_n1000');
+  });
+
+  it('expands braces and keeps one PyNEAppLES copy per run', () => {
+    assert.deepStrictEqual(expandBraces('**/*_exp.{dat,txt}'), ['**/*_exp.dat', '**/*_exp.txt']);
+    const d = path.join('ws', 'conv');
+    const files = ['ev.cross', 'nm.molar', 'nm.cross', 'cm.cross'].map(k => path.join(d, `absspec.run1.n1000.${k}.dat`)).concat(path.join(d, 'absspec.run2.n500.ev.cross.dat'));
+    assert.deepStrictEqual(preferredCopies(files).map(f => path.basename(f)), ['absspec.run1.n1000.nm.cross.dat', 'absspec.run2.n500.ev.cross.dat']);
+  });
+
+  it('reads PyNEAppLES molar files as cross sections (σ = 1000 ln10 ε / N_A)', () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'spectra-molar-'));
+    try {
+      const rows = ['300 1000 900 1100 600 400', '310 2000 1900 2100 1200 800', ''].join(String.fromCharCode(10));
+      fs.writeFileSync(path.join(tmp, 'absspec.a.nm.molar.dat'), rows);
+      const d = readNea(path.join(tmp, 'absspec.a.nm.molar.dat'));
+      assert.ok(close(SIGMA_PER_EPSILON, 3.823532e-21, 1e-6));
+      assert.ok(close(d.y[1], 2000 * SIGMA_PER_EPSILON, 1e-12));
+      assert.ok(close(d.lo![0], 900 * SIGMA_PER_EPSILON, 1e-12));
+      assert.ok(close(d.states[1][1], 800 * SIGMA_PER_EPSILON, 1e-12));
+      assert.strictEqual(spectrumStem('absspec.a.nm.molar.dat'), 'absspec.a');
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   it('turns globs into anchored regular expressions', () => {
