@@ -18,7 +18,7 @@ import { spawn, execFile } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { isAlive, killTree } from './proc';
+import { commandLineOf, isAlive, killTree } from './proc';
 import type { MlConfig } from './spec';
 import { targetLabel } from './spec';
 
@@ -382,7 +382,12 @@ export async function stopRun(runDir: string): Promise<{ stopped: boolean; state
   if (!raw || (raw.state !== 'running' && raw.state !== 'starting')) {
     return { stopped: false, state: readStatus(runDir).state };
   }
-  const pids = [raw.pid, sp?.pid].filter((p): p is number => isAlive(p));
+  // status.json and spawn.json are plain files (a crashed worker leaves a stale pid that the OS
+  // may reuse; a cloned repo can ship any pid): only kill processes that run this run's config.
+  const pids: number[] = [];
+  for (const pid of new Set([raw.pid, sp?.pid])) {
+    if (typeof pid === 'number' && isAlive(pid) && await runsConfig(pid, runDir)) pids.push(pid);
+  }
   for (const pid of pids) await killTree(pid);
   const after = readJson<RunStatus>(path.join(runDir, 'status.json'));
   if (after && (after.state === 'done' || after.state === 'failed') && pids.length === 0) {
@@ -390,6 +395,14 @@ export async function stopRun(runDir: string): Promise<{ stopped: boolean; state
   }
   mergeStatus(runDir, { state: 'stopped', step: 'stopped by user', finished: nowIso() });
   return { stopped: true, state: 'stopped' };
+}
+
+/** Does process `pid` run `<runDir>/config.json` (our worker, or the venv launcher in front of it)? */
+async function runsConfig(pid: number, runDir: string): Promise<boolean> {
+  const cmd = await commandLineOf(pid);
+  if (!cmd) return false;
+  const fold = (s: string) => (process.platform === 'win32' || process.platform === 'darwin' ? s.toLowerCase() : s).replace(/\\/g, '/');
+  return fold(cmd).includes(fold(path.join(path.resolve(runDir), 'config.json')));
 }
 
 /** Delete a run folder. A running run is stopped first when force, else this throws. */

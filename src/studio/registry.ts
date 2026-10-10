@@ -3,6 +3,7 @@
 
 import type { HostContext, TabHost } from './context';
 import type { RequestMessage, ResponseMessage, StudioInfo, TabId } from './protocol';
+import { isReallyInside } from './paths';
 import { host as spectra } from './tabs/spectra/host';
 import { host as calcs } from './tabs/calcs/host';
 import { host as runs } from './tabs/runs/host';
@@ -51,13 +52,19 @@ export async function dispatchStudioRequest(
   try {
     switch (msg.method) {
       case 'info': return ok(info());
-      case 'saveFile': return ok(await ctx.saveFile(p));
+      // The webview cannot name a target: it always gets the save dialog. Host code may pass `path`.
+      case 'saveFile': return ok(await ctx.saveFile({ ...p, path: undefined }));
       case 'openFile': return ok(await ctx.openFile(p));
       case 'pickFiles': return ok(await ctx.pickFiles(p ?? {}));
       case 'confirm': return ok(await ctx.confirm(p));
       case 'notify': ctx.notify(p); return ok();
       case 'getConfig': return ok(ctx.config(String(p?.key ?? ''), undefined));
-      case 'runInTerminal': ctx.runInTerminal(p); return ok();
+      case 'runInTerminal': {
+        // Typed into the terminal, never executed: the user presses Enter.
+        const cwd = typeof p?.cwd === 'string' && ctx.workspaceFolders().some(w => isReallyInside(p.cwd, w)) ? p.cwd : undefined;
+        ctx.runInTerminal({ command: String(p?.command ?? ''), name: typeof p?.name === 'string' ? p.name : undefined, cwd, execute: false });
+        return ok();
+      }
       case 'sendToReport':
         ctx.navigate('report');
         ctx.post('incomingFigure', p);

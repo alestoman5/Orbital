@@ -6,6 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HostContext } from '../../context';
+import { isInside, isReallyInside, isUserChosen } from '../../paths';
 import { findGeomSets } from '../../../chem/neaRun';
 import { silvermanBandwidth } from '../../../chem/spectrum';
 import {
@@ -66,20 +67,17 @@ export function readSettings(ctx: HostContext): Settings {
 // ---------------------------------------------------------------- paths
 
 const norm = (p: string) => path.resolve(p);
-const sameOrInside = (child: string, parent: string) => {
-  const rel = path.relative(parent, child);
-  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
-};
+const sameOrInside = isInside;
 
 export function insideWorkspace(ctx: HostContext, p: string): boolean {
-  return ctx.workspaceFolders().some(w => sameOrInside(norm(p), norm(w)));
+  return ctx.workspaceFolders().some(w => isReallyInside(p, w));
 }
 
 /**
  * Paths the user picked (Add files…) or a command passed. Inside a workspace
- * folder anything that exists is fine; outside, only folders and files with
- * a spectrum / output extension (the HostContext cannot tell us whether the
- * webview really got the path from the file picker).
+ * folder anything that exists is fine; outside, only what the user chose in
+ * a dialog or a command passed (see studio/paths.ts), and of that only
+ * folders and files with a spectrum / output extension.
  */
 export function validateExtraPath(ctx: HostContext, p: unknown): { path?: string; error?: string } {
   if (typeof p !== 'string' || !p.trim() || p.includes('\0')) {
@@ -98,6 +96,9 @@ export function validateExtraPath(ctx: HostContext, p: unknown): { path?: string
   }
   if (st.isFile() && st.size > MAX_FILE_BYTES) {
     return { error: `${abs}: larger than ${MAX_FILE_BYTES / 1048576} MB` };
+  }
+  if (!insideWorkspace(ctx, abs) && !isUserChosen(abs)) {
+    return { error: `${abs}: outside the workspace; add it with "Add files…"` };
   }
   if (!insideWorkspace(ctx, abs) && st.isFile() && !FILE_EXT.test(abs)) {
     return { error: `${abs}: outside the workspace and not a spectrum file (.dat, .txt, .csv, .out)` };

@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { spawnSync } from 'child_process';
+import { spawn, spawnSync } from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -207,6 +207,21 @@ describe('ml/runs: listing and reading fixture runs', () => {
     assert.deepStrictEqual(await stopRun(run.dir), { stopped: true, state: 'stopped' });
     await until(() => !isAlive(workerPid) && !isAlive(pid));
     assert.strictEqual(readStatus(run.dir).state, 'stopped');
+  });
+
+  it("stop does not kill a process that is not this run's worker (stale or forged pid)", async () => {
+    const run = createRun(dir, CONFIG);
+    const other = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], { stdio: 'ignore' });
+    try {
+      await until(() => isAlive(other.pid));
+      fs.writeFileSync(path.join(run.dir, 'status.json'), JSON.stringify({ state: 'running', step: 'x', pid: other.pid }));
+      fs.writeFileSync(path.join(run.dir, 'spawn.json'), JSON.stringify({ pid: other.pid }));
+      await stopRun(run.dir);
+      assert.ok(isAlive(other.pid!), 'the unrelated process must survive');
+      assert.notStrictEqual(readStatus(run.dir).state, 'running');
+    } finally {
+      other.kill();
+    }
   });
 
   it('a worker that dies without a final status is reported as failed', async () => {

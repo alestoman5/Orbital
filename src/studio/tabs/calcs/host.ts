@@ -13,6 +13,7 @@ import * as path from 'path';
 import type { Disposable, HostContext, TabHost } from '../../context';
 import { CALC_STATUSES, CalcCache, CalcGroup, CalcStatus, readCalcGroups, summarizeGroup } from '../../../chem/calcStatus';
 import { matchesAny } from '../runs/glob';
+import { isAllowedPath, isInside, isUserChosen } from '../../paths';
 import type {
   CalcStatusName, CalcTotals, FailedListParams, GroupDetail, GroupRow, ProblemsParams, ProblemsResult, ScanParams, ScanResult, TimeStats
 } from './types';
@@ -25,11 +26,7 @@ const YIELD_EVERY_MS = 40;
 const caseless = process.platform === 'win32' || process.platform === 'darwin';
 const norm = (p: string) => (caseless ? path.resolve(p).toLowerCase() : path.resolve(p));
 
-/** Is `p` equal to or inside `dir`? */
-export function isInside(p: string, dir: string): boolean {
-  const rel = path.relative(norm(dir), norm(p));
-  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
-}
+export { isInside };
 
 function emptyCounts(): Record<CalcStatusName, number> {
   return Object.fromEntries(CALC_STATUSES.map(s => [s, 0])) as Record<CalcStatusName, number>;
@@ -153,7 +150,7 @@ export function createCalcsHost(opts: { debounceMs?: number } = {}): TabHost {
   };
 
   const allowed = (ctx: HostContext, dir: string) =>
-    ctx.workspaceFolders().some(w => isInside(dir, w)) || [...picked].some(p => isInside(dir, p));
+    isAllowedPath(ctx, dir) || [...picked].some(p => isInside(dir, p));
 
   /** Apply queued watcher events to the file lists; returns how many paths changed. */
   const flush = (ctx: HostContext): number => {
@@ -206,7 +203,7 @@ export function createCalcsHost(opts: { debounceMs?: number } = {}): TabHost {
       if (typeof f !== 'string' || !f) continue;
       const dir = path.resolve(f);
       if (roots.some(r => isInside(dir, r))) continue;
-      if (!picked.has(norm(dir)) || !fs.existsSync(dir)) {
+      if ((!picked.has(norm(dir)) && !isUserChosen(dir)) || !fs.existsSync(dir)) {
         skipped.push(dir);
         continue;
       }

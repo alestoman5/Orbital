@@ -296,6 +296,7 @@
         },
         "orcaInp.studio.processPattern": {
           "type": "string",
+          "scope": "machine",
           "default": "(^|[\\\\/\\s\"'])(orca(_\\w+)?|xtb|crest|g16|g09|gaussian|cp2k(\\.\\w+)?|abin|psi4|mpirun|mpiexec|srun|pyscf)(\\.exe)?(?=$|[\\s\"'])|python[\\d.]*(\\.exe)?[\"']?\\s.*(pyscf|run_|ml_worker|from_geometry|from_ensemble|compare_ensembles)",
           "description": "Regular expression (case-insensitive) matched against \"<process name> <command line>\" to pick the calculation processes the Studio's Runs tab lists: by default ORCA (orca, orca_*), xtb, crest, Gaussian, CP2K, ABIN, Psi4, mpirun/srun, and Python running PySCF or run_*/ml_worker/from_geometry/from_ensemble/compare_ensembles scripts."
         },
@@ -406,7 +407,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "node -e \"require('fs').rmSync('out',{recursive:true,force:true})\" && npm run compile",
     "compile": "tsc -p ./ && tsc -p webview --noEmit && node esbuild.mjs",
     "watch": "tsc -watch -p ./",
     "watch:webview": "node esbuild.mjs --watch",

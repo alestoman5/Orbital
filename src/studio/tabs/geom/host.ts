@@ -9,6 +9,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HostContext, TabHost } from '../../context';
+import { isAllowedPath, isInside } from '../../paths';
 import { parseDat, DatTable } from '../../../chem/datFile';
 import { WatchedCoordinate, parseWatchSpec } from '../../../chem/geometry';
 import {
@@ -95,18 +96,13 @@ const norm = (p: string) => {
   return process.platform === 'win32' ? r.toLowerCase() : r;
 };
 
-function inside(file: string, folder: string): boolean {
-  const rel = path.relative(norm(folder), norm(file));
-  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
-}
-
 /** Absolute path of an existing file inside a workspace folder (or picked by the user); throws otherwise. */
 export function checkFile(p: unknown, ctx: HostContext): string {
   if (typeof p !== 'string' || p.trim() === '') {
     throw new Error('Expected a file path.');
   }
   const abs = path.resolve(p);
-  if (!picked.has(norm(abs)) && !ctx.workspaceFolders().some(f => inside(abs, f))) {
+  if (!picked.has(norm(abs)) && !isAllowedPath(ctx, abs)) {
     throw new Error(`${p} is outside the workspace.`);
   }
   const st = fs.statSync(abs, { throwIfNoEntry: false });
@@ -129,7 +125,7 @@ function int(v: unknown, fallback: number, lo: number, hi: number): number {
 }
 
 function relTo(ctx: HostContext, p: string): string {
-  const f = ctx.workspaceFolders().find(w => inside(p, w));
+  const f = ctx.workspaceFolders().find(w => isInside(p, w));
   return f ? path.relative(f, p).replace(/\\/g, '/') : p;
 }
 

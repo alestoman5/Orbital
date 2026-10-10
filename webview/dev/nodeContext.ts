@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import type { Disposable, FindFilesOptions, HostContext } from '../../src/studio/context';
 import type { TabId } from '../../src/studio/protocol';
+import { isInside } from '../../src/studio/paths';
 
 export interface DevOptions {
   workspace: string;
@@ -138,7 +139,10 @@ export function createNodeContext(tab: TabId, o: DevOptions): HostContext {
     post: (name, payload) => o.broadcast(tab, name, payload),
     navigate: (t, args) => o.broadcast('studio', 'navigate', { tab: t, args }),
     async saveFile(p) {
-      const target = p.path ?? path.join(o.workspace, '.orbital', 'dev-exports', p.defaultName);
+      const target = path.resolve(p.path ?? path.join(o.workspace, '.orbital', 'dev-exports', path.basename(p.defaultName)));
+      if (!isInside(target, o.workspace)) {
+        throw new Error(`dev harness: refusing to write outside the workspace: ${target}`);
+      }
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, p.encoding === 'base64' ? Buffer.from(p.data, 'base64') : p.data);
       log(`saved ${target}`);

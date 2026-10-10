@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import type { HostContext } from './context';
 import type { EventMessage, NavigatePayload, StudioInfo, TabId, ToHost, ToWebview } from './protocol';
 import { TAB_HOSTS, dispatchStudioRequest, dispatchTabRequest } from './registry';
+import { allowUserPaths, pathsInArgs } from './paths';
 import { createVscodeContext, studioLog, trackActiveEditor } from './vscodeContext';
 
 export class StudioPanel {
@@ -14,6 +15,7 @@ export class StudioPanel {
   private readonly disposables: vscode.Disposable[] = [];
   private readonly contexts = new Map<TabId, HostContext>();
   private ready = false;
+  private disposed = false;
   private readonly queue: ToWebview[] = [];
 
   /** Opens (or reveals) the studio, optionally on a tab with arguments. */
@@ -24,6 +26,8 @@ export class StudioPanel {
       StudioPanel.current = new StudioPanel(extensionUri);
     }
     if (nav) {
+      // Command arguments come from a menu or the explorer: the user chose these paths.
+      allowUserPaths(pathsInArgs(nav.args));
       StudioPanel.current.navigate(nav.tab, nav.args);
     }
     return StudioPanel.current;
@@ -84,6 +88,9 @@ export class StudioPanel {
   }
 
   private async onMessage(m: ToHost): Promise<void> {
+    if (this.disposed) {
+      return;
+    }
     if (m.kind === 'ready') {
       this.ready = true;
       this.queue.splice(0).forEach(q => void this.panel.webview.postMessage(q));
@@ -95,11 +102,14 @@ export class StudioPanel {
     const res = m.channel === 'studio'
       ? await dispatchStudioRequest(m, t => this.contextFor(t), () => this.info())
       : await dispatchTabRequest(m, t => this.contextFor(t));
-    void this.panel.webview.postMessage(res);
+    this.send(res);
   }
 
   /** Events wait until the webview said 'ready' (navigate right after creation would be lost). */
   private send(msg: ToWebview): void {
+    if (this.disposed) {
+      return;   // a long request finished after the panel was closed
+    }
     if (this.ready) {
       void this.panel.webview.postMessage(msg);
     } else {
@@ -138,6 +148,10 @@ export class StudioPanel {
   }
 
   private dispose(): void {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
     StudioPanel.current = undefined;
     this.disposables.splice(0).forEach(d => d.dispose());
     this.panel.dispose();

@@ -63,7 +63,7 @@
           }
           return;
         }
-        fetch('/rpc', { method: 'POST', body: JSON.stringify(msg) })
+        fetch('/rpc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(msg) })
           .then(r => r.json())
           .then(res => window.postMessage(res, '*'))
           .catch(e => window.postMessage({ kind: 'response', id: msg.id, ok: false, error: String(e) }, '*'));

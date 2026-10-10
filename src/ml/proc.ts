@@ -14,6 +14,27 @@ export function isAlive(pid: unknown): boolean {
 }
 
 /**
+ * Command line of a running process, or undefined when it is gone or cannot be read.
+ * Windows: Win32_Process via PowerShell. POSIX: `ps -o args= -p <pid>`.
+ */
+export function commandLineOf(pid: number, timeoutMs = 10000): Promise<string | undefined> {
+  if (!isAlive(pid)) return Promise.resolve(undefined);
+  return new Promise(resolve => {
+    const done = (err: Error | null, stdout: string) => {
+      const s = String(stdout ?? '').trim();
+      resolve(err || !s ? undefined : s);
+    };
+    if (process.platform === 'win32') {
+      execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command',
+        `(Get-CimInstance Win32_Process -Filter "ProcessId=${Math.floor(pid)}").CommandLine`],
+      { windowsHide: true, timeout: timeoutMs }, done);
+    } else {
+      execFile('ps', ['-o', 'args=', '-p', String(Math.floor(pid))], { timeout: timeoutMs }, done);
+    }
+  });
+}
+
+/**
  * Kill a process and its children. Windows: `taskkill /PID <pid> /T /F`. POSIX: SIGTERM (then
  * SIGKILL after graceMs) to the process group when the process leads one (detached spawn), else
  * to the process. Resolves when done; never throws.

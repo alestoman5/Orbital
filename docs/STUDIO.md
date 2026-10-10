@@ -11,6 +11,7 @@ src/studio/
   registry.ts        TAB_HOSTS + request dispatchers (shared by panel and dev harness)
   panel.ts           the VS Code WebviewPanel, CSP, command orcaInp.openStudio
   vscodeContext.ts   HostContext implemented with the VS Code API
+  paths.ts           path policy: isInside, isAllowedPath, user-chosen paths (dialogs, command args)
   tabs/<tab>/host.ts   host side of a tab: { id, methods, activate? }
   tabs/<tab>/types.ts  request/response/event types of that tab (types only)
 webview/
@@ -48,11 +49,11 @@ Dev harness URLs: `http://localhost:5173/?tab=geom&theme=light&args=<url-encoded
 
 **Host side.**
 - Never import `vscode` from `src/studio/tabs/**` or from modules they import (that includes `src/features/*.ts`, which do). Use the `HostContext`. Pure modules in `src/chem`, `src/outparser`, `src/inputs` etc. are fine.
-- Validate params. They come from the webview. Paths must resolve inside a workspace folder (or be a file the user picked).
+- Validate params. They come from the webview. Paths must resolve inside a workspace folder (or be a file the user picked). Use `isAllowedPath(ctx, p)` from `src/studio/paths.ts`: it compares real paths (a symlink out of the workspace is outside) and accepts what the user chose in a `pickFiles` dialog or what a command passed in its arguments.
 - Return plain JSON (numbers, strings, arrays, objects). Send large numeric arrays as `number[]` and downsample to what a plot needs: a 1000–4000 point grid is plenty.
 - Cache parsed files by `(path, mtimeMs)`. Ensembles have 10⁵ geometries, so stream or read once.
 - Settings are `ctx.config('studio.<name>', default)`. Declare each one in `contrib/<tab>.json` with the same default.
-- Also on the context: `runInTerminal({ command, cwd, name?, execute? })` (also a studio method for the webview) and `activeEditorPath()` (the last focused file editor).
+- Also on the context: `runInTerminal({ command, cwd, name?, execute? })` and `activeEditorPath()` (the last focused file editor). The webview's studio methods are restricted: `saveFile` always shows the save dialog (only host code may pass `path`), and `runInTerminal` only types the command (`execute` is forced off, `cwd` must be inside the workspace).
 
 **Webview side.**
 - Build the UI from `webview/src/ui/components.ts` (`split`, `card`, `kpi`, `dataTable`, `field`, `select`, `toggle`, `segmented`, `subTabs`, `section`, `emptyState`, `skeleton`, `callout`, `button`, `badge`, `stackedBar`, `toast`, `busy`) and `h()` from `ui/dom.ts`.

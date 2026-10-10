@@ -57,6 +57,8 @@ export const view: TabView = {
     let listTimer: ReturnType<typeof setInterval> | undefined;
     let procBusy = false;
     let tailBusy = false;
+    /** Newest tail request: a click supersedes a pending poll instead of being dropped. */
+    let tailSeq = 0;
     let lastUpdate = 0;
 
     const tabs = h('div');
@@ -323,25 +325,26 @@ export const view: TabView = {
     }
 
     async function loadTail(poll = false): Promise<void> {
-      if (!selectedLog || tailBusy) return;
+      if (!selectedLog || (poll && tailBusy)) return;
+      const seq = ++tailSeq;
       tailBusy = true;
       const asked = selectedLog;
       if (!poll && !tail) renderViewer(true);
       try {
         const since = poll && tail ? { size: tail.size, mtimeMs: tail.mtimeMs } : undefined;
         const res = await ctx.rpc<TailResult>('tail', { path: asked, lines: tailLines, since });
-        if (asked !== selectedLog) return;
+        if (seq !== tailSeq) return;
         tailError = undefined;
         if (res.unchanged) return;
         const grew = !!tail && res.size !== tail.size;
         tail = res;
         renderViewer(false, poll && grew);
       } catch (e) {
-        if (asked !== selectedLog) return;
+        if (seq !== tailSeq) return;
         tailError = e instanceof Error ? e.message : String(e);
         renderViewer();
       } finally {
-        tailBusy = false;
+        if (seq === tailSeq) tailBusy = false;
       }
     }
 

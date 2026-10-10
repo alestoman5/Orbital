@@ -6,6 +6,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { HostContext, TabHost } from '../../context';
+import { isAllowedPath, isInside } from '../../paths';
 import type { GeometryAtom } from '../../../outparser/types';
 import { parseOrcaOutput } from '../../../outparser/parse';
 import { parseOrcaInput, parseXyz } from '../../../chem/inputFile';
@@ -27,10 +28,7 @@ const norm = (p: string) => {
   return process.platform === 'win32' ? r.toLowerCase() : r;
 };
 
-export function isInside(file: string, folder: string): boolean {
-  const rel = path.relative(norm(folder), norm(file));
-  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
-}
+export { isInside };
 
 /** Throws unless `p` is an absolute path inside a workspace folder or below something the user picked. */
 export function checkPath(p: unknown, ctx: HostContext): string {
@@ -41,7 +39,7 @@ export function checkPath(p: unknown, ctx: HostContext): string {
     throw new Error(`Not an absolute path: ${p}`);
   }
   const abs = path.resolve(p);
-  const ok = ctx.workspaceFolders().some(f => isInside(abs, f)) || [...picked].some(f => isInside(abs, f));
+  const ok = isAllowedPath(ctx, abs) || [...picked].some(f => isInside(abs, f));
   if (!ok) {
     throw new Error(`${abs} is outside the workspace.`);
   }

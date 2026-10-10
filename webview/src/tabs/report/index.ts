@@ -530,8 +530,8 @@ class ReportTab {
     let width = '0.85\\textwidth';
     const fileNote = h('span.rp-hint');
     const updateNote = () => {
-      const exists = this.figures?.inFolder.some(f => f.name.replace(/\.[^.]+$/, '') === name);
-      mount(fileNote, `figures/${name}${p.pdf ? '.pdf' : '.png'}${p.pdf && p.png ? ' (+ .png)' : ''}`, exists ? h('b.rp-warn', null, ' — replaces the existing file') : null);
+      const exists = this.figures?.inFolder.some(f => f.name.replace(/\.[^.]+$/, '').toLowerCase() === name.toLowerCase());
+      mount(fileNote, `figures/${name}${p.pdf ? '.pdf' : '.png'}${p.pdf && p.png ? ' (+ .png)' : ''}`, exists ? h('b.rp-warn', null, ' — replaces the existing file (a copy goes to .orbital/report-backups)') : null);
     };
     updateNote();
     const nameIn = h('input.input.mono', { value: name, oninput: (e: Event) => { name = sanitizeName((e.target as HTMLInputElement).value); updateNote(); } });

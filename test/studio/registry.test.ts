@@ -73,4 +73,21 @@ describe('studio registry', () => {
     );
     assert.deepStrictEqual(log, ['navigate report', 'post incomingFigure {"name":"fig"}']);
   });
+
+  it('never lets the webview pick a save target or execute a terminal command', async () => {
+    const saved: unknown[] = [];
+    const ran: unknown[] = [];
+    const ctx = {
+      ...fakeContext(),
+      saveFile: async (p: unknown) => { saved.push(p); return undefined; },
+      runInTerminal: (p: unknown) => { ran.push(p); }
+    } as HostContext;
+    const info = () => ({ workspaceFolders: ['/ws'], colorTheme: 'dark' as const, platform: 'test', extensionVersion: '0' });
+    await dispatchStudioRequest({ kind: 'request', id: 1, channel: 'studio', method: 'saveFile',
+      params: { defaultName: 'a.txt', data: 'x', path: '/etc/evil' } }, () => ctx, info);
+    assert.strictEqual((saved[0] as { path?: string }).path, undefined);
+    await dispatchStudioRequest({ kind: 'request', id: 2, channel: 'studio', method: 'runInTerminal',
+      params: { command: 'echo hi', execute: true, cwd: '/elsewhere' } }, () => ctx, info);
+    assert.deepStrictEqual(ran[0], { command: 'echo hi', name: undefined, cwd: undefined, execute: false });
+  });
 });

@@ -17,6 +17,7 @@ import {
   writeFigureFiles
 } from '../../../report/compile';
 import { isInside, rememberPicked, resolveUserPath } from '../ml/paths';
+import { isAllowedPath } from '../../paths';
 import type {
   AddFigureParams, AddFigureResponse, CompileResponse, FigureEntry, FiguresResponse, LatexEngine, PdfResponse,
   ReportDoc, SaveParams, SaveResponse, ThumbResponse
@@ -33,6 +34,18 @@ export function engineOf(ctx: HostContext): LatexEngine {
 function storageOr(ctx: HostContext, sub: string): string {
   const s = ctx.storageDir();
   return s ? path.join(s, sub) : path.join(os.tmpdir(), 'orbital', sub);
+}
+
+/** Copy figures/<base>.pdf|png that "Send to report" is about to replace into the backup folder. */
+function backUpFigures(figuresDir: string, base: string, backupDir: string): void {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  for (const ext of ['.pdf', '.png']) {
+    const f = path.join(figuresDir, base + ext);
+    if (fs.existsSync(f)) {
+      fs.mkdirSync(path.join(backupDir, 'figures'), { recursive: true });
+      fs.copyFileSync(f, path.join(backupDir, 'figures', `${base}-${stamp}${ext}`));
+    }
+  }
 }
 
 /** Build folder of one .tex (several reports do not overwrite each other's PDF). */
@@ -224,7 +237,9 @@ export const host: TabHost = {
         const ref = String(p.ref ?? '').trim();
         if (!ref) return { kind: 'missing', tried: [] };
         const doc = parseTex(fs.readFileSync(texPath, 'utf8'));
-        tried = candidates(ref, dir, graphicsPaths(doc.preamble));
+        // A ref may be absolute or climb out with ../ — only read what lies inside the workspace,
+        // next to the .tex, or was chosen by the user.
+        tried = candidates(ref, dir, graphicsPaths(doc.preamble)).filter(f => isAllowedPath(ctx, f, [dir]));
       }
       const file = tried.find(f => fs.existsSync(f) && fs.statSync(f).isFile());
       if (!file) return { kind: 'missing', tried };
@@ -254,6 +269,7 @@ export const host: TabHost = {
       const sec = Number(p.section);
       if (!Number.isInteger(sec) || !doc.sections[sec]) throw new Error(`no section ${p.section}`);
       const dir = path.dirname(texPath);
+      backUpFigures(path.join(dir, 'figures'), sanitizeFigureName(String(p.name ?? '')), storageOr(ctx, 'report-backups'));
       const w = writeFigureFiles(path.join(dir, 'figures'), String(p.name ?? ''), { pdf: p.pdf, png: p.png }, dir);
       const gp = graphicsPaths(doc.preamble);
       const ref = refFor(w.files[0], dir, gp);

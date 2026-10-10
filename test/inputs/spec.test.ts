@@ -119,7 +119,7 @@ describe('inputs: validateSpec', () => {
   it('resolves RI per method family', () => {
     assert.deepStrictEqual(orcaRiKeywords(defaultSpec()), ['RIJCOSX', 'def2/J']);
     assert.deepStrictEqual(orcaRiKeywords(edit(s => { s.method.functional = 'PBE'; })), ['RI', 'def2/J']);
-    assert.deepStrictEqual(orcaRiKeywords(edit(s => { s.method.family = 'ccsd(t)'; })), []);
+    assert.deepStrictEqual(orcaRiKeywords(edit(s => { s.method.family = 'ccsd(t)'; })), ['NoRI']);
     assert.deepStrictEqual(orcaRiKeywords(edit(s => { s.method.family = 'mp2'; s.basis = 'def2-TZVP'; })), ['RIJCOSX', 'def2/J', 'def2-TZVP/C']);
     assert.deepStrictEqual(orcaRiKeywords(edit(s => { s.ri.mode = 'rijk'; })), ['RIJK', 'def2/JK']);
     assert.deepStrictEqual(orcaRiKeywords(edit(s => { s.method.functional = 'r2SCAN-3c'; })), []);

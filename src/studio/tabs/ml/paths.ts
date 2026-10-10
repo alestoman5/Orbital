@@ -4,6 +4,9 @@
 
 import * as path from 'path';
 import type { HostContext } from '../../context';
+import { isAllowedPath, isInside } from '../../paths';
+
+export { isInside };
 
 const picked = new Set<string>();
 
@@ -12,11 +15,6 @@ const norm = (p: string) => (process.platform === 'win32' ? p.toLowerCase() : p)
 /** Remember files the user chose in a dialog (they may live outside the workspace). */
 export function rememberPicked(paths: string[]): void {
   for (const p of paths) picked.add(norm(path.resolve(p)));
-}
-
-export function isInside(child: string, parent: string): boolean {
-  const rel = path.relative(norm(path.resolve(parent)), norm(path.resolve(child)));
-  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
 }
 
 /**
@@ -29,6 +27,6 @@ export function resolveUserPath(ctx: HostContext, p: unknown, extraRoots: string
   const folders = ctx.workspaceFolders();
   const abs = path.resolve(folders[0] ?? process.cwd(), p.trim());
   if (picked.has(norm(abs))) return abs;
-  if ([...folders, ...extraRoots].some(f => isInside(abs, f))) return abs;
+  if (isAllowedPath(ctx, abs, extraRoots)) return abs;
   throw new Error(`path is outside the workspace: ${abs}`);
 }

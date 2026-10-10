@@ -54,9 +54,7 @@ export function orcaRiKeywords(spec: InputSpec): string[] {
     case 'rijcosx': out.push('RIJCOSX', auxJ); break;
     case 'rijk': out.push('RIJK', /^def2\/J$/i.test(auxJ) ? 'def2/JK' : auxJ); break;
     case 'none':
-      if (fam === 'dft') {
-        out.push('NoRI'); // ORCA 6 switches RI-J / RIJCOSX on by default for DFT
-      }
+      out.push('NoRI'); // ORCA 6 switches RI-J / RIJCOSX on by default for DFT and HF SCF steps
       break;
   }
   const needsC = fam === 'dlpno-ccsd(t)' || (fam === 'mp2' && mode !== 'none') || kind === 'double-hybrid';

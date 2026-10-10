@@ -43,6 +43,9 @@ export function run(cmd: string, args: string[], timeoutMs = 10000): Promise<Exe
   });
 }
 
+/** Editors, shells of the desktop and system services: never signalled from the Runs tab. */
+const PROTECTED_NAME = /^(code|code - insiders|codium|cursor|electron|explorer|dwm|svchost|wininit|winlogon|csrss|smss|services|lsass|system|init|systemd|launchd|sshd|loginwindow|windowserver)(\.exe)?$/i;
+
 const LINUX_COLS = ['pid', 'ppid', 'user:32', 'pcpu', 'pmem', 'rss', 'nlwp', 'etime', 'args'];
 const BSD_COLS = ['pid', 'ppid', 'user', 'pcpu', 'pmem', 'rss', 'etime', 'args'];
 const keyOf = (c: string) => c.split(':')[0];
@@ -207,6 +210,9 @@ export function createRunsHost(): TabHost {
         const listed = await processes(ctx);
         const row = listed.rows.find(r => r.pid === pid);
         if (!row) return { ok: false, message: `PID ${pid} is no longer running (or no longer matches the process pattern)` };
+        // A too broad processPattern must not let a click take down the editor or the system
+        // (taskkill /T also ends every child process).
+        if (PROTECTED_NAME.test((row.name ?? '').split(/[\\/]/).pop() ?? '')) return { ok: false, message: `refusing to signal ${row.name} (PID ${pid}): not a calculation process` };
         if (process.platform === 'win32') {
           try {
             await run('taskkill', ['/PID', String(pid), '/T', ...(signal === 'KILL' ? ['/F'] : [])], 10000);

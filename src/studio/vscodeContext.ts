@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import type { Disposable, FindFilesOptions, HostContext } from './context';
 import type { TabId } from './protocol';
 import { naturalCompare } from '../features/io';
+import { allowUserPaths } from './paths';
 
 export interface PanelHooks {
   post(channel: TabId | 'studio', name: string, payload?: unknown): void;
@@ -95,7 +96,9 @@ export function createVscodeContext(tab: TabId, extensionPath: string, hooks: Pa
         filters: params.filters,
         defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri
       });
-      return (picked ?? []).map(u => u.fsPath);
+      const paths = (picked ?? []).map(u => u.fsPath);
+      allowUserPaths(paths);
+      return paths;
     },
     async confirm(params) {
       const choice = await vscode.window.showWarningMessage(params.message, { modal: true, detail: params.detail }, params.action);
