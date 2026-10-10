@@ -112,6 +112,16 @@ export interface SendToReportPayload {
   png?: string;
 }
 
+export interface RunInTerminalParams {
+  command: string;
+  /** Working directory (absolute). */
+  cwd?: string;
+  /** Terminal name; a terminal with that name is reused. */
+  name?: string;
+  /** Press Enter after typing the command (default false: the user reviews it first). */
+  execute?: boolean;
+}
+
 export interface StudioInfo {
   /** Absolute workspace folder paths. */
   workspaceFolders: string[];
@@ -135,4 +145,5 @@ export interface StudioMethods {
   /** Value of an `orcaInp.*` setting, key without the prefix, e.g. "studio.spectraGlobs". */
   getConfig: { params: { key: string }; result: unknown };
   sendToReport: { params: SendToReportPayload; result: void };
+  runInTerminal: { params: RunInTerminalParams; result: void };
 }

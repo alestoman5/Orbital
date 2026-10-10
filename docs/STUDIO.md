@@ -52,6 +52,7 @@ Dev harness URLs: `http://localhost:5173/?tab=geom&theme=light&args=<url-encoded
 - Return plain JSON (numbers, strings, arrays, objects). Send large numeric arrays as `number[]` and downsample to what a plot needs: a 1000–4000 point grid is plenty.
 - Cache parsed files by `(path, mtimeMs)`. Ensembles have 10⁵ geometries, so stream or read once.
 - Settings are `ctx.config('studio.<name>', default)`. Declare each one in `contrib/<tab>.json` with the same default.
+- Also on the context: `runInTerminal({ command, cwd, name?, execute? })` (also a studio method for the webview) and `activeEditorPath()` (the last focused file editor).
 
 **Webview side.**
 - Build the UI from `webview/src/ui/components.ts` (`split`, `card`, `kpi`, `dataTable`, `field`, `select`, `toggle`, `segmented`, `subTabs`, `section`, `emptyState`, `skeleton`, `callout`, `button`, `badge`, `stackedBar`, `toast`, `busy`) and `h()` from `ui/dom.ts`.
@@ -60,6 +61,7 @@ Dev harness URLs: `http://localhost:5173/?tab=geom&theme=light&args=<url-encoded
 - Every plot goes through `webview/src/charts` (`render`, `figureToolbar`, `toSvg/toPdf/toPng/toCsv`). Do not draw charts by hand.
 - Use the empty, loading and error states: `emptyState(...)` when there is no data, `skeleton()` while loading, `toast(..., 'error')` or `callout('bad', ...)` on failure. Never leave a blank area.
 - Persist small UI state (selections, form values) with `ctx.state` / `ctx.setState`.
+- `ctx.toast(message, level, { label, run })` shows a toast with an action button.
 - Must work in dark, light and high-contrast themes, and down to 760 px panel width.
 
 **Publication-quality figures.** Axis labels use the "quantity / unit" form (`λ / nm`, `E / eV`, `σ / cm^{2} molecule^{−1}`). The default export preset is 'publication', and journal sizes come from `JOURNAL_SIZES`. CI bands are drawn under their curves and share a `group` with them. Experiment is drawn dashed in `EXP_COLOR` and a reference curve in `REF_COLOR`.

@@ -1,13 +1,13 @@
 // Commands for the working directories of the uv-vis NEA scripts
-// (https://github.com/alestoman5/uv-vis, scripts/): progress overview, quick
-// access to the outputs, and a command-line builder for the three entry
-// scripts. The spectrum preview of such a directory lives in spectrumPanel.ts.
+// (https://github.com/alestoman5/uv-vis, scripts/): quick access to the
+// outputs and a command-line builder for the three entry scripts. The
+// progress overview lives in the Orbital Studio Calculations tab.
 
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { GEOM_STATUSES, countXyzFrames, findGeomSets, readGeomSet } from '../chem/neaRun';
-import { openFile, pickFolder, showMarkdown, targetPath } from './io';
+import { findGeomSets } from '../chem/neaRun';
+import { openFile, targetPath } from './io';
 import { NeaScript, buildNeaCommand } from '../inputs/nea';
 
 function runFolder(uri?: vscode.Uri): string | undefined {
@@ -16,56 +16,6 @@ function runFolder(uri?: vscode.Uri): string | undefined {
     return undefined;
   }
   return fs.existsSync(p) && fs.statSync(p).isDirectory() ? p : path.dirname(p);
-}
-
-function readJson(file: string): Record<string, unknown> | undefined {
-  try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
-  } catch {
-    return undefined;
-  }
-}
-
-export async function neaOverview(uri?: vscode.Uri): Promise<void> {
-  const folder = runFolder(uri) ?? (await pickFolder('NEA working directory'))?.fsPath;
-  if (!folder) {
-    return;
-  }
-  const sets = findGeomSets(folder);
-  if (sets.length === 0) {
-    vscode.window.showErrorMessage(`No geom_NNNN directories in ${folder} (or its geoms/, <label>/geoms/).`);
-    return;
-  }
-  const md: string[] = [`# NEA run: ${path.basename(folder)}`, ''];
-  const cfg = readJson(path.join(folder, 'run_config.json'));
-  if (cfg) {
-    const keys = ['method', 'basis', 'nstates', 'charge', 'mult', 'sampling', 'nsamples', 'reference', 'written'];
-    md.push(...keys.filter(k => cfg[k] !== undefined && cfg[k] !== null).map(k => `- **${k}**: ${JSON.stringify(cfg[k])}`));
-    if (typeof cfg.command === 'string') {
-      md.push('', '```bash', cfg.command, '```');
-    }
-    md.push('');
-  }
-  for (const dir of sets) {
-    const s = readGeomSet(dir);
-    const label = path.relative(folder, dir).replace(/\/?geoms$/, '') || '.';
-    const total = GEOM_STATUSES.reduce((n, k) => n + s.byStatus[k].length, 0);
-    md.push(`## ${label}`, '');
-    const ens = path.join(dir === folder ? folder : path.dirname(dir), 'ensemble.xyz');
-    if (fs.existsSync(ens)) {
-      md.push(`ensemble.xyz: ${countXyzFrames(fs.readFileSync(ens, 'utf8'))} geometries`, '');
-    }
-    md.push('| status | count |', '|---|---:|', ...GEOM_STATUSES.map(k => `| ${k} | ${s.byStatus[k].length} |`), `| **total** | ${total} |`, '');
-    const t = s.adcTimes;
-    if (t.length > 0) {
-      md.push(`ADC time: median ${t[Math.floor(t.length / 2)].toFixed(0)} s, min ${t[0].toFixed(0)} s, max ${t[t.length - 1].toFixed(0)} s`, '');
-    }
-    for (const k of GEOM_STATUSES.filter(k => k !== 'ok' && s.byStatus[k].length > 0)) {
-      const links = s.byStatus[k].slice(0, 200).map(g => `[${g}](${vscode.Uri.file(path.join(dir, g, 'run.log')).toString()})`);
-      md.push(`**${k}:** ${links.join(' ')}${s.byStatus[k].length > 200 ? ' …' : ''}`, '');
-    }
-  }
-  await showMarkdown(md.join('\n'));
 }
 
 const OUTPUTS = [

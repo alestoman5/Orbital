@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { lintDocument } from './diagnostics';
 import { OrcaCompletionProvider } from './completion';
@@ -17,12 +19,11 @@ import {
 } from './features/batchCommands';
 import { RunsTreeProvider } from './features/runsTree';
 import { showSpectrumPreview } from './features/spectrumPanel';
-import { showDatPlot } from './features/mdPlot';
-import { neaCommand, neaOpenOutputs, neaOverview } from './features/neaRuns';
+import { neaCommand, neaOpenOutputs } from './features/neaRuns';
 import { OutUnitHoverProvider } from './features/unitHover';
 import { loadOutput, runFilesFor, targetPath } from './features/io';
 import { summarizeRun } from './features/runSummary';
-import { registerStudio } from './studio/panel';
+import { openStudio, registerStudio } from './studio/panel';
 
 const LANGUAGE_ID = 'orca-inp';
 
@@ -84,8 +85,20 @@ export function activate(context: vscode.ExtensionContext): void {
     ['orcaInp.exportPyneapples', (uri?: vscode.Uri) => exportPyneapples(uri)],
     ['orcaInp.boltzmannWeights', (uri?: vscode.Uri, uris?: vscode.Uri[]) => boltzmannWeightsCommand(uri, uris)],
     ['orcaInp.previewSpectrum', (uri?: vscode.Uri) => showSpectrumPreview(uri)],
-    ['orcaInp.plotDat', (uri?: vscode.Uri) => showDatPlot(uri)],
-    ['orcaInp.neaOverview', (uri?: vscode.Uri) => neaOverview(uri)],
+    ['orcaInp.plotDat', (uri?: vscode.Uri) => {
+      const p = targetPath(uri);
+      if (p) {
+        openStudio(context.extensionUri, 'geom', { dat: p });
+      }
+    }],
+    ['orcaInp.neaOverview', (uri?: vscode.Uri) => {
+      const p = targetPath(uri);
+      openStudio(context.extensionUri, 'calcs', p ? { folder: fs.existsSync(p) && fs.statSync(p).isDirectory() ? p : path.dirname(p) } : undefined);
+    }],
+    ['orcaInp.newInput', (uri?: vscode.Uri) => {
+      const p = targetPath(uri);
+      openStudio(context.extensionUri, 'inputs', p && /\.(xyz|inp|out)$/i.test(p) ? { geometryFile: p } : undefined);
+    }],
     ['orcaInp.neaOpenOutputs', (uri?: vscode.Uri) => neaOpenOutputs(uri)],
     ['orcaInp.neaCommand', (uri?: vscode.Uri, uris?: vscode.Uri[]) => neaCommand(uri, uris)],
     ['orcaInp.runActions', (uri?: vscode.Uri) => runActions(uri)],

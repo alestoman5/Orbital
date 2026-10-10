@@ -57,6 +57,7 @@ export async function dispatchStudioRequest(
       case 'confirm': return ok(await ctx.confirm(p));
       case 'notify': ctx.notify(p); return ok();
       case 'getConfig': return ok(ctx.config(String(p?.key ?? ''), undefined));
+      case 'runInTerminal': ctx.runInTerminal(p); return ok();
       case 'sendToReport':
         ctx.navigate('report');
         ctx.post('incomingFigure', p);

@@ -106,8 +106,31 @@ export function createVscodeContext(tab: TabId, extensionPath: string, hooks: Pa
         : params.level === 'warning' ? vscode.window.showWarningMessage : vscode.window.showInformationMessage;
       void show(params.message);
     },
+    runInTerminal(params) {
+      const existing = params.name ? vscode.window.terminals.find(t => t.name === params.name) : undefined;
+      const term = existing ?? vscode.window.createTerminal({ name: params.name ?? 'Orbital', cwd: params.cwd });
+      term.show();
+      term.sendText(params.command, params.execute ?? false);
+    },
+    activeEditorPath: () => lastEditorPath(),
     log
   };
+}
+
+let lastEditor: string | undefined;
+/** The active text editor's file, or the last one when the studio panel itself has focus. */
+function lastEditorPath(): string | undefined {
+  const doc = vscode.window.activeTextEditor?.document;
+  if (doc?.uri.scheme === 'file') {
+    lastEditor = doc.uri.fsPath;
+  }
+  return lastEditor;
+}
+
+/** Track the last file editor so activeEditorPath() still knows it after focus moved to the studio. */
+export function trackActiveEditor(context: vscode.ExtensionContext): void {
+  lastEditorPath();
+  context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(() => lastEditorPath()));
 }
 
 export { log as studioLog };

@@ -377,5 +377,17 @@ select.input { padding-right: 24px; cursor: pointer; }
   transition: opacity 300ms, transform 300ms;
 }
 .toast .icon { color: var(--tone); }
+.toast-action {
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  color: var(--fg-strong);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.toast-action:hover { background: color-mix(in srgb, var(--tone) 22%, transparent); }
 .toast.out { opacity: 0; transform: translateY(6px); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } }

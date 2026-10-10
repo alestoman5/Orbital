@@ -8,6 +8,7 @@ import type {
   NotifyParams,
   OpenFileParams,
   PickFilesParams,
+  RunInTerminalParams,
   SaveFileParams,
   SaveFileResult,
   TabId
@@ -57,6 +58,10 @@ export interface HostContext {
   pickFiles(params: PickFilesParams): Promise<string[]>;
   confirm(params: ConfirmParams): Promise<boolean>;
   notify(params: NotifyParams): void;
+  /** Types a command into an integrated terminal (dev harness: logs it). */
+  runInTerminal(params: RunInTerminalParams): void;
+  /** File of the active (or most recently active) text editor, if any. */
+  activeEditorPath(): string | undefined;
   /** Line in the "Orbital Studio" output channel (stderr in the dev harness). */
   log(message: string): void;
 }

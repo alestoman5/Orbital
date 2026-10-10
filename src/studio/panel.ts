@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 import type { HostContext } from './context';
 import type { EventMessage, NavigatePayload, StudioInfo, TabId, ToHost, ToWebview } from './protocol';
 import { TAB_HOSTS, dispatchStudioRequest, dispatchTabRequest } from './registry';
-import { createVscodeContext, studioLog } from './vscodeContext';
+import { createVscodeContext, studioLog, trackActiveEditor } from './vscodeContext';
 
 export class StudioPanel {
   private static current: StudioPanel | undefined;
@@ -145,6 +145,7 @@ export class StudioPanel {
 }
 
 export function registerStudio(context: vscode.ExtensionContext): void {
+  trackActiveEditor(context);
   context.subscriptions.push(
     vscode.commands.registerCommand('orcaInp.openStudio', (tab?: TabId, args?: unknown) =>
       StudioPanel.show(context.extensionUri, typeof tab === 'string' ? { tab, args } : undefined)

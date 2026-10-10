@@ -22,7 +22,7 @@ export interface ViewContext {
   /** Base URL of out/webview/ (for pdf.worker.min.mjs etc.), ends with '/'. */
   readonly assetBase: string;
   /** Short non-modal message in the studio's corner. */
-  toast(message: string, level?: 'info' | 'success' | 'warning' | 'error'): void;
+  toast(message: string, level?: 'info' | 'success' | 'warning' | 'error', action?: { label: string; run(): void }): void;
   /** Switch to another tab. */
   navigate(tab: TabId, args?: unknown): void;
   /** Buttons shown on the right of the tab header (replaces the previous ones). */

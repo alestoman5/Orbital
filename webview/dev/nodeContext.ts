@@ -159,6 +159,10 @@ export function createNodeContext(tab: TabId, o: DevOptions): HostContext {
       log(`${p.level}: ${p.message}`);
       o.broadcast('studio', 'devNotify', p);
     },
+    runInTerminal(p) {
+      log(`runInTerminal (${p.cwd ?? o.workspace}): ${p.command}`);
+    },
+    activeEditorPath: () => undefined,
     log
   };
 }

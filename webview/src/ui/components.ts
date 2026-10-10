@@ -289,13 +289,21 @@ export function dataTable<R>(o: TableOptions<R>): HTMLElement {
 // --- feedback ---------------------------------------------------------------
 
 let toastHost: HTMLElement | undefined;
-export function toast(message: string, level: 'info' | 'success' | 'warning' | 'error' = 'info'): void {
+export interface ToastAction {
+  label: string;
+  run(): void;
+}
+
+/** Corner message; with an action it stays longer and shows a button (e.g. "Show in Calculations"). */
+export function toast(message: string, level: 'info' | 'success' | 'warning' | 'error' = 'info', action?: ToastAction): void {
   toastHost ??= document.body.appendChild(h('div.toasts', { role: 'status', 'aria-live': 'polite' }));
   const tone: Tone = level === 'success' ? 'ok' : level === 'warning' ? 'warn' : level === 'error' ? 'bad' : 'info';
-  const t = h('div.toast', { class: `tone-${tone}` }, icon(tone === 'ok' ? 'check' : tone === 'bad' ? 'error' : tone === 'warn' ? 'warning' : 'info'), h('span', null, message));
+  const t = h('div.toast', { class: `tone-${tone}` }, icon(tone === 'ok' ? 'check' : tone === 'bad' ? 'error' : tone === 'warn' ? 'warning' : 'info'), h('span', null, message),
+    action ? h('button.toast-action', { type: 'button', onclick: () => { t.remove(); action.run(); } }, action.label) : null);
   toastHost.appendChild(t);
-  setTimeout(() => t.classList.add('out'), level === 'error' ? 7000 : 3500);
-  setTimeout(() => t.remove(), level === 'error' ? 7400 : 3900);
+  const life = action ? 9000 : level === 'error' ? 7000 : 3500;
+  setTimeout(() => t.classList.add('out'), life);
+  setTimeout(() => t.remove(), life + 400);
 }
 
 /** Run an async action with a busy state on its button and a toast on failure. */
