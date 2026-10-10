@@ -195,10 +195,19 @@ const KNOWN_AXES: [RegExp, string][] = [
   [/^time\s*\[?\(?fs\)?\]?$/i, 't / fs'],
   [/^time\s*\[?\(?ps\)?\]?$/i, 't / ps'],
   [/^temperature$/i, 'T / K'],
-  [/^t-average$/i, '⟨T⟩ / K']
+  [/^t-average$/i, 'T_{avg} / K'],
+  // ABIN energies.dat / est_energy.dat columns are in Hartree
+  [/^e-potential$/i, 'E_{pot} / E_{h}'],
+  [/^e-kinetic$/i, 'E_{kin} / E_{h}'],
+  [/^e-total$/i, 'E_{tot} / E_{h}'],
+  [/^e-total-avg$/i, 'E_{tot,avg} / E_{h}'],
+  [/^e-primitive$/i, 'E_{prim} / E_{h}'],
+  [/^e-virial$/i, 'E_{vir} / E_{h}'],
+  [/^cumulavg_prim$/i, 'E_{prim,avg} / E_{h}'],
+  [/^cumulavg_vir$/i, 'E_{vir,avg} / E_{h}']
 ];
 
-/** Axis label from a column name: "Time[fs]" → "t / fs", "E-pot[eV]" → "E-pot / eV", others unchanged. */
+/** Axis label from a column name: "Time[fs]" → "t / fs", "E-pot[eV]" → "E-pot / eV", known ABIN columns ("E-Total" → "E_{tot} / E_{h}"), others unchanged. */
 export function axisFromName(name: string): string {
   for (const [re, label] of KNOWN_AXES) {
     if (re.test(name.trim())) return label;

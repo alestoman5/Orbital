@@ -59,8 +59,10 @@ export function trajectoryView(ctx: ViewContext): SubView {
     initialSize: st.size,
     caption: () => (data ? `${data.label}: ${data.series.map(s => s.name).join(', ')} vs ${data.columns[0]}; dashed: least-squares fit over the shown range.` : ''),
     onLayoutChange: (preset, size) => {
+      // switching the preset alone keeps the default size (it depends on the plot); a picked size sticks
+      const cur = figure()?.size;
+      if (!cur || Math.abs(cur.widthIn - size.widthIn) > 1e-3 || Math.abs(cur.heightIn - size.heightIn) > 1e-3) st.size = size;
       st.preset = preset;
-      st.size = size;
       save();
       draw();
     }
@@ -288,6 +290,7 @@ export function trajectoryView(ctx: ViewContext): SubView {
     renderColumns();
     renderStats();
     const fig = figure();
+    toolbar.dispatchEvent(new Event('focusin')); // the size picker re-reads the default size (it grows with the columns)
     if (!fig) {
       handle?.dispose();
       handle = undefined;
@@ -299,7 +302,7 @@ export function trajectoryView(ctx: ViewContext): SubView {
           : emptyState('runs', 'No columns shown', 'Tick at least one column on the left.'));
       return;
     }
-    plotBox.style.height = st.preset === 'screen' ? `${40 + PANEL_PX * fig.panels.length}px` : '';
+    plotBox.style.height = `${40 + PANEL_PX * fig.panels.length}px`; // the publication preview scales into the same box
     if (handle) {
       handle.update(fig);
     } else {

@@ -197,7 +197,7 @@ describe('geom tab host', () => {
     it('reports the slope per ps for an fs time axis, end − start and decimates', async () => {
       const r = await call<DatViewResult>('datView', { path: dat, maxPoints: 200 }, ctx);
       assert.strictEqual(r.xLabel, 't / fs');
-      assert.deepStrictEqual(r.series.map(s => s.axis), ['E-potential', 'T / K']);
+      assert.deepStrictEqual(r.series.map(s => s.axis), ['E_{pot} / E_{h}', 'T / K']);
       const e = r.series[0];
       assert.strictEqual(e.stats.slopeUnit, 'ps');
       assert.ok(Math.abs(e.stats.slope - 2e-3) < 2e-5, String(e.stats.slope));
@@ -252,7 +252,8 @@ describe('geom analysis helpers', () => {
   it('labels axes from column names', () => {
     assert.strictEqual(axisFromName('Time[fs]'), 't / fs');
     assert.strictEqual(axisFromName('E-pot[eV]'), 'E-pot / eV');
-    assert.strictEqual(axisFromName('E-Total'), 'E-Total');
+    assert.strictEqual(axisFromName('E-Total'), 'E_{tot} / E_{h}');
+    assert.strictEqual(axisFromName('Conserved_quantity_of_thermostat'), 'Conserved_quantity_of_thermostat');
   });
 
   it('infers bonds and projects a linear molecule onto its axis', () => {

@@ -106,8 +106,10 @@ export function distributionsView(ctx: ViewContext): SubView {
     initialSize: st.size,
     caption: () => caption(),
     onLayoutChange: (preset, size) => {
+      // switching the preset alone keeps the default size (it depends on the plot); a picked size sticks
+      const cur = figure()?.size;
+      if (!cur || Math.abs(cur.widthIn - size.widthIn) > 1e-3 || Math.abs(cur.heightIn - size.heightIn) > 1e-3) st.size = size;
       st.preset = preset;
-      st.size = size;
       save();
       drawPlot();
     }
