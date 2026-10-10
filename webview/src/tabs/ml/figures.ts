@@ -77,9 +77,12 @@ export function curveFigure(curves: { label?: string; curve: { n: number; test_m
   const series: Series[] = curves.filter(c => c.curve.length).map(c => ({
     type: 'line' as const, x: c.curve.map(p => p.n), y: c.curve.map(p => p.test_mae), markers: true, label: c.label
   }));
+  // pad the log x range so the end markers are not cut by the frame
+  const ns = curves.flatMap(c => c.curve.map(p => p.n)).filter(n => n > 0);
+  const pad = ns.length ? { min: Math.min(...ns) / 1.12, max: Math.max(...ns) * 1.12 } : {};
   return {
     panels: [{
-      x: { label: 'n_{train}', log: true },
+      x: { label: 'n_{train}', log: true, ...pad },
       y: { label: 'MAE (test set)', log: true },
       legend: curves.length > 1 ? 'top-right' : 'none',
       series
