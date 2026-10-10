@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orbital Studio (dev)</title>
+<link rel="stylesheet" href="/out/webview/studio.css">
+<style>
+  .dev-bar { position: fixed; right: 10px; top: 8px; z-index: 100; display: flex; gap: 4px; font: 11px sans-serif; opacity: .55; }
+  .dev-bar:hover { opacity: 1; }
+  .dev-bar button { font: inherit; padding: 2px 6px; cursor: pointer; }
+  body.dev-shot .dev-bar { display: none; }
+</style>
+</head>
+<body>
+<div id="app" data-asset-base="/out/webview/" data-media-base="/media/"></div>
+<div class="dev-bar">
+  <button onclick="__setTheme('dark')">dark</button>
+  <button onclick="__setTheme('light')">light</button>
+  <button onclick="__setTheme('hc')">hc</button>
+</div>
+<script>if (new URLSearchParams(location.search).has('shot')) document.body.classList.add('dev-shot');</script>
+<script src="/dev-client.js"></script>
+<script src="/out/webview/studio.js"></script>
+</body>
+</html>

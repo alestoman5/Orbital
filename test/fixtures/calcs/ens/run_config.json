@@ -1,0 +1,1 @@
+{"method": "adc(3)", "basis": "aug-cc-pVDZ", "nstates": 2, "command": "python scripts/from_ensemble.py"}

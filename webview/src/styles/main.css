@@ -1,0 +1,12 @@
+/* Studio stylesheet entry (imported by main.ts, bundled to out/webview/studio.css).
+   Tabs and the chart engine import their own CSS from their TS modules. */
+
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
+@import './tokens.css';
+@import './shell.css';
+@import './components.css';
