@@ -1,0 +1,90 @@
+/* Spectra tab. Every selector is scoped to the tab; colors only from tokens.css
+   (series swatches get their color inline from the chart engine palette). */
+
+[data-tab="spectra"] .sp-root { padding: var(--space-4); }
+[data-tab="spectra"] .sp-side,
+[data-tab="spectra"] .sp-main { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+[data-tab="spectra"] .sp-main { gap: var(--space-4); }
+[data-tab="spectra"] .sp-messages:empty { display: none; }
+[data-tab="spectra"] .sp-messages { display: flex; flex-direction: column; gap: var(--space-2); }
+[data-tab="spectra"] .sp-errors { margin: var(--space-1) 0 0; padding-left: var(--space-4); }
+[data-tab="spectra"] .sp-kpis:empty { display: none; }
+
+/* library */
+[data-tab="spectra"] .sp-library .card-body { display: flex; flex-direction: column; gap: var(--space-2); }
+[data-tab="spectra"] .sp-library .table td,
+[data-tab="spectra"] .sp-library .table th { padding-top: 5px; padding-bottom: 5px; white-space: nowrap; }
+[data-tab="spectra"] .sp-library .table td { font-size: var(--font-size-sm); }
+[data-tab="spectra"] .sp-ref {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; padding: 0;
+  border: 0; border-radius: 50%; background: transparent; cursor: pointer; color: var(--muted);
+}
+[data-tab="spectra"] .sp-ref:hover:not(:disabled) { background: var(--surface-3); }
+[data-tab="spectra"] .sp-ref:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+[data-tab="spectra"] .sp-ref:disabled { opacity: 0.3; cursor: default; }
+[data-tab="spectra"] .sp-ref-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 1.5px solid var(--border-strong); box-sizing: border-box;
+  transition: background 120ms var(--ease), border-color 120ms var(--ease);
+}
+[data-tab="spectra"] .sp-ref.on .sp-ref-dot { border: 3.5px solid var(--accent); background: var(--bg); }
+[data-tab="spectra"] .sp-kind { padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--radius-sm); }
+[data-tab="spectra"] .sp-kind:hover .badge { filter: brightness(1.15); outline: 1px solid var(--border-strong); }
+[data-tab="spectra"] .sp-kind:focus-visible { outline: 2px solid var(--focus); }
+[data-tab="spectra"] .sp-name { display: inline-flex; align-items: center; gap: var(--space-1); max-width: 130px; }
+[data-tab="spectra"] .sp-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+[data-tab="spectra"] .sp-name.error { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--bad); }
+[data-tab="spectra"] .sp-warn { width: 13px; height: 13px; color: var(--warn); }
+
+/* option controls */
+[data-tab="spectra"] .section-body { display: flex; flex-direction: column; gap: var(--space-3); }
+[data-tab="spectra"] .sp-range { display: flex; align-items: center; gap: var(--space-2); }
+[data-tab="spectra"] .sp-range .sp-range-input { width: 92px; }
+[data-tab="spectra"] .sp-toggles { display: flex; flex-direction: column; gap: var(--space-2); }
+[data-tab="spectra"] .sp-h { display: flex; align-items: center; gap: var(--space-2); }
+[data-tab="spectra"] .sp-h .sp-h-input { width: 80px; }
+[data-tab="spectra"] .sp-slider { flex: 1; min-width: 80px; accent-color: var(--accent); }
+[data-tab="spectra"] .sp-hint { margin: 0; font-size: var(--font-size-xs); line-height: 1.45; }
+[data-tab="spectra"] .segmented { flex-wrap: wrap; }
+
+/* chart */
+[data-tab="spectra"] .sp-chart { height: 440px; position: relative; }
+[data-tab="spectra"] .sp-chart.tall { height: 560px; }
+[data-tab="spectra"] .sp-chart:has(.chart.publication) { height: auto; min-height: 240px; }
+[data-tab="spectra"] .sp-chart > .empty,
+[data-tab="spectra"] .sp-chart > .skeleton { height: 100%; box-sizing: border-box; }
+[data-tab="spectra"] .sp-chart-card .card-body { display: flex; flex-direction: column; gap: var(--space-3); }
+[data-tab="spectra"] .sp-chart-card.loading .sp-chart { opacity: 0.55; transition: opacity 200ms var(--ease); }
+[data-tab="spectra"] .sp-chart-card .card-head p.muted { margin: 2px 0 0; }
+
+/* statistics */
+[data-tab="spectra"] .sp-series { display: inline-flex; align-items: center; gap: var(--space-2); }
+[data-tab="spectra"] .sp-series-name { max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-tab="spectra"] .sp-swatch { width: 14px; height: 4px; border-radius: 2px; border: 1px solid; box-sizing: border-box; flex: none; }
+[data-tab="spectra"] .sp-swatch.dashed { height: 0; border-width: 0; border-top: 2px dashed; border-radius: 0; }
+[data-tab="spectra"] .sp-stats-card .table td { white-space: nowrap; }
+[data-tab="spectra"] .sp-stats-card .table td,
+[data-tab="spectra"] .sp-stats-card .table th { padding-left: 8px; padding-right: 8px; font-size: var(--font-size-sm); }
+[data-tab="spectra"] .sp-note { font-size: var(--font-size-xs); }
+[data-tab="spectra"] .sp-footnote { margin: var(--space-3) 0 0; font-size: var(--font-size-xs); line-height: 1.55; max-width: 110ch; }
+
+/* empty library */
+[data-tab="spectra"] .sp-empty-card { max-width: 760px; margin: var(--space-6) auto; }
+[data-tab="spectra"] .sp-empty-actions { margin-top: var(--space-3); }
+[data-tab="spectra"] .sp-globs { margin: var(--space-3) auto 0; max-width: 520px; }
+[data-tab="spectra"] .sp-globs ul { margin: var(--space-1) 0 var(--space-3); padding-left: var(--space-4); }
+[data-tab="spectra"] .sp-globs code { font-family: var(--font-mono); font-size: var(--font-size-sm); }
+
+body.vscode-high-contrast [data-tab="spectra"] .sp-ref.on .sp-ref-dot { border-color: var(--focus); }
+
+/* units and Greek letters must keep their case in headers */
+[data-tab="spectra"] .sp-stats-card .table th { text-transform: none; letter-spacing: 0; }
+[data-tab="spectra"] .sp-kpis { display: flex; flex-direction: column; gap: var(--space-2); }
+[data-tab="spectra"] .sp-kpi-caption { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-sm); color: var(--muted); min-width: 0; }
+[data-tab="spectra"] .sp-kpi-caption > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-tab="spectra"] .sp-kpi-caption b { color: var(--fg-strong); font-weight: 600; }
+[data-tab="spectra"] .sp-library .table td,
+[data-tab="spectra"] .sp-library .table th { padding-left: 6px; padding-right: 6px; }
+[data-tab="spectra"] .sp-library .table th { font-size: var(--font-size-xs); }
+[data-tab="spectra"] .sp-library .table td.sel,
+[data-tab="spectra"] .sp-library .table th.sel { padding-left: 10px; }
