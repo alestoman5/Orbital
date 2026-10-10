@@ -77,6 +77,11 @@ export function formatLogTicks(ticks: number[]): TickLabels {
   const min = Math.min(...ticks);
   const max = Math.max(...ticks);
   const plain = min >= 0.01 && max <= 1e4;
+  if (plain && max / min < 10) {
+    // labels inside one decade (0.16, 0.18, 0.20 …) share their decimals
+    const dec = Math.min(6, Math.max(...ticks.map(t => (String(Number(t.toPrecision(6))).split('.')[1] ?? '').length)));
+    return { exponent: 0, labels: ticks.map(t => withMinus(t.toFixed(dec))) };
+  }
   return {
     exponent: 0,
     labels: ticks.map(t => {

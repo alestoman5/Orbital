@@ -5,7 +5,7 @@
 
 import type { AxisSpec, Figure, HeatmapSeries, Panel, SecondaryAxisSpec, Series } from './api';
 import { colorAt, colormapStops, normalizer } from './colormap';
-import { factorMarkup, formatLinearTicks, formatLogTicks, labelWithFactor } from './format';
+import { factorMarkup, formatLinearTicks, formatLogTicks, labelWithFactor, withMinus } from './format';
 import { equalAspectBox, gridLayout, maxTickCount, stackLayout, type Box, type Req } from './layout';
 import { bestCornerScored, cornerBox, isOutside, legendEntries, legendMarkup, measureLegend, type LegendHit, type ResolvedSeries } from './legend';
 import { bandMark, f, heatmapLimits, heatmapMark, histogramMark, lineMark, ruleMark, scatterMark, sticksMark, textMark, type MarkContext } from './marks';
@@ -335,7 +335,7 @@ function axisTicks(spec: AxisSpec, d: Range, length: number, horizontal: boolean
 
 function format(spec: { format?: (v: number) => string; log?: boolean }, t: Ticks): { labels: Run[][]; exponent: number } {
   if (spec.format) {
-    return { labels: t.major.map(v => parseRich(spec.format!(v))), exponent: 0 };
+    return { labels: t.major.map(v => parseRich(withMinus(spec.format!(v)))), exponent: 0 };
   }
   const r = spec.log ? formatLogTicks(t.major) : formatLinearTicks(t.major, t.step);
   return { labels: r.labels.map(parseRich), exponent: r.exponent };
@@ -354,7 +354,7 @@ function secondaryAxisTicks(spec: SecondaryAxisSpec, d: Range, length: number, t
   const spacing = theme.preset === 'publication' ? size * 3.2 : 84;
   let maxN = maxTickCount(length, spacing);
   let res = secondaryTicks(d[0], d[1], spec.toSecondary, spec.fromSecondary, maxN, spec.ticks);
-  const fmtLabels = (vals: number[], step: number) => spec.format ? vals.map(v => parseRich(spec.format!(v))) : formatLinearTicks(vals, step).labels.map(parseRich);
+  const fmtLabels = (vals: number[], step: number) => spec.format ? vals.map(v => parseRich(withMinus(spec.format!(v)))) : formatLinearTicks(vals, step).labels.map(parseRich);
   let labels = fmtLabels(res.major.map(m => m.value), res.step);
   // avoid collisions where the non-linear mapping crowds the ticks
   for (let guard = 0; guard < 5 && !spec.ticks && res.major.length > 2; guard++) {

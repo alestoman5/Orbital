@@ -159,10 +159,11 @@ export function logTicks(min: number, max: number, target = 6): Ticks {
         (m === 1 || m === 2 || m === 5 ? major : minor).push(v);
       }
     }
-    if (major.length >= 2) {
+    if (major.length >= 3) {
       return { major, minor, step: 1 };
     }
-    const lin = linearTicks(lo, hi, target);
+    // few ticks: linear steps bunch up at the top of a log axis
+    const lin = linearTicks(lo, hi, Math.min(target, 4));
     return lin;
   }
   const every = Math.max(1, Math.ceil(decades / Math.max(1, target)));

@@ -138,6 +138,7 @@ describe('charts: format', () => {
 
   it('formats log ticks as plain numbers or 10^{n}', () => {
     assert.deepStrictEqual(formatLogTicks([0.1, 1, 10, 100]).labels, ['0.1', '1', '10', '100']);
+    assert.deepStrictEqual(formatLogTicks([0.16, 0.18, 0.2, 0.22]).labels, ['0.16', '0.18', '0.20', '0.22']);
     assert.deepStrictEqual(formatLogTicks([1e-20, 1e-18]).labels, [`10^{${MINUS}20}`, `10^{${MINUS}18}`]);
   });
 
