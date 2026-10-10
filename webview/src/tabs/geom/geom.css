@@ -194,10 +194,9 @@
 [data-tab="geom"] .geom-check input { accent-color: var(--accent); }
 [data-tab="geom"] .geom-datfiles .table td { padding-top: 5px; padding-bottom: 5px; }
 
-/* tables: keep numbers on one line; Greek symbols in headers must not be uppercased (τ → Τ) */
+/* tables: keep numbers on one line */
 [data-tab="geom"] .geom-summary td,
 [data-tab="geom"] .geom-lib td.num { white-space: nowrap; }
-[data-tab="geom"] .geom-summary th { text-transform: none; letter-spacing: 0.01em; }
 [data-tab="geom"] .geom-colname { display: inline-flex; align-items: center; gap: 6px; }
 [data-tab="geom"] .geom-summary td .geom-colname { white-space: normal; flex-wrap: wrap; }
 @media (max-width: 1100px) {

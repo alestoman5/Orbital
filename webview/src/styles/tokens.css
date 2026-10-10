@@ -1,9 +1,13 @@
 /* Design tokens of Orbital Studio. Dark-first, derived from the VS Code theme
    variables so the studio sits naturally in any theme; the accent pair is the
    two phases of an orbital (cyan +, violet −). Tabs use these variables only —
-   no raw colors in tab CSS. */
+   no raw colors in tab CSS.
+   Declared on body as well as :root: derived tokens (--accent-grad, --accent-soft, ...)
+   resolve where they are declared, so they have to be resolved again on the body that
+   carries the theme class (body.vscode-light overrides --accent). */
 
-:root {
+:root,
+body {
   --font-ui: 'Inter', var(--vscode-font-family, system-ui), system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', var(--vscode-editor-font-family, ui-monospace), ui-monospace, 'Cascadia Code', Consolas, monospace;
   --font-size: 13px;
@@ -58,13 +62,16 @@
   color-scheme: dark;
 }
 
+/* Light theme: tones one step darker than the dark theme's so small text (badges, muted
+   labels) keeps a 4.5:1 contrast on the light surfaces and their 14 % tints. */
 body.vscode-light {
-  --accent: #0284c7;
-  --accent-2: #7c3aed;
+  --accent: #0369a1;
+  --accent-2: #6d28d9;
   --on-accent: #ffffff;
-  --ok: #059669;
-  --warn: #b45309;
-  --bad: #dc2626;
+  --ok: #046c4e;
+  --warn: #a14309;
+  --bad: #b91c1c;
+  --muted: color-mix(in srgb, var(--vscode-descriptionForeground, #717171) 85%, var(--fg-strong));
   --surface-1: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
   --surface-2: color-mix(in srgb, var(--fg) 4.5%, var(--bg));
   --border: color-mix(in srgb, var(--fg) 12%, transparent);
@@ -84,6 +91,6 @@ body.vscode-high-contrast {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root { --ease: linear; }
+  :root, body { --ease: linear; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

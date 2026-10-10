@@ -66,5 +66,4 @@
 [data-tab="calcs"] .card-actions .segmented { flex-wrap: wrap; }
 
 [data-tab="calcs"] .calcs-kpis > .grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important; }
-[data-tab="calcs"] .table th.left { text-align: left; }
 [data-tab="calcs"] .calcs-detail-grid .empty { padding: var(--space-4) var(--space-3); }

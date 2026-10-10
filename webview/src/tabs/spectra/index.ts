@@ -344,17 +344,17 @@ class SpectraTab {
     const nameCell = (it: LibraryItem) => h('span.sp-name', { title: `${it.path}${it.error ? `\n${it.error}` : ''}`, class: it.error ? 'error' : '' },
       it.error ? icon('warning', 'icon sp-warn') : null, h('span.sp-name-text', null, it.name));
     const columns: Column<LibraryItem>[] = [
-      { key: 'ref', label: 'ref', render: refBtn, sortValue: i => (this.ref === i.id ? 0 : 1), align: 'center', width: '34px', title: 'Reference' },
-      { key: 'kind', label: 'kind', render: kindCell, sortValue: i => this.kindOf(i), width: '52px' }
+      { key: 'ref', label: 'Ref', render: refBtn, sortValue: i => (this.ref === i.id ? 0 : 1), align: 'center', width: '34px', title: 'Reference' },
+      { key: 'kind', label: 'Kind', render: kindCell, sortValue: i => this.kindOf(i), width: '52px' }
     ];
     if (shown.length) {
       shown.forEach((n, k) => columns.push({
-        key: `f:${n}`, label: n, numeric: n === 'n',
+        key: `f:${n}`, label: n === 'n' ? n : n.charAt(0).toUpperCase() + n.slice(1), numeric: n === 'n',
         render: i => (k === 0 && nameOnly(i) ? nameCell(i) : i.error && k === 0 ? nameCell(i) : h('span', { title: i.path }, i.fields[n] ?? '')),
         sortValue: i => (n === 'n' ? Number(i.fields[n] ?? 0) : (i.fields[n] ?? (k === 0 ? i.name : '')))
       }));
     } else {
-      columns.push({ key: 'name', label: 'name', render: nameCell, sortValue: i => i.name });
+      columns.push({ key: 'name', label: 'Name', render: nameCell, sortValue: i => i.name });
     }
     const full = (i: LibraryItem) => lib.fieldNames.length > 0 && lib.fieldNames.every(n => n in i.fields);
     const rows = lib.items.slice().sort((a, b) =>
@@ -414,7 +414,7 @@ class SpectraTab {
     return [
       field('Mode', segmented<Mode>([
         { value: 'overlay', label: 'Overlay' }, { value: 'diff', label: '+ Difference' }, { value: 'multiples', label: 'Small multiples' }
-      ], o.mode, v => this.setOpt('mode', v)), o.mode !== 'overlay' && !this.refId() ? 'Pick a reference (ref column) to compare against.' : undefined),
+      ], o.mode, v => this.setOpt('mode', v)), o.mode !== 'overlay' && !this.refId() ? 'Pick a reference (Ref column) to compare against.' : undefined),
       field('x axis', segmented<XAxis>([
         { value: 'nm', label: 'λ / nm' }, { value: 'eV', label: 'E / eV' }, { value: 'cm-1', label: 'ν̃ / cm⁻¹' }
       ], o.axis, v => this.setOpt('axis', v, 'sidebar'))),
@@ -565,7 +565,7 @@ class SpectraTab {
       this.chart = undefined;
       mount(this.kpiEl);
       mount(this.messagesEl);
-      mount(this.chartBox, emptyState('spectra', 'Nothing selected', 'Tick spectra in the library to plot them. Mark one as the reference (ref column) to compare against it.'));
+      mount(this.chartBox, emptyState('spectra', 'Nothing selected', 'Tick spectra in the library to plot them. Mark one as the reference (Ref column) to compare against it.'));
       this.chartSubtitle.textContent = '';
       mount(this.statsEl);
       mount(this.noteEl);
@@ -612,7 +612,7 @@ class SpectraTab {
         h('ul.sp-errors', null, errs.map(e => h('li', null, h('b', null, this.item(e.id)?.name ?? e.id), `: ${e.message}`)))));
     }
     if (this.opts.mode !== 'overlay' && !this.refId()) {
-      notes.push(callout('info', `${this.opts.mode === 'diff' ? 'Difference' : 'Small multiples'} need a reference: click the dot in the "ref" column of the library.`));
+      notes.push(callout('info', `${this.opts.mode === 'diff' ? 'Difference' : 'Small multiples'} need a reference: click the dot in the Ref column of the library.`));
     }
     mount(this.messagesEl, notes);
   }
@@ -718,24 +718,24 @@ ${this.item(r.id)?.path ?? ''}` }, name(r)),
           r.isRef ? badge('ref', 'accent') : null)
       },
       { key: 'xmax', label: `${AXIS_NAME[axis]}max / ${u}`, numeric: true, render: r => fmt(r.xmax, d) },
-      { key: 'peak', label: this.loaded.normalized ? 'peak' : `peak / ${yUnit}`, numeric: true, render: r => fmtSci(r.peak) }
+      { key: 'peak', label: this.loaded.normalized ? 'Peak' : `Peak / ${yUnit}`, numeric: true, render: r => fmtSci(r.peak) }
     ];
     if (st.refId) {
       columns.push(
-        { key: 'shift', label: `shift / ${u}`, numeric: true, render: r => (r.isRef ? h('span.muted', null, 'ref') : r.shift === undefined ? '' : signed(r.shift, d)), sortValue: r => r.shift ?? 0, title: 'position of the maximum minus that of the reference' },
+        { key: 'shift', label: `Shift / ${u}`, numeric: true, render: r => (r.isRef ? h('span.muted', null, 'ref') : r.shift === undefined ? '' : signed(r.shift, d)), sortValue: r => r.shift ?? 0, title: 'position of the maximum minus that of the reference' },
         { key: 'consistentPct', label: '% cons.', numeric: true, render: r => (r.consistentPct === undefined ? h('span.muted', { title: r.note ?? '' }, r.isRef ? '' : '–') : fmt(r.consistentPct, 0)), sortValue: r => r.consistentPct ?? -1, title: 'share of the signal grid where the 95 % CI of the difference contains 0' },
-        { key: 'verdict', label: 'verdict', render: r => (r.verdict ? h('span', { title: r.verdict === 'same within noise' ? 'same spectrum within the bootstrap noise' : 'different beyond the bootstrap noise' }, badge(r.verdict === 'same within noise' ? 'same' : 'different', r.verdict === 'same within noise' ? 'ok' : 'bad')) : r.note ? h('span.muted.sp-note', null, r.note) : ''), sortValue: r => r.verdict ?? '' }
+        { key: 'verdict', label: 'Verdict', render: r => (r.verdict ? h('span', { title: r.verdict === 'same within noise' ? 'same spectrum within the bootstrap noise' : 'different beyond the bootstrap noise' }, badge(r.verdict === 'same within noise' ? 'same' : 'different', r.verdict === 'same within noise' ? 'ok' : 'bad')) : r.note ? h('span.muted.sp-note', null, r.note) : ''), sortValue: r => r.verdict ?? '' }
       );
     }
     columns.push(
       { key: 'fwhm', label: `FWHM / ${u}`, numeric: true, render: r => fmt(r.fwhm, d) },
-      { key: 'centroid', label: `centroid / ${u}`, numeric: true, render: r => fmt(r.centroid, d) }
+      { key: 'centroid', label: `Centroid / ${u}`, numeric: true, render: r => fmt(r.centroid, d) }
     );
     if (st.experimentLabel) {
-      columns.push({ key: 'maxOverExp', label: 'max/exp', numeric: true, render: r => (r.maxOverExp === undefined ? '' : fmt(r.maxOverExp, 2)), sortValue: r => r.maxOverExp ?? -1, title: `peak / peak of ${st.experimentLabel} in the window` });
+      columns.push({ key: 'maxOverExp', label: 'Max / exp', numeric: true, render: r => (r.maxOverExp === undefined ? '' : fmt(r.maxOverExp, 2)), sortValue: r => r.maxOverExp ?? -1, title: `peak / peak of ${st.experimentLabel} in the window` });
     }
     columns.push(
-      { key: 'integral', label: 'integral', numeric: true, render: r => fmtSci(r.integral), title: `∫σ d${AXIS_NAME[axis]} in the window (${yUnit || '1'} × ${u})` }
+      { key: 'integral', label: 'Integral', numeric: true, render: r => fmtSci(r.integral), title: `∫σ d${AXIS_NAME[axis]} in the window (${yUnit || '1'} × ${u})` }
     );
     mount(this.statsEl, dataTable<StatsRow>({ columns, rows: st.rows, rowKey: r => r.id, empty: 'No statistics' }));
     const w = st.window;
