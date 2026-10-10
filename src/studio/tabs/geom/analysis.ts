@@ -20,7 +20,7 @@ function atomName(i: number, symbols?: string[]): string {
 export function coordInfo(c: WatchedCoordinate, spec: string, symbols?: string[]): CoordInfo {
   const kind = c.atoms.length === 2 ? 'bond' : c.atoms.length === 3 ? 'angle' : 'dihedral';
   const unit = kind === 'bond' ? 'Å' : '°';
-  const sym = kind === 'bond' ? 'r' : kind === 'angle' ? '∠' : 'φ';
+  const sym = kind === 'bond' ? 'r' : kind === 'angle' ? 'θ' : 'φ';
   const name = `${sym}(${c.atoms.map(i => atomName(i, symbols)).join('–')})`;
   return { spec, label: c.label, atoms: c.atoms, kind, unit, name, axis: `${name} / ${unit}` };
 }

@@ -61,7 +61,7 @@ describe('geom tab host', () => {
       const r = await call<ParseResult>('parse', { specs: ['O-O: 2-3', 'COO: 1-2-3', 'HCOO: 4-1-2-3', 'bad', 'x: 1'], file: three }, ctx);
       assert.deepStrictEqual(r.coords.map(c => [c.label, c.kind, c.unit, c.axis]), [
         ['O-O', 'bond', 'Å', 'r(O2–O3) / Å'],
-        ['COO', 'angle', '°', '∠(C1–O2–O3) / °'],
+        ['COO', 'angle', '°', 'θ(C1–O2–O3) / °'],
         ['HCOO', 'dihedral', '°', 'φ(H4–C1–O2–O3) / °']
       ]);
       assert.strictEqual(r.errors.length, 2);

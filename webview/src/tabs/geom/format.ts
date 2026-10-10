@@ -42,3 +42,20 @@ export function bytes(n: number): string {
 export function count(n: number): string {
   return n.toLocaleString('en-US').replace(/,/g, ' ');
 }
+
+/**
+ * Legend labels: drops the path segments all labels share at the start and at
+ * the end ("CMD/geoms.xyz", "GLE/geoms.xyz" → "CMD", "GLE"), keeping at
+ * least one segment; a single label keeps only its file name.
+ */
+export function legendLabels(labels: string[]): string[] {
+  const parts = labels.map(l => l.split('/'));
+  if (parts.length < 2) return labels;
+  const minLen = Math.min(...parts.map(p => p.length));
+  let tail = 0;
+  while (tail < minLen - 1 && parts.every(p => p[p.length - 1 - tail] === parts[0][parts[0].length - 1 - tail])) tail++;
+  let head = 0;
+  while (head < minLen - 1 - tail && parts.every(p => p[head] === parts[0][head])) head++;
+  const out = parts.map(p => p.slice(head, p.length - tail).join('/'));
+  return new Set(out).size === out.length ? out : labels;
+}

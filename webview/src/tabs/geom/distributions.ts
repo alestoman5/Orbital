@@ -22,7 +22,7 @@ import { figureToolbar, render, type ChartHandle, type Figure, type FigureSize, 
 import { badge, button, callout, card, dataTable, emptyState, field, iconButton, numberInput, section, segmented, select, skeleton, split, textInput, toggle, type Column } from '../../ui/components';
 import { debounce, h, mount } from '../../ui/dom';
 import type { ViewContext } from '../../view';
-import { bytes, count, fixed, sig } from './format';
+import { bytes, count, fixed, legendLabels, sig } from './format';
 import { atomTable, measurePicked, moleculeSketch, pickLabel } from './molecule';
 
 interface DistState {
@@ -330,7 +330,7 @@ export function distributionsView(ctx: ViewContext): SubView {
       role: 'button', tabindex: 0, title: `${c.spec} — click to plot`,
       onclick: () => { st.coord = i; save(); renderCoords(); renderOptions(); scheduleCompute(); }
     },
-    h('span.geom-chip-kind', { class: c.kind }, c.kind === 'bond' ? 'r' : c.kind === 'angle' ? '∠' : 'φ'),
+    h('span.geom-chip-kind', { class: c.kind }, c.kind === 'bond' ? 'r' : c.kind === 'angle' ? 'θ' : 'φ'),
     h('span.geom-chip-label', null, c.label),
     h('span.geom-chip-atoms', null, c.atoms.join('-')),
     h('span.geom-chip-unit', null, c.unit),
@@ -386,7 +386,7 @@ export function distributionsView(ctx: ViewContext): SubView {
     const m = molecule;
     const kind = pick.length === 2 ? 'bond' : pick.length === 3 ? 'angle' : pick.length === 4 ? 'dihedral' : undefined;
     const v = kind ? measurePicked(m.atoms, pick) : undefined;
-    const name = kind ? `${kind === 'bond' ? 'r' : kind === 'angle' ? '∠' : 'φ'}(${pickLabel(m.atoms, pick)})` : '';
+    const name = kind ? `${kind === 'bond' ? 'r' : kind === 'angle' ? 'θ' : 'φ'}(${pickLabel(m.atoms, pick)})` : '';
     const preview = kind
       ? h('div.geom-pick-preview', null, h('span', null, name, ' = ', h('b', null, v === undefined ? '–' : kind === 'bond' ? `${fixed(v, 4)} Å` : `${fixed(v, 2)}°`)), h('span.muted', null, ' frame 1'))
       : h('div.geom-pick-preview.muted', null, pick.length ? `${pickLabel(m.atoms, pick)} — pick ${pick.length === 1 ? 'at least one more atom' : ''}` : 'Click 2–4 atoms: bond, angle, dihedral.');
@@ -542,8 +542,9 @@ export function distributionsView(ctx: ViewContext): SubView {
     const base = { preset: st.preset, size: st.size };
     if (plot.kind === 'histogram') {
       const series: Series[] = [];
+      const names = legendLabels(plot.series.map(s => s.label));
       plot.series.forEach((s, k) => {
-        series.push({ type: 'histogram', edges: plot.edges, values: s.values, style: st.style, label: s.label, group: s.label, opacity: st.style === 'filled' ? 0.28 : undefined });
+        series.push({ type: 'histogram', edges: plot.edges, values: s.values, style: st.style, label: names[k], group: s.label, opacity: st.style === 'filled' ? 0.28 : undefined });
         if (plot.kde) series.push({ type: 'line', x: plot.kde.grid, y: plot.kde.series[k], group: s.label, width: 1.5 });
         if (st.means && Number.isFinite(s.mean)) series.push({ type: 'vline', value: s.mean, dash: 'dashed', group: s.label, width: 1 });
       });
@@ -551,8 +552,9 @@ export function distributionsView(ctx: ViewContext): SubView {
     }
     if (plot.kind === 'trace') {
       const series: Series[] = [];
-      plot.series.forEach(s => {
-        series.push({ type: 'line', x: s.x, y: s.y, label: s.label, group: s.label, width: 0.9 });
+      const names = legendLabels(plot.series.map(s => s.label));
+      plot.series.forEach((s, k) => {
+        series.push({ type: 'line', x: s.x, y: s.y, label: names[k], group: s.label, width: 0.9 });
         if (st.means && Number.isFinite(s.mean)) series.push({ type: 'hline', value: s.mean, dash: 'dashed', group: s.label, width: 1 });
       });
       return { ...base, panels: [{ x: { label: 'frame' }, y: { label: c.axis, zero: false }, series, legend: 'auto' }] };
