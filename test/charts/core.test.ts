@@ -314,3 +314,30 @@ describe('charts: CSV and SVG export', () => {
     assert.ok(svg.indexOf('fill-opacity="0.22"') < svg.indexOf('stroke-width="1.25"'));
   });
 });
+
+describe('charts: publication legend placement', () => {
+  const xs = Array.from({ length: 101 }, (_, i) => i);
+  const legendY = (svg: string) => Number(/<g class="chart-legend">.*?<text x="[\d.]+" y="([\d.]+)"/.exec(svg)![1]);
+  const frameTop = (svg: string) => Number(/<clipPath id="[^"]*clip0"><rect x="[\d.]+" y="([\d.]+)"/.exec(svg)![1]);
+
+  it('keeps an auto legend inside when a corner is free', () => {
+    const fig: Figure = { panels: [{ x: {}, y: {}, series: [{ type: 'line', x: xs, y: xs.map(x => Math.exp(-((x - 20) ** 2) / 50)), label: 'peak' }] }] };
+    const svg = svgString(fig, { size: { widthIn: 3.25, heightIn: 2.4 } });
+    assert.ok(legendY(svg) > frameTop(svg));
+  });
+
+  it('moves an auto legend above the frame when every corner holds data', () => {
+    const fig: Figure = {
+      panels: [{
+        x: {}, y: {},
+        series: [
+          { type: 'line', x: xs, y: xs.map(() => 1), label: 'a rather long series name number one' },
+          { type: 'line', x: xs, y: xs.map(() => 0), label: 'a rather long series name number two' },
+          { type: 'line', x: xs, y: xs.map(x => x / 100), label: 'three' }
+        ]
+      }]
+    };
+    const svg = svgString(fig, { size: { widthIn: 3.25, heightIn: 2.4 } });
+    assert.ok(legendY(svg) < frameTop(svg), `legend at ${legendY(svg)}, frame top ${frameTop(svg)}`);
+  });
+});
