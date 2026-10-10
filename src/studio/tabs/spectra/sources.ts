@@ -22,7 +22,7 @@ import { parseOrcaOutput } from '../../../outparser/parse';
 import type { StateStick } from './crossSection';
 import type { ItemSource, LibraryItem, LibraryResult } from './types';
 
-export const DEFAULT_SPECTRA_GLOBS = ['**/spectra_txt/*.dat', '**/*.cross.dat', '**/absspec*.dat'];
+export const DEFAULT_SPECTRA_GLOBS = ['**/spectra_txt/*.dat', '**/*.cross.dat'];
 export const DEFAULT_EXPERIMENT_GLOBS = ['**/*_exp.{dat,txt,csv}', '**/exp*/*.{dat,txt,csv}', '**/experiment*.{dat,txt,csv}'];
 export const DEFAULT_NAME_PATTERN = '^(?<sampling>.+?)-(?<geometry>.+?)_(?<method>[^-_]+)-(?<basis>.+?)_n(?<n>\\d+)$';
 /** Largest spectrum file read (a PyNEAppLES file is ~0.1–1 MB). */
@@ -160,14 +160,30 @@ function fileKey(p: string): { key: string; st: fs.Stats } {
 /** File stem without the PyNEAppLES suffixes (.nm.cross.dat → stem). */
 export function spectrumStem(file: string): string {
   let b = path.basename(file);
-  b = b.replace(/\.(cross|int)\.(dat|txt)$/i, '').replace(/\.(dat|txt|csv|tsv|xy)$/i, '');
+  b = b.replace(/\.(cross|int|molar)\.(dat|txt)$/i, '').replace(/\.(dat|txt|csv|tsv|xy)$/i, '');
   b = b.replace(/\.(nm|ev|cm|cm-1)$/i, '');
   return b;
 }
 
+/**
+ * σ in cm² per decadic molar absorption coefficient ε in L mol⁻¹ cm⁻¹:
+ * σ = 1000 ln(10) ε / N_A (PyNEAppLES *.molar.dat files; checked against the
+ * matching *.cross.dat, ratio 2.6154e20).
+ */
+export const SIGMA_PER_EPSILON = (1000 * Math.LN10) / 6.02214076e23;
+
+/** PyNEAppLES molar-absorptivity file (absspec.*.{nm,ev,cm}.molar.dat). */
+export const isMolarFile = (p: string) => /\.molar\.(dat|txt)$/i.test(p);
+
+/** NEA spectrum as σ in cm² molecule⁻¹ (molar files converted). */
 export function readNea(p: string): NeaSpectrum {
   const { key } = fileKey(p);
-  return cached('nea', p, key, () => parseNeaSpectrum(fs.readFileSync(p, 'utf8'), { unit: unitFromFileName(path.basename(p)) }));
+  return cached('nea', p, key, () => {
+    const d = parseNeaSpectrum(fs.readFileSync(p, 'utf8'), { unit: unitFromFileName(path.basename(p)) });
+    if (!isMolarFile(p)) return d;
+    const f = (a: number[]) => a.map(v => v * SIGMA_PER_EPSILON);
+    return { ...d, y: f(d.y), lo: d.lo && f(d.lo), hi: d.hi && f(d.hi), states: d.states.map(f) };
+  });
 }
 
 export function readExperiment(p: string): ExperimentSpectrum & { unit: SpectrumXUnit } {
@@ -420,6 +436,34 @@ function matchesAny(ctx: HostContext, p: string, globs: string[]): boolean {
   return globs.some(g => globToRegExp(g).test(posix));
 }
 
+/**
+ * PyNEAppLES writes every spectrum six times (nm / ev / cm × cross / molar).
+ * Of files with the same folder and stem keep one: nm before ev before cm,
+ * cross section before molar absorptivity.
+ */
+export function preferredCopies(files: string[]): string[] {
+  const rank = (p: string) => {
+    const b = path.basename(p).toLowerCase();
+    const u = /\.nm\./.test(b) ? 0 : /\.ev\./.test(b) ? 1 : /\.cm\./.test(b) ? 2 : 0;
+    return u + (isMolarFile(p) ? 10 : 0);
+  };
+  const best = new Map<string, string>();
+  for (const f of files) {
+    const k = path.join(path.dirname(f), spectrumStem(f)).toLowerCase();
+    const cur = best.get(k);
+    if (!cur || rank(f) < rank(cur)) best.set(k, f);
+  }
+  const keep = new Set(best.values());
+  return files.filter(f => keep.has(f));
+}
+
+/** 'a/{b,c}.{x,y}' → ['a/b.x', 'a/b.y', 'a/c.x', 'a/c.y'] (no nesting needed for settings globs). */
+export function expandBraces(glob: string): string[] {
+  const m = /\{([^{}]*)\}/.exec(glob);
+  if (!m) return [glob];
+  return m[1].split(',').flatMap(alt => expandBraces(glob.slice(0, m.index) + alt + glob.slice(m.index + m[0].length)));
+}
+
 /** Minimal glob → RegExp (**, *, ?, {a,b}) for classifying added files. */
 export function globToRegExp(glob: string): RegExp {
   let re = '';
@@ -457,20 +501,20 @@ export async function buildLibrary(ctx: HostContext, extra: string[]): Promise<L
       items.push(it);
     }
   };
-  const find = async (globs: string[]) => {
-    const out: string[] = [];
-    for (const g of globs) {
-      try {
-        out.push(...(await ctx.findFiles(g, { max: 2000 })));
-      } catch (e) {
-        warnings.push(`glob ${g}: ${e instanceof Error ? e.message : String(e)}`);
-      }
+  // One workspace walk for all globs ({a,b,c} with braces expanded), then classify.
+  const all = [...s.spectraGlobs, ...s.experimentGlobs].flatMap(expandBraces);
+  let found: string[] = [];
+  if (all.length) {
+    try {
+      found = [...new Set((await ctx.findFiles(all.length === 1 ? all[0] : `{${all.join(',')}}`, { max: 5000 })).map(norm))];
+    } catch (e) {
+      warnings.push(`globs ${all.join(', ')}: ${e instanceof Error ? e.message : String(e)}`);
     }
-    return [...new Set(out.map(norm))];
-  };
-  const expFiles = new Set(await find(s.experimentGlobs));
-  for (const p of await find(s.spectraGlobs)) {
-    if (!expFiles.has(p)) add(fileItem(p, s, false, false));
+  }
+  found = preferredCopies(found);
+  const expFiles = found.filter(p => matchesAny(ctx, p, s.experimentGlobs));
+  for (const p of found) {
+    if (!expFiles.includes(p)) add(fileItem(p, s, false, false));
   }
   for (const p of expFiles) add(fileItem(p, s, true, false));
   const allowed = new Set<string>();

@@ -3,7 +3,7 @@
     "orcaInp.studio.spectraGlobs": {
       "type": "array",
       "items": { "type": "string" },
-      "default": ["**/spectra_txt/*.dat", "**/*.cross.dat", "**/absspec*.dat"],
+      "default": ["**/spectra_txt/*.dat", "**/*.cross.dat"],
       "description": "Globs (relative to each workspace folder) of NEA spectrum files listed in the Studio Spectra tab: columns x, total[, CI low, CI high, S1..SN] as written by PyNEAppLES."
     },
     "orcaInp.studio.experimentGlobs": {
