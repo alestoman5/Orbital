@@ -198,7 +198,11 @@ export function compareBarsFigure(rows: CompareRow[]): Figure {
       x: { label: 'run', ticks: ok.map((_, i) => i + 0.5), format: v => names[Math.floor(v)] ?? '', grid: false, min: 0, max: Math.max(ok.length, 1) },
       y: { label: 'MAE (test set)' },
       legend: 'none',
-      series: [{ type: 'histogram', edges: [...ok.map((_, i) => i), ok.length], values: ok.map(r => r.test!.mae), style: 'filled', opacity: 0.7, label: 'test MAE' }]
+      // separated bars: [i + 0.2, i + 0.8] carries the value, the gaps between are empty bins
+      series: [{
+        type: 'histogram', edges: ok.flatMap((_, i) => [i + 0.2, i + 0.8]), values: ok.flatMap((r, i) => (i < ok.length - 1 ? [r.test!.mae, 0] : [r.test!.mae])),
+        style: 'filled', opacity: 0.75, label: 'test MAE'
+      }]
     }],
     size: SIZE_WIDE
   };
