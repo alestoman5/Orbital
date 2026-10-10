@@ -2,14 +2,25 @@
   "configuration": {
     "orcaInp.studio.spectraGlobs": {
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["**/spectra_txt/*.dat", "**/*.cross.dat"],
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "**/spectra_txt/*.dat",
+        "**/*.cross.dat"
+      ],
       "description": "Globs (relative to each workspace folder) of NEA spectrum files listed in the Studio Spectra tab: columns x, total[, CI low, CI high, S1..SN] as written by PyNEAppLES."
     },
     "orcaInp.studio.experimentGlobs": {
       "type": "array",
-      "items": { "type": "string" },
-      "default": ["**/*_exp.{dat,txt,csv}", "**/exp*/*.{dat,txt,csv}", "**/experiment*.{dat,txt,csv}"],
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "**/*_exp.{dat,txt,csv}",
+        "**/exp*/*.{dat,txt,csv}",
+        "**/experiment*.{dat,txt,csv}"
+      ],
       "description": "Globs of experimental two-column spectra (x, y; whitespace, tab, comma or semicolon separated), drawn dashed in the Studio Spectra tab. Any file can also be added with \"Add files…\" and toggled to experiment."
     },
     "orcaInp.studio.spectrumNamePattern": {
@@ -18,5 +29,5 @@
       "description": "Regular expression applied to spectrum file stems in the Studio Spectra tab; every named group becomes a filterable column of the library (e.g. wigner-augccpVDZ_adc3-augccpVDZ_n1000 → sampling, geometry, method, basis, n)."
     }
   },
-  "notes": "Redirect orcaInp.previewSpectrum to the Spectra tab: for a file URI (a .out, or any spectrum .dat/.txt) call openStudio(extensionUri, 'spectra', { files: [uri.fsPath] }); for a folder URI (folder of per-geometry .out files, or a folder holding geom_NNNN/result.json sets directly, in <folder>/geoms or <folder>/<label>/geoms) call openStudio(extensionUri, 'spectra', { folder: uri.fsPath }). With no URI, use the active editor's file as { files: [path] }. The tab adds the paths to its library (persisted), selects them and plots them: a .out becomes a stick spectrum broadened with orcaInp.spectrum.singleGeometryBandwidth, a folder an NEA average with the Silverman bandwidth, both as absolute σ(E) in cm² molecule⁻¹. The tab covers everything spectrumPanel.ts shows (sticks, broadening, h slider, nm/eV axis, band descriptors) plus the multi-set result.json case without a quick pick (every set becomes a library entry), so spectrumPanel.ts's showSpectrumPreview/spectrumHtml/nonce can be deleted once the command is redirected. Check first that nothing else imports nonce() from spectrumPanel.ts (grep), and keep orcaInp.spectrum.singleGeometryBandwidth: the tab reads it. The command also needs no quick pick any more. Follow-up for the orchestrator: HostContext.pickFiles results cannot be verified by tab hosts, so the tab accepts outside-workspace paths only when they are folders or have a spectrum/output extension (.dat .txt .csv .tsv .xy .out); see the report."
+  "notes": "Redirect orcaInp.previewSpectrum to the Spectra tab. For a file URI (a .out, or any spectrum .dat/.txt/.csv), call openStudio(extensionUri, 'spectra', { files: [uri.fsPath] }). For a folder URI, call openStudio(extensionUri, 'spectra', { folder: uri.fsPath }). A folder can hold per-geometry .out files, or geom_NNNN/result.json sets directly, in <folder>/geoms or in <folder>/<label>/geoms. With no URI, pass the active editor's file as { files: [path] }. The tab adds the paths to its library (persisted), selects them and plots them as absolute sigma(E) in cm^2 molecule^-1. A .out is broadened with orcaInp.spectrum.singleGeometryBandwidth. A folder becomes an NEA average with the Silverman bandwidth, and every result.json set becomes its own library entry, so no quick pick is needed. Experiments selected in the tab stay selected. After the redirect, showSpectrumPreview and spectrumHtml in src/features/spectrumPanel.ts can be deleted: the tab covers sticks, broadening, the h slider, the nm/eV axis and the band descriptors, and adds more. Before deleting the file, move nonce() elsewhere: src/features/mdPlot.ts imports it from spectrumPanel.ts. Keep the setting orcaInp.spectrum.singleGeometryBandwidth, because the tab reads it. Settings added here: studio.spectraGlobs, studio.experimentGlobs, studio.spectrumNamePattern."
 }
