@@ -2,7 +2,7 @@
   "name": "orca-inp",
   "displayName": "ORCA Input Files (.inp)",
   "description": "Syntax highlighting, diagnostics and autocompletion for ORCA quantum chemistry input files (.inp)",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "publisher": "alestoman5",
   "repository": {
