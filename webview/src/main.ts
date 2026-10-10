@@ -42,6 +42,18 @@ const mounted = new Map<TabId, Mounted>();
 let active: TabId | undefined;
 
 const nav = h('nav.rail', { 'aria-label': 'Studio sections' });
+// Up / Down (and Home / End) move between the rail items; Tab leaves the rail.
+nav.addEventListener('keydown', (e: KeyboardEvent) => {
+  const items = [...nav.querySelectorAll<HTMLButtonElement>('.rail-item')];
+  const i = items.indexOf(document.activeElement as HTMLButtonElement);
+  if (i < 0) return;
+  const next = e.key === 'ArrowDown' ? (i + 1) % items.length : e.key === 'ArrowUp' ? (i - 1 + items.length) % items.length
+    : e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : -1;
+  if (next >= 0) {
+    e.preventDefault();
+    items[next].focus();
+  }
+});
 const header = h('header.tab-header');
 const content = h('main.tab-content');
 mount(app, h('div.shell', null, nav, h('div.stage', null, header, content)));
@@ -54,7 +66,7 @@ function renderNav(): void {
       h('div.rail-group', null, label),
       TABS.filter(t => t.group === g).map(t =>
         h('button.rail-item', {
-          class: t.id === active ? 'on' : '', title: t.subtitle, 'aria-current': t.id === active ? 'page' : undefined, type: 'button',
+          class: t.id === active ? 'on' : '', title: t.subtitle, 'aria-label': t.title, 'aria-current': t.id === active ? 'page' : undefined, type: 'button',
           onclick: () => show(t.id)
         }, icon(t.icon), h('span', null, t.title)))
     ])
@@ -115,7 +127,11 @@ function show(id: TabId, args?: unknown): void {
   mount(header,
     h('div.tab-title', null, icon(entry.icon, 'icon tab-icon'), h('div', null, h('h1', null, entry.title), h('p', null, entry.subtitle))),
     h('div.tab-header-actions', null, [...mounted.values()].map(x => x.actions)));
+  const railFocused = nav.contains(document.activeElement);
   renderNav();
+  if (railFocused) {
+    nav.querySelector<HTMLButtonElement>('.rail-item.on')?.focus(); // keep keyboard users in the rail
+  }
   if (!fresh) {
     m.instance?.onShow?.();
   }

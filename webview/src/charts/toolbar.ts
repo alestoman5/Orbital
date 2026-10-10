@@ -57,6 +57,7 @@ export function buildToolbar(o: FigureToolbarOptions): HTMLElement {
     syncCustom();
   });
   unitSel.classList.add('figure-toolbar-unit');
+  unitSel.setAttribute('aria-label', 'Size unit');
   const custom = h('div.figure-toolbar-custom', null, wIn, h('span.muted', null, '×'), hIn, unitSel);
   const sizeOptions = [
     ...Object.entries(JOURNAL_SIZES).map(([k, s]) => ({ value: k, label: s.label })),
@@ -76,6 +77,7 @@ export function buildToolbar(o: FigureToolbarOptions): HTMLElement {
   });
   sizeSel.classList.add('figure-toolbar-size');
   sizeSel.title = 'Figure size (publication preview and exports)';
+  sizeSel.setAttribute('aria-label', 'Figure size');
   custom.hidden = sizeKey(size) !== CUSTOM;
   syncCustom();
 
