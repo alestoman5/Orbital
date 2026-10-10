@@ -95,6 +95,10 @@ export function activate(context: vscode.ExtensionContext): void {
       const p = targetPath(uri);
       openStudio(context.extensionUri, 'calcs', p ? { folder: fs.existsSync(p) && fs.statSync(p).isDirectory() ? p : path.dirname(p) } : undefined);
     }],
+    ['orcaInp.editReport', (uri?: vscode.Uri) => {
+      const p = targetPath(uri);
+      openStudio(context.extensionUri, 'report', p && /\.tex$/i.test(p) ? { texFile: p } : undefined);
+    }],
     ['orcaInp.newInput', (uri?: vscode.Uri) => {
       const p = targetPath(uri);
       openStudio(context.extensionUri, 'inputs', p && /\.(xyz|inp|out)$/i.test(p) ? { geometryFile: p } : undefined);
