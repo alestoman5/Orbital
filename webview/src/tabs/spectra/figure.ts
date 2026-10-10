@@ -76,13 +76,15 @@ function curveSeries(s: PlotSeries, color: string, o: FigureOptions, opts: { wid
   }
   out.push({ type: 'line', x: s.x, y: s.y, label: name, group, color, width: opts.width });
   if (o.sticks && s.sticks && s.sticks.x.length) {
-    out.push({ type: 'sticks', x: s.sticks.x, y: s.sticks.f, yAxis: 'right', group, color, width: s.sticks.x.length > 200 ? 0.5 : 1 });
+    // ensembles: thousands of sticks, kept low under the band so the curve stays readable
+    const many = s.sticks.x.length > 200;
+    out.push({ type: 'sticks', x: s.sticks.x, y: s.sticks.f, yAxis: many ? 'left' : 'right', group, color, width: many ? 0.35 : 1, relativeHeight: many ? 0.3 : undefined });
   }
   return out;
 }
 
 function hasSticks(series: Series[]): boolean {
-  return series.some(s => s.type === 'sticks');
+  return series.some(s => s.type === 'sticks' && !s.relativeHeight);
 }
 
 function basePanel(res: LoadResult, o: FigureOptions, series: Series[]): Panel {

@@ -145,9 +145,10 @@ class SpectraTab {
     return it.source === 'file' ? this.kindOverride[it.id] ?? it.kind : it.kind;
   }
 
-  /** Selected ids in library order (only existing entries). */
+  /** Selected ids in library order, experiments last (only existing entries). */
   private selectedIds(): string[] {
-    return this.items().filter(i => this.selected.has(i.id)).map(i => i.id);
+    const sel = this.items().filter(i => this.selected.has(i.id));
+    return [...sel.filter(i => this.kindOf(i) !== 'exp'), ...sel.filter(i => this.kindOf(i) === 'exp')].map(i => i.id);
   }
 
   private refId(): string | undefined {
@@ -263,9 +264,9 @@ class SpectraTab {
   private emptyLibrary(): HTMLElement {
     const lib = this.lib;
     const globs = h('div.sp-globs', null,
-      h('div.field-label', null, 'Spectrum files (orcaInp.studio.spectraGlobs)'),
+      h('p.sp-glob-title', null, 'Spectrum files ', h('code', null, 'orcaInp.studio.spectraGlobs')),
       h('ul', null, (lib?.spectraGlobs ?? []).map(g => h('li', null, h('code', null, g)))),
-      h('div.field-label', null, 'Experiments (orcaInp.studio.experimentGlobs)'),
+      h('p.sp-glob-title', null, 'Experiments ', h('code', null, 'orcaInp.studio.experimentGlobs')),
       h('ul', null, (lib?.experimentGlobs ?? []).map(g => h('li', null, h('code', null, g)))));
     return card({ class: 'sp-empty-card' },
       emptyState('spectra', 'No spectra found',
@@ -305,7 +306,7 @@ class SpectraTab {
 
   private libraryCardEl(lib: LibraryResult): HTMLElement {
     const { shown, constant } = this.fieldColumns(lib);
-    const nameOnly = (i: LibraryItem) => !shown.some(n => n in i.fields);
+    const nameOnly = (i: LibraryItem) => !shown.length || !(shown[0] in i.fields);
     const refBtn = (it: LibraryItem) => {
       const exp = this.kindOf(it) === 'exp';
       return h('button.sp-ref', {
@@ -470,7 +471,7 @@ class SpectraTab {
     return [
       field('Gaussian width h / eV', h('div.sp-h', null, slider, num,
         button('Silverman', () => this.setOpt('h', null, 'sidebar'), { variant: 'ghost', disabled: o.h === null, title: 'Back to the automatic width (Silverman for ensembles)' })), hint),
-      toggle('Show sticks on the right axis (f)', o.sticks, v => this.setOpt('sticks', v)),
+      toggle('Show sticks (f, right axis)', o.sticks, v => this.setOpt('sticks', v), { hint: 'Ensembles (> 200 sticks) are drawn scaled to 30 % of the panel height, without an f axis' }),
       h('p.sp-hint.muted', null, 'σ(E) = (πe²ħ / 2mₑcε₀) · (1/N) Σ fᵢ g(E − Eᵢ), g a normalized Gaussian of width h; πe²ħ/2mₑcε₀ = 1.0976 × 10⁻¹⁶ eV cm². No confidence band: sticks give no bootstrap interval.')
     ];
   }
@@ -509,8 +510,28 @@ class SpectraTab {
     mount(this.mainEl, this.messagesEl, this.kpiEl, this.chartCard, statsCard);
   }
 
+  /**
+   * Short series labels: the name-pattern fields that differ between the
+   * selected entries ("classical n1000", "gle n5000"); the full stem when the
+   * entry does not match the pattern or nothing differs.
+   */
+  private shortLabels(): Map<string, string> {
+    const names = this.lib?.fieldNames ?? [];
+    const sel = this.selectedIds().map(id => this.item(id)!).filter(Boolean);
+    const matched = sel.filter(i => names.length > 0 && names.every(n => n in i.fields));
+    const varying = names.filter(n => new Set(matched.map(i => i.fields[n])).size > 1);
+    const out = new Map<string, string>();
+    for (const i of this.items()) {
+      const short = matched.includes(i) && varying.length && matched.length > 1
+        ? varying.map(n => (n === 'n' ? `n${i.fields[n]}` : i.fields[n])).join(' ')
+        : i.name;
+      out.set(i.id, short);
+    }
+    return out;
+  }
+
   private figure() {
-    const labels = new Map(this.items().map(i => [i.id, i.name]));
+    const labels = this.shortLabels();
     const empty: LoadResult = { axis: this.opts.axis, range: this.opts.ranges[this.opts.axis] ?? [250, 500], yScale: this.opts.yScale, normalized: this.opts.normalize, series: [], errors: [] };
     return buildFigure(this.loaded ?? empty, {
       mode: this.opts.mode, refId: this.refId(), ci: this.opts.ci, states: this.opts.states, sticks: this.opts.sticks,
@@ -651,7 +672,8 @@ class SpectraTab {
     const u = X_UNIT[axis];
     const yUnit = this.loaded.normalized ? '' : this.loaded.yScale === 'relative' ? 'eV⁻¹' : 'cm²';
     const colors = seriesColors(this.loaded, this.opts.mode, this.refId());
-    const name = (r: StatsRow) => this.item(r.id)?.name ?? r.label;
+    const short = this.shortLabels();
+    const name = (r: StatsRow) => short.get(r.id) ?? this.item(r.id)?.name ?? r.label;
 
     // KPI tiles: the reference, else the first computed series
     const focus = st.rows.find(r => r.isRef) ?? st.rows.find(r => r.kind !== 'exp') ?? st.rows[0];
