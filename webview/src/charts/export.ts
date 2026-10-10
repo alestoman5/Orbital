@@ -135,6 +135,10 @@ export function absolutizeText(root: Element): void {
     const size = parseFloat(text.getAttribute('font-size') ?? '10');
     const weight = text.getAttribute('font-weight') ?? '';
     const bold = weight === 'bold' || parseInt(weight, 10) >= 600;
+    if (weight && weight !== 'bold' && weight !== 'normal') {
+      // the PDF has only Arimo regular and bold: numeric weights (titles use 600) would fall back to the default font
+      text.setAttribute('font-weight', bold ? 'bold' : 'normal');
+    }
     const anchor = text.getAttribute('text-anchor') ?? 'start';
     const x0 = parseFloat(text.getAttribute('x') ?? '0');
     // wrap loose text nodes so every run is a tspan
