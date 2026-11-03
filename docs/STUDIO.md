@@ -1,6 +1,6 @@
 # Orbital Studio: architecture and conventions
 
-Orbital Studio is one webview panel (`Orbital: Open Orbital Studio`) with tabs for spectra, calculations, runs, geometries, the input builder, machine learning and the report editor. It generalizes the uv-vis web app (github.com/alestoman5/uv-vis, `webapp/`) and runs entirely inside the extension. Python is only needed for ML (and optionally to run PySCF jobs).
+Orbital Studio is one webview panel (`Orbital: Open Orbital Studio`) with tabs for spectra, calculations, runs, the 3D viewer, geometries, the input builder, machine learning and the report editor. It generalizes the uv-vis web app (github.com/alestoman5/uv-vis, `webapp/`) and runs entirely inside the extension. Python is only needed for ML (and optionally to run PySCF jobs).
 
 ## Layout
 
@@ -78,6 +78,8 @@ Dev harness URLs: `http://localhost:5173/?tab=geom&theme=light&args=<url-encoded
   "notes": "free text for the orchestrator: commands to redirect, follow-ups"
 }
 ```
+
+**3D (viewer tab).** The viewer is the only tab that draws with WebGL: three.js is bundled by esbuild (no CDN, CSP unchanged), `webview/src/tabs/viewer/scene.ts` renders on demand with instanced meshes. Isosurfaces are computed on the host (`src/chem/marchingCubes.ts`, marching tetrahedra) and sent as indexed meshes; theme colors reach three.js through `cssColor()` because the tokens use `color-mix()`. The parsers behind it are pure modules: `src/chem/cube.ts`, `src/chem/orbitals.ts` (ORBITAL ENERGIES, MO coefficients, CIS/TD-DFT states, composition), `src/chem/trajectory3d.ts`.
 
 **Tests.** Mocha + ts-node (transpile only), `test/**/*.test.ts`. Pure logic gets unit tests. Tab hosts are tested by calling `host.methods.x(params, fakeContext)` (see `test/studio/registry.test.ts` for a fake HostContext).
 
