@@ -177,6 +177,42 @@ export function readFirstFrame(file: string): XyzFrame {
   return out;
 }
 
+export interface ReadFramesOptions {
+  /** Keep every stride-th frame (default 1). */
+  stride?: number;
+  /** Stop after this many kept frames. */
+  maxFrames?: number;
+}
+
+/**
+ * All (or every stride-th) frame of a multi-XYZ file with atoms, for the
+ * 3D viewer. Frames with malformed atom lines are skipped. Stops after
+ * maxFrames kept frames (`truncated` is then true).
+ */
+export function readFrames(file: string, options: ReadFramesOptions = {}): { frames: XyzFrame[]; nFrames: number; truncated: boolean; incompleteTail: boolean } {
+  const stride = Math.max(1, Math.floor(options.stride ?? 1));
+  const max = options.maxFrames ?? Infinity;
+  const frames: XyzFrame[] = [];
+  let truncated = false;
+  const walk = walkFrames(file, {
+    wantAtoms: i => i % stride === 0,
+    frame: (_i, natoms, comment, lines) => {
+      if (!lines) return true;
+      if (frames.length >= max) {
+        truncated = true;
+        return false;
+      }
+      const atoms = lines.map(parseAtomLine);
+      if (atoms.every(a => a !== undefined)) {
+        const ok = atoms as GeometryAtom[];
+        frames.push({ natoms, symbols: ok.map(a => a.symbol), atoms: ok, comment });
+      }
+      return true;
+    }
+  });
+  return { frames, nFrames: walk.nFrames, truncated, incompleteTail: walk.incompleteTail };
+}
+
 /** Number of complete frames; decodes only the count lines. */
 export function countFrames(file: string): number {
   return walkFrames(file, { wantAtoms: () => false, frame: () => true }).nFrames;
