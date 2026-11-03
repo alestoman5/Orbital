@@ -6,9 +6,9 @@
 // (`rpc(tab, method, params)`); the host pushes unsolicited events
 // (`ctx.post(name, payload)`), e.g. "a file changed" or "navigate here".
 
-export type TabId = 'spectra' | 'calcs' | 'runs' | 'geom' | 'inputs' | 'ml' | 'report';
+export type TabId = 'spectra' | 'calcs' | 'runs' | 'geom' | 'viewer' | 'inputs' | 'ml' | 'report';
 
-export const TAB_IDS: TabId[] = ['spectra', 'calcs', 'runs', 'geom', 'inputs', 'ml', 'report'];
+export const TAB_IDS: TabId[] = ['spectra', 'calcs', 'runs', 'geom', 'viewer', 'inputs', 'ml', 'report'];
 
 /** Target of a request or event: a tab, or the studio shell itself. */
 export type Channel = TabId | 'studio';

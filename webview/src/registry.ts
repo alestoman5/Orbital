@@ -8,6 +8,7 @@ import { view as spectra } from './tabs/spectra/index';
 import { view as calcs } from './tabs/calcs/index';
 import { view as runs } from './tabs/runs/index';
 import { view as geom } from './tabs/geom/index';
+import { view as viewer } from './tabs/viewer/index';
 import { view as inputs } from './tabs/inputs/index';
 import { view as ml } from './tabs/ml/index';
 import { view as report } from './tabs/report/index';
@@ -28,6 +29,7 @@ export const TABS: TabEntry[] = [
   { id: 'calcs', title: 'Calculations', subtitle: 'Convergence and timing of every geometry in your ensembles', icon: 'calcs', view: calcs, group: 'analyze' },
   { id: 'runs', title: 'Runs', subtitle: 'Running jobs, machine load and live log tails', icon: 'runs', view: runs, group: 'analyze' },
   { id: 'geom', title: 'Geometries', subtitle: 'Distributions of bonds, angles and dihedrals across ensembles and trajectories', icon: 'geom', view: geom, group: 'analyze' },
+  { id: 'viewer', title: 'Viewer', subtitle: '3D structures, trajectories, normal modes and molecular orbitals', icon: 'viewer', view: viewer, group: 'analyze' },
   { id: 'inputs', title: 'Input Builder', subtitle: 'Generate ORCA and PySCF inputs from templates', icon: 'inputs', view: inputs, group: 'create' },
   { id: 'ml', title: 'Machine Learning', subtitle: 'Train and compare models on molecular representations', icon: 'ml', view: ml, group: 'create' },
   { id: 'report', title: 'Report', subtitle: 'Edit a LaTeX report with live PDF preview', icon: 'report', view: report, group: 'create' }

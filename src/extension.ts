@@ -105,6 +105,11 @@ export function activate(context: vscode.ExtensionContext): void {
       const p = targetPath(uri);
       openStudio(context.extensionUri, 'inputs', p && /\.(xyz|inp|out)$/i.test(p) ? { geometryFile: p } : undefined);
     }],
+    ['orcaInp.openInViewer', (uri?: vscode.Uri, opts?: unknown) => {
+      const p = targetPath(uri);
+      const o = opts && typeof opts === 'object' ? (opts as { orbitals?: boolean; mode?: number }) : {};
+      openStudio(context.extensionUri, 'viewer', p ? { file: p, orbitals: o.orbitals === true, mode: typeof o.mode === 'number' ? o.mode : undefined } : undefined);
+    }],
     ['orcaInp.neaOpenOutputs', (uri?: vscode.Uri) => neaOpenOutputs(uri)],
     ['orcaInp.neaCommand', (uri?: vscode.Uri, uris?: vscode.Uri[]) => neaCommand(uri, uris)],
     ['orcaInp.runActions', (uri?: vscode.Uri) => runActions(uri)],
@@ -131,7 +136,7 @@ async function runActions(uri?: vscode.Uri): Promise<void> {
   const files = runFilesFor(p);
   const parsed = loadOutput(files.out);
   const s = parsed ? summarizeRun(parsed) : undefined;
-  const items: (vscode.QuickPickItem & { command: string })[] = [];
+  const items: (vscode.QuickPickItem & { command: string; args?: unknown })[] = [];
   if (s?.verdict === 'saddle') {
     items.push({ label: '$(debug-step-over) Displace along imaginary mode', description: 'new input + xyz', command: 'orcaInp.displaceAlongImaginaryMode' });
   }
@@ -147,10 +152,27 @@ async function runActions(uri?: vscode.Uri): Promise<void> {
   if (parsed?.jobs.some(j => j.excitations && j.excitations.length > 0)) {
     items.push({ label: '$(graph-line) Preview spectrum', command: 'orcaInp.previewSpectrum' });
   }
+  const steps = parsed?.jobs.reduce((n, j) => n + Math.max(j.optCycles.length, j.finalGeometry ? 1 : 0), 0) ?? 0;
+  items.push({ label: '$(eye) Show in 3D viewer', description: steps > 1 ? `${steps} geometry steps` : undefined, command: 'orcaInp.openInViewer' });
+  if (s?.hasFrequencies) {
+    const imag = parsed?.jobs.flatMap(j => j.frequenciesCm1 ?? []).findIndex(f => f < -20) ?? -1;
+    items.push({ label: '$(pulse) Animate normal modes', description: imag >= 0 ? 'starts with the imaginary mode' : undefined, command: 'orcaInp.openInViewer', args: { mode: imag >= 0 ? imag : undefined } });
+  }
+  if (files.out && /^\s*ORBITAL ENERGIES\s*$/m.test(safeRead(files.out))) {
+    items.push({ label: '$(symbol-misc) Show orbitals', description: 'MO levels, composition, excited states, cube isosurfaces', command: 'orcaInp.openInViewer', args: { orbitals: true } });
+  }
   items.push({ label: '$(go-to-file) Open output', command: 'vscode.open' });
   const pick = await vscode.window.showQuickPick(items, { title: `ORCA: ${files.base}` });
   if (pick) {
-    await vscode.commands.executeCommand(pick.command, vscode.Uri.file(files.out));
+    await vscode.commands.executeCommand(pick.command, vscode.Uri.file(files.out), ...(pick.args ? [pick.args] : []));
+  }
+}
+
+function safeRead(p: string): string {
+  try {
+    return fs.readFileSync(p, 'utf8');
+  } catch {
+    return '';
   }
 }
 
