@@ -1,0 +1,16 @@
+{
+  "ealg": "bootstrap",
+  "label": "run1",
+  "series": [
+    {
+      "kind": "ml",
+      "file": "absspec.pyneapples_run1_ml.n3000.2026-11-06_19-23-00.nm.cross.dat",
+      "n": 3000
+    },
+    {
+      "kind": "direct",
+      "file": "absspec.pyneapples_run1_direct.n60.2026-11-06_19-23-10.nm.cross.dat",
+      "n": 60
+    }
+  ]
+}

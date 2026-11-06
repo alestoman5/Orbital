@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "name": "h2co",
+  "geometry": "h2co.xyz",
+  "charge": 0,
+  "multiplicity": 1,
+  "ground": {
+    "program": "pyscf",
+    "method": "PBE",
+    "basis": "6-31g",
+    "keywords": "TightSCF",
+    "nprocs": 1
+  },
+  "sampling": {
+    "kind": "wigner",
+    "temperature": 300.0,
+    "wigner": {
+      "nsamples": 3000,
+      "seed": 16661
+    },
+    "md": {
+      "nsteps": 104000,
+      "dt": 20.0,
+      "nwritex": 10,
+      "equil_ps": 2.0,
+      "beads": 4,
+      "gle": "auto",
+      "launch": true
+    }
+  },
+  "excited": {
+    "method": "adc(2)",
+    "basis": "6-31g",
+    "xc": "PBE0",
+    "frozen_core": true,
+    "memory": 3000
+  },
+  "minimum": {
+    "nstates": 6,
+    "target_state": null,
+    "cubes": true
+  },
+  "train": {
+    "n": 60,
+    "jobs": 8
+  },
+  "mbtr": {
+    "n": 200,
+    "sigma": 0.2,
+    "range": "auto",
+    "max_frames": 5000
+  },
+  "krr": {
+    "alpha": [
+      -8,
+      -2,
+      4
+    ],
+    "gamma_factor": [
+      -1,
+      1,
+      3
+    ],
+    "cv": 5,
+    "nested": true,
+    "n_jobs": 4,
+    "seed": 42
+  },
+  "spectrum": {
+    "bandwidth": "silverman",
+    "confidence": 0.95,
+    "ealg": "auto",
+    "ncores": 4,
+    "direct": true
+  }
+}

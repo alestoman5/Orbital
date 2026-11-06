@@ -1,0 +1,106 @@
+{
+  "stages": {
+    "optfreq": {
+      "status": "done",
+      "started": "2026-11-06T19:22:54+00:00",
+      "summary": {
+        "program": "pyscf",
+        "method": "PBE",
+        "basis": "6-31g",
+        "n_imag": 0,
+        "omega_min_cm": 1160.7032567455801,
+        "omega_max_cm": 2923.8547956340226,
+        "energy_eh": -114.33154910939282,
+        "bohr_angstrom": 0.529177210903
+      },
+      "progress": 1.0,
+      "message": null,
+      "finished": "2026-11-06T19:22:54+00:00"
+    },
+    "minimum": {
+      "status": "done",
+      "started": "2026-11-06T19:22:54+00:00",
+      "summary": {
+        "method": "adc(2)",
+        "basis": "6-31g",
+        "xc": null,
+        "nstates": 6,
+        "converged": true,
+        "dominant": 2,
+        "target_state": 2,
+        "planar_rms": 0.0,
+        "planar": true,
+        "homo": 8,
+        "e_scf": -113.80525819807083
+      },
+      "progress": 1.0,
+      "message": null,
+      "finished": "2026-11-06T19:22:54+00:00"
+    },
+    "sampling": {
+      "status": "done",
+      "started": "2026-11-06T19:22:54+00:00",
+      "summary": {
+        "kind": "wigner",
+        "n_frames": 3000,
+        "beads": 1,
+        "seed": 16661,
+        "correlated": false,
+        "temperature": 300.0
+      },
+      "progress": 1.0,
+      "message": null,
+      "finished": "2026-11-06T19:22:54+00:00"
+    },
+    "select": {
+      "status": "done",
+      "started": "2026-11-06T19:22:54+00:00",
+      "summary": {
+        "n_all": 3000,
+        "n_train": 60,
+        "step": 50
+      },
+      "progress": 1.0,
+      "message": null,
+      "finished": "2026-11-06T19:22:54+00:00"
+    },
+    "excite": {
+      "status": "done",
+      "started": "2026-11-06T19:22:54+00:00",
+      "summary": {
+        "n": 60,
+        "converged": 60,
+        "nstates": 2,
+        "target_state": 2
+      },
+      "progress": 1.0,
+      "message": null,
+      "finished": "2026-11-06T19:22:54+00:00"
+    },
+    "train": {
+      "status": "done",
+      "started": "2026-11-06T19:22:54+00:00",
+      "progress": 1.0,
+      "message": null,
+      "summary": {
+        "n_all": 3000,
+        "n_train": 60,
+        "target_state": 2
+      },
+      "finished": "2026-11-06T19:22:59+00:00"
+    },
+    "spectrum": {
+      "status": "done",
+      "started": "2026-11-06T19:22:59+00:00",
+      "summary": {
+        "ealg": "bootstrap",
+        "label": "run1"
+      },
+      "progress": 1.0,
+      "message": null,
+      "finished": "2026-11-06T19:23:13+00:00"
+    }
+  },
+  "updated": "2026-11-06T19:23:13+00:00",
+  "pid": 999999
+}
