@@ -16,6 +16,8 @@ export const ICONS = {
   geom: s('<circle cx="6" cy="16" r="2.5"/><circle cx="12" cy="7" r="2.5"/><circle cx="18" cy="16" r="2.5"/><path d="M7.4 13.8 10.6 9.2M13.4 9.2l3.2 4.6"/><path d="M8.5 16h7" stroke-dasharray="1.5 2"/>'),
   /** document with code brackets */
   inputs: s('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="m10 12-2 2 2 2M14 12l2 2-2 2"/>'),
+  /** absorption band with a lightning bolt (ML-accelerated spectrum) */
+  accel: s('<path d="M3 20h18"/><path d="M3 19c3 0 4-9 6.5-9S12 16 14 16"/><path d="m17 3-3 6h4l-3 6"/>'),
   /** network of nodes */
   ml: s('<circle cx="5" cy="6" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="19" cy="18" r="2"/><path d="m6.7 7 3.6 3.9M6.7 17l3.6-3.9M13.7 11l3.6-3.9M13.7 13l3.6 3.9"/>'),
   /** page with lines */

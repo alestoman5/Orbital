@@ -1,0 +1,60 @@
+/* Accelerated UV/Vis tab. Colors only from tokens.css. */
+
+[data-tab="accel"] .accel { display: flex; flex-direction: column; gap: var(--space-4); }
+[data-tab="accel"] .accel-subtabs { margin-bottom: calc(-1 * var(--space-1)); }
+[data-tab="accel"] .accel-project .input { min-width: 220px; max-width: 420px; }
+
+/* --- setup form --- */
+[data-tab="accel"] .accel-form { display: flex; flex-direction: column; gap: var(--space-4); }
+[data-tab="accel"] .accel-form-grid { columns: 2 380px; column-gap: var(--space-4); }
+[data-tab="accel"] .accel-form-grid > .card { break-inside: avoid; margin-bottom: var(--space-4); display: inline-block; width: 100%; }
+[data-tab="accel"] .accel-form-grid .card-body { display: flex; flex-direction: column; gap: var(--space-3); }
+[data-tab="accel"] .accel-form-actions { display: flex; gap: var(--space-2); justify-content: flex-end; align-items: center; flex-wrap: wrap; position: sticky; bottom: 0; padding: var(--space-2) 0; background: var(--bg); }
+[data-tab="accel"] .accel-form-actions .callout { margin-right: auto; }
+[data-tab="accel"] .accel-row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+[data-tab="accel"] .accel-row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); align-items: start; }
+[data-tab="accel"] .accel-toggles { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; min-height: 28px; }
+[data-tab="accel"] .accel-path { display: flex; gap: var(--space-1); align-items: center; }
+[data-tab="accel"] .accel-path .input { flex: 1; min-width: 0; }
+[data-tab="accel"] .accel-subhead { font-weight: 650; color: var(--fg-strong); margin-top: var(--space-1); }
+[data-tab="accel"] .accel-note { font-size: var(--font-size-sm); color: var(--muted); align-self: end; padding-bottom: 6px; }
+[data-tab="accel"] .accel-field-error { font-size: var(--font-size-xs); color: var(--bad); }
+[data-tab="accel"] code { font-family: var(--font-mono); font-size: 11.5px; padding: 1px 4px; border-radius: 4px; background: var(--surface-3); }
+@media (max-width: 860px) {
+  [data-tab="accel"] .accel-row3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+/* --- pipeline --- */
+[data-tab="accel"] .accel-stages { display: flex; flex-direction: column; }
+[data-tab="accel"] .accel-stage { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: var(--space-3); align-items: start; padding: var(--space-2) 0; border-top: 1px solid var(--border); }
+[data-tab="accel"] .accel-stage:first-child { border-top: none; }
+[data-tab="accel"] .accel-stage-num {
+  width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: var(--font-size-xs); font-weight: 700;
+  background: var(--surface-3); color: var(--muted); border: 1px solid var(--border);
+}
+[data-tab="accel"] .st-done .accel-stage-num { background: var(--ok-soft, var(--surface-3)); color: var(--ok); border-color: var(--ok); }
+[data-tab="accel"] .st-running .accel-stage-num { color: var(--accent); border-color: var(--accent); }
+[data-tab="accel"] .st-failed .accel-stage-num, [data-tab="accel"] .st-interrupted .accel-stage-num { color: var(--bad); border-color: var(--bad); }
+[data-tab="accel"] .st-waiting .accel-stage-num { color: var(--warn); border-color: var(--warn); }
+[data-tab="accel"] .accel-stage-head { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+[data-tab="accel"] .accel-stage-text { font-size: var(--font-size-sm); color: var(--muted); margin-top: 2px; }
+[data-tab="accel"] .accel-stage-msg { font-size: var(--font-size-sm); margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+[data-tab="accel"] .accel-stage-msg.bad { color: var(--bad); }
+[data-tab="accel"] .accel-stage-actions { display: flex; gap: var(--space-1); align-items: center; }
+[data-tab="accel"] .accel-progress { width: 120px; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+[data-tab="accel"] .accel-progress span { display: block; height: 100%; background: var(--accent); }
+
+/* --- results --- */
+[data-tab="accel"] .accel-kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--space-3); }
+[data-tab="accel"] .accel-chart { width: 100%; height: 300px; }
+[data-tab="accel"] .accel-chart-card .card-body { display: flex; flex-direction: column; gap: var(--space-2); }
+[data-tab="accel"] .accel-links { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-top: var(--space-2); }
+[data-tab="accel"] .accel-target td { background: var(--accent-soft); }
+[data-tab="accel"] .accel-trans { display: flex; flex-direction: column; gap: 2px; }
+[data-tab="accel"] .accel-weight { color: var(--muted); font-size: var(--font-size-xs); }
+[data-tab="accel"] .accel-mo {
+  font: inherit; font-size: var(--font-size-sm); padding: 0 4px; border-radius: 4px; cursor: pointer;
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--fg);
+}
+[data-tab="accel"] .accel-mo:hover { border-color: var(--accent); color: var(--accent); }
+[data-tab="accel"] .accel-mo:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
