@@ -10,10 +10,11 @@ import { host as runs } from './tabs/runs/host';
 import { host as geom } from './tabs/geom/host';
 import { host as viewer } from './tabs/viewer/host';
 import { host as inputs } from './tabs/inputs/host';
+import { host as accel } from './tabs/accel/host';
 import { host as ml } from './tabs/ml/host';
 import { host as report } from './tabs/report/host';
 
-export const TAB_HOSTS: Record<TabId, TabHost> = { spectra, calcs, runs, geom, viewer, inputs, ml, report };
+export const TAB_HOSTS: Record<TabId, TabHost> = { spectra, calcs, runs, geom, viewer, inputs, accel, ml, report };
 
 /**
  * Runs one tab request. Errors become `{ ok: false, error }` so the webview

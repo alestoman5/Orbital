@@ -1,0 +1,36 @@
+{
+  "program": "pyscf",
+  "program_version": "2.15.0",
+  "method": "adc(2)",
+  "geometry_file": "/tmp/claude-0/t/run1/04-excite/geoms/geom_0001/geom.xyz",
+  "geometry_comment": "ensemble entry 49",
+  "host": "vm",
+  "nbf": 22,
+  "nelectron": 16,
+  "n_frozen_core_orbitals": 2,
+  "e_scf": -113.78042352002994,
+  "excitation_energies_ev": [
+    3.3868003224084706,
+    7.358570312719453
+  ],
+  "oscillator_strengths": [
+    0.0004901807616673722,
+    0.11688717779970088
+  ],
+  "osc_gauge": "length",
+  "converged": true,
+  "time_scf_s": 0.4729286240001329,
+  "time_adc_s": 0.1991134840000086,
+  "settings": {
+    "basis": "6-31g",
+    "charge": 0,
+    "n_states": 2,
+    "frozen_core": true,
+    "approx_trans_moments": false,
+    "memory_mb": 3000,
+    "scf_conv_tol": 1e-09,
+    "adc_conv_tol": 1e-08,
+    "adc_max_space": 12,
+    "adc_max_cycle": 50
+  }
+}

@@ -105,6 +105,15 @@ export function activate(context: vscode.ExtensionContext): void {
       const p = targetPath(uri);
       openStudio(context.extensionUri, 'inputs', p && /\.(xyz|inp|out)$/i.test(p) ? { geometryFile: p } : undefined);
     }],
+    ['orcaInp.openAccel', (uri?: vscode.Uri) => {
+      const p = targetPath(uri);
+      const isDir = p && fs.existsSync(p) && fs.statSync(p).isDirectory();
+      const args = !p ? undefined
+        : isDir ? { workdir: p }
+          : path.basename(p) === 'accel.json' ? { workdir: path.dirname(p) }
+            : /\.xyz$/i.test(p) ? { geometry: p } : undefined;
+      openStudio(context.extensionUri, 'accel', args);
+    }],
     ['orcaInp.openInViewer', (uri?: vscode.Uri, opts?: unknown) => {
       const p = targetPath(uri);
       const o = opts && typeof opts === 'object' ? (opts as { orbitals?: boolean; mode?: number }) : {};

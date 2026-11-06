@@ -1,0 +1,205 @@
+{
+  "method": "adc(2)",
+  "basis": "6-31g",
+  "xc": null,
+  "nstates": 6,
+  "converged": true,
+  "states": [
+    {
+      "state": 1,
+      "e_ev": 3.834556078499699,
+      "nm": 323.3339032259239,
+      "f": 2.0658165392304794e-14,
+      "character": "n -> pi*",
+      "character_weight": 0.959,
+      "singles": 0.922,
+      "transitions": [
+        {
+          "from": 8,
+          "to": 9,
+          "weight": 0.959,
+          "label": "n -> pi*"
+        }
+      ]
+    },
+    {
+      "state": 2,
+      "e_ev": 8.545939165587894,
+      "nm": 145.07966415119085,
+      "f": 0.1404668928913347,
+      "character": "n -> sigma*",
+      "character_weight": 0.963,
+      "singles": 0.861,
+      "transitions": [
+        {
+          "from": 8,
+          "to": 10,
+          "weight": 0.963,
+          "label": "n -> sigma*"
+        }
+      ]
+    },
+    {
+      "state": 3,
+      "e_ev": 9.010831433004252,
+      "nm": 137.5946263358997,
+      "f": 0.00953606227929539,
+      "character": "n -> pi*",
+      "character_weight": 0.993,
+      "singles": 0.923,
+      "transitions": [
+        {
+          "from": 6,
+          "to": 9,
+          "weight": 0.982,
+          "label": "n -> pi*"
+        }
+      ]
+    },
+    {
+      "state": 4,
+      "e_ev": 10.058000394634195,
+      "nm": 123.26923198983354,
+      "f": 0.0039055590202056213,
+      "character": "pi -> pi*",
+      "character_weight": 0.564,
+      "singles": 0.911,
+      "transitions": [
+        {
+          "from": 7,
+          "to": 9,
+          "weight": 0.564,
+          "label": "pi -> pi*"
+        },
+        {
+          "from": 8,
+          "to": 11,
+          "weight": 0.374,
+          "label": "n -> sigma*"
+        }
+      ]
+    },
+    {
+      "state": 5,
+      "e_ev": 11.09915922197641,
+      "nm": 111.70593728803388,
+      "f": 5.556253541538593e-13,
+      "character": "sigma -> pi*",
+      "character_weight": 0.951,
+      "singles": 0.922,
+      "transitions": [
+        {
+          "from": 5,
+          "to": 9,
+          "weight": 0.951,
+          "label": "sigma -> pi*"
+        }
+      ]
+    },
+    {
+      "state": 6,
+      "e_ev": 11.284519429372759,
+      "nm": 109.87104871943275,
+      "f": 0.010288248674386989,
+      "character": "n -> sigma*",
+      "character_weight": 0.969,
+      "singles": 0.917,
+      "transitions": [
+        {
+          "from": 8,
+          "to": 12,
+          "weight": 0.969,
+          "label": "n -> sigma*"
+        }
+      ]
+    }
+  ],
+  "orbitals": {
+    "5": {
+      "label": "sigma",
+      "pi_frac": 0.0,
+      "main_atom": "C1",
+      "main_atom_frac": 0.484,
+      "energy_ev": -18.836664326465215,
+      "occ": 2.0,
+      "name": "HOMO-3",
+      "cube": "02-minimum/cubes/mo_5.cube"
+    },
+    "6": {
+      "label": "n",
+      "pi_frac": 0.0,
+      "main_atom": "O2",
+      "main_atom_frac": 0.694,
+      "energy_ev": -17.311193939266463,
+      "occ": 2.0,
+      "name": "HOMO-2",
+      "cube": "02-minimum/cubes/mo_6.cube"
+    },
+    "7": {
+      "label": "pi",
+      "pi_frac": 1.0,
+      "main_atom": "O2",
+      "main_atom_frac": 0.637,
+      "energy_ev": -14.178176604221111,
+      "occ": 2.0,
+      "name": "HOMO-1",
+      "cube": "02-minimum/cubes/mo_7.cube"
+    },
+    "8": {
+      "label": "n",
+      "pi_frac": 0.0,
+      "main_atom": "O2",
+      "main_atom_frac": 0.68,
+      "energy_ev": -12.089721921462342,
+      "occ": 2.0,
+      "name": "HOMO",
+      "cube": "02-minimum/cubes/mo_8.cube"
+    },
+    "9": {
+      "label": "pi*",
+      "pi_frac": 1.0,
+      "main_atom": "C1",
+      "main_atom_frac": 0.635,
+      "energy_ev": 3.1446830344363756,
+      "occ": 0.0,
+      "name": "LUMO",
+      "cube": "02-minimum/cubes/mo_9.cube"
+    },
+    "10": {
+      "label": "sigma*",
+      "pi_frac": 0.0,
+      "main_atom": "C1",
+      "main_atom_frac": 0.359,
+      "energy_ev": 6.354216295477593,
+      "occ": 0.0,
+      "name": "LUMO+1",
+      "cube": "02-minimum/cubes/mo_10.cube"
+    },
+    "11": {
+      "label": "sigma*",
+      "pi_frac": 0.0,
+      "main_atom": "H3",
+      "main_atom_frac": 0.324,
+      "energy_ev": 8.611288244010524,
+      "occ": 0.0,
+      "name": "LUMO+2",
+      "cube": "02-minimum/cubes/mo_11.cube"
+    },
+    "12": {
+      "label": "sigma*",
+      "pi_frac": 0.0,
+      "main_atom": "C1",
+      "main_atom_frac": 0.761,
+      "energy_ev": 9.938640480219348,
+      "occ": 0.0,
+      "name": "LUMO+3",
+      "cube": "02-minimum/cubes/mo_12.cube"
+    }
+  },
+  "dominant": 2,
+  "target_state": 2,
+  "planar_rms": 0.0,
+  "planar": true,
+  "homo": 8,
+  "e_scf": -113.80525819807083
+}

@@ -1,6 +1,6 @@
 # Orbital Studio: architecture and conventions
 
-Orbital Studio is one webview panel (`Orbital: Open Orbital Studio`) with tabs for spectra, calculations, runs, the 3D viewer, geometries, the input builder, machine learning and the report editor. It generalizes the uv-vis web app (github.com/alestoman5/uv-vis, `webapp/`) and runs entirely inside the extension. Python is only needed for ML (and optionally to run PySCF jobs).
+Orbital Studio is one webview panel (`Orbital: Open Orbital Studio`) with tabs for spectra, calculations, runs, the 3D viewer, geometries, the input builder, accelerated UV/Vis, machine learning and the report editor. It generalizes the uv-vis web app (github.com/alestoman5/uv-vis, `webapp/`) and runs entirely inside the extension. Python is only needed for ML (and optionally to run PySCF jobs).
 
 ## Layout
 
@@ -80,6 +80,8 @@ Dev harness URLs: `http://localhost:5173/?tab=geom&theme=light&args=<url-encoded
 ```
 
 **3D (viewer tab).** The viewer is the only tab that draws with WebGL: three.js is bundled by esbuild (no CDN, CSP unchanged), `webview/src/tabs/viewer/scene.ts` renders on demand with instanced meshes. Isosurfaces are computed on the host (`src/chem/marchingCubes.ts`, marching tetrahedra) and sent as indexed meshes; theme colors reach three.js through `cssColor()` because the tokens use `color-mix()`. The parsers behind it are pure modules: `src/chem/cube.ts`, `src/chem/orbitals.ts` (ORBITAL ENERGIES, MO coefficients, CIS/TD-DFT states, composition), `src/chem/trajectory3d.ts`.
+
+**Accelerated UV/Vis (accel tab).** The tab only writes `<workdir>/accel.json` (`src/accel/spec.ts`: form ↔ config, validation, command line) and starts the uv-vis driver `scripts/accelerated.py` (found via `orcaInp.nea.scriptsDir` or a workspace search; interpreter `orcaInp.studio.accel.pythonPath`), detached or in a terminal. Everything it shows is read from the driver's files: `state.json` (per-stage status, pid), `01-optfreq/freqs.json`, `02-minimum/states.json` (+ `cubes/`), `03-sampling/sampling.json`, `04-excite/train_indices.json` and `geoms/*/result.json`, `05-ml/{mbtr,krr}.json`, `06-spectrum/spectrum.json` and the `nm.cross.dat` files. A watcher on `**/state.json` pushes `changed`; while a stage runs the webview polls every 3 s.
 
 **Tests.** Mocha + ts-node (transpile only), `test/**/*.test.ts`. Pure logic gets unit tests. Tab hosts are tested by calling `host.methods.x(params, fakeContext)` (see `test/studio/registry.test.ts` for a fake HostContext).
 

@@ -1,0 +1,8 @@
+{
+  "kind": "wigner",
+  "n_frames": 3000,
+  "beads": 1,
+  "seed": 16661,
+  "correlated": false,
+  "temperature": 300.0
+}

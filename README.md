@@ -54,14 +54,16 @@ ticks, 8 pt Arial-metric text, the Okabe-Ito palette and `quantity / unit` axis 
 | **Viewer** | 3D structures from `.xyz`, ORCA `.allxyz` relaxed scans (paired with `.relaxscanact.dat`), the geometry steps of a `.out`, `.hess` and `.cube` files (three.js, bundled). Trajectory player with the energy profile along the scan coordinate (click to jump), normal-mode animation, picking atoms for distances / angles / dihedrals, PNG export. Orbitals: MO level diagram and table with c² composition per element and π character relative to a picked plane (printed coefficients, `print[p_mos]`), CIS / TD-DFT states with their main i → a excitations (click one to see donor and acceptor MO side by side), ±isosurfaces of `<base>_moN.cube` files, and a ready `%plots` block for MOs without a cube. |
 | **Geometries** | Multi-XYZ ensembles and trajectories: watched bonds, angles and dihedrals as histograms, KDE, traces and 2D histograms; ABIN `.dat` columns with drift over the visible range. |
 | **Input Builder** | Form + templates for **ORCA 6** `.inp` and runnable **PySCF** `.py` (SP, Opt, Freq, OptTS, scans, TD-DFT/TDA, ADC(2)/ADC(3), EOM-CCSD, CASSCF/NEVPT2, DLPNO-CCSD(T); RI/RIJCOSX, D3/D4, CPCM/SMD) with a live highlighted preview and checks; batch inputs for a whole ensemble; NEA script commands. |
+| **Accelerated UV/Vis** | The uv-vis pipeline `scripts/accelerated.py` from one form: start geometry → ORCA/PySCF opt+freq → the first 6–7 excited states at the minimum (ADC(2)/ADC(2)-x/ADC(3) or TD-DFT/TDA) with their character (n→π\*, π→π\*, …, MO cube files for the viewer) and the dominant state → Wigner, GLE or PI+GLE sampling (ABIN; GLE matrix checked against the highest normal mode) → evenly picked training geometries → MBTR on a grid from the inverse-distance histograms + KRR grid search → PyNEAppLES spectrum of the whole ensemble. Pipeline view with per-stage status, run / redo / stop and the log; results: spectrum (ML vs training set ± experiment), states table, MBTR histograms, parity plots, E/f distributions, grid search. |
 | **Machine Learning** | Regression of a per-molecule target (CSV, e.g. excitation energies) from a multi-XYZ ensemble with `python/ml_worker.py` (scikit-learn): parity plots, learning curves, grid search, run comparison. |
 | **Report** | Section editor for a LaTeX report with backups, compile (latexmk / tectonic), PDF preview and figure import. |
 
 ![Input Builder](docs/screenshots/studio-inputs.png)
+![Accelerated UV/Vis](docs/screenshots/studio-accel.png)
 
 Commands that open a tab directly: *Open in 3D Viewer* (`.xyz`, `.allxyz`, `.out`, `.hess`, `.cube`; also in the `.out` status-bar menu as *Show in 3D viewer*, *Animate normal modes*, *Show orbitals*), *Preview Absorption Spectrum* (`.out`, folder), *Plot MD Data*
 (ABIN `.dat`), *NEA Run Overview*, *New ORCA/PySCF Input* (`.xyz`, `.inp`, `.out`) and *Edit Report in Orbital Studio*
-(`.tex`).
+(`.tex`) and *Accelerated UV/Vis…* (`.xyz`, a folder or its `accel.json`).
 
 | | |
 |---|---|

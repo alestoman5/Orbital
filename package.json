@@ -54,7 +54,8 @@
       { "command": "orcaInp.runs.toggleProblemsOnlyOff", "title": "Show All Runs", "category": "ORCA", "icon": "$(filter-filled)" },
       { "command": "orcaInp.editReport", "title": "Edit Report in Orbital Studio", "category": "Orbital", "icon": "$(book)" },
       { "command": "orcaInp.newInput", "title": "New ORCA/PySCF Input…", "category": "Orbital", "icon": "$(new-file)" },
-      { "command": "orcaInp.openInViewer", "title": "Open in 3D Viewer", "category": "Orbital", "icon": "$(eye)" }
+      { "command": "orcaInp.openInViewer", "title": "Open in 3D Viewer", "category": "Orbital", "icon": "$(eye)" },
+      { "command": "orcaInp.openAccel", "title": "Accelerated UV/Vis…", "category": "Orbital", "icon": "$(zap)" }
     ],
     "views": {
       "explorer": [
@@ -99,7 +100,8 @@
         { "command": "orcaInp.neaOpenOutputs", "when": "explorerResourceIsFolder", "group": "8_nea" },
         { "command": "orcaInp.neaCommand", "when": "explorerResourceIsFolder || resourceExtname =~ /^\\.(xyz|molden)$/", "group": "8_nea" },
         { "command": "orcaInp.newInput", "when": "resourceExtname =~ /^\\.(xyz|inp|out)$/", "group": "7_orca@1" },
-        { "command": "orcaInp.editReport", "when": "resourceExtname == .tex", "group": "7_orca@2" }
+        { "command": "orcaInp.editReport", "when": "resourceExtname == .tex", "group": "7_orca@2" },
+        { "command": "orcaInp.openAccel", "when": "resourceExtname == .xyz || resourceFilename == accel.json || explorerResourceIsFolder", "group": "8_nea@0" }
       ],
       "editor/title": [
         { "command": "orcaInp.previewSpectrum", "when": "resourceExtname == .out", "group": "navigation" },
@@ -366,6 +368,11 @@
           "type": "string",
           "default": "python",
           "markdownDescription": "Python interpreter that runs the Orbital Studio ML worker (`python/ml_worker.py`). Needs numpy, scipy, pandas, scikit-learn, joblib and threadpoolctl; dscribe + ase for the CM/SOAP/MBTR representations, xgboost for XGBoost. Use the full path of a venv/conda interpreter if `python` on PATH is not the right one."
+        },
+        "orcaInp.studio.accel.pythonPath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Python interpreter that runs the uv-vis driver `scripts/accelerated.py` (Accelerated UV/Vis tab): PySCF, numpy, scipy, scikit-learn (dscribe + ase optional), the uv-vis `nea` environment. Empty = `orcaInp.studio.pythonPath`. ORCA and ABIN come from `$ORCA` / `$ABIN` of the environment VS Code was started in."
         },
         "orcaInp.studio.ml.maxJobs": {
           "type": "number",
