@@ -18,7 +18,7 @@
   font-size: var(--font-size-sm); color: var(--fg);
 }
 [data-tab="calcs"] .calcs-progress-bar { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; min-width: 120px; }
-[data-tab="calcs"] .calcs-progress-bar span { display: block; height: 100%; background: var(--accent-grad); transition: width 200ms var(--ease); }
+[data-tab="calcs"] .calcs-progress-bar span { display: block; height: 100%; background: var(--accent); transition: width 200ms var(--ease); }
 [data-tab="calcs"] .calcs-progress-bar.indeterminate span { animation: calcs-slide 1.2s var(--ease) infinite; }
 @keyframes calcs-slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 [data-tab="calcs"] .calcs-spinner {

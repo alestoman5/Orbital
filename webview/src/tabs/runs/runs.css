@@ -17,7 +17,7 @@
   font-family: var(--font-mono); font-size: var(--font-size-xs);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw;
 }
-[data-tab="runs"] .runs-hot { color: var(--warn); font-weight: 600; }
+[data-tab="runs"] .runs-hot { color: var(--warn); font-weight: 500; }
 [data-tab="runs"] .table td .btn { white-space: nowrap; }
 
 [data-tab="runs"] .runs-logs { display: grid; grid-template-columns: minmax(300px, 2fr) minmax(0, 3fr); gap: var(--space-4); align-items: start; }
@@ -27,7 +27,7 @@
 [data-tab="runs"] .runs-logname { display: flex; flex-direction: column; min-width: 0; }
 [data-tab="runs"] .runs-logbase { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--fg-strong); }
 [data-tab="runs"] .runs-logdir { font-size: var(--font-size-xs); color: var(--muted); overflow-wrap: anywhere; }
-[data-tab="runs"] .runs-fresh { color: var(--ok); font-weight: 600; }
+[data-tab="runs"] .runs-fresh { color: var(--ok); font-weight: 500; }
 
 [data-tab="runs"] .runs-viewer { position: sticky; top: 0; min-width: 0; }
 [data-tab="runs"] .runs-viewer .card-head { flex-wrap: wrap; gap: var(--space-2); }

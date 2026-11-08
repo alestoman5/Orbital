@@ -1,8 +1,10 @@
 /* Design tokens of Orbital Studio. Dark-first, derived from the VS Code theme
-   variables so the studio sits naturally in any theme; the accent pair is the
-   two phases of an orbital (cyan +, violet −). Tabs use these variables only —
-   no raw colors in tab CSS.
-   Declared on body as well as :root: derived tokens (--accent-grad, --accent-soft, ...)
+   variables so the studio sits naturally in any theme. The chrome is neutral with
+   one accent (cyan, the + phase of an orbital); violet (--accent-2, the − phase)
+   is a data color only: a second category, a second selection, syntax. Never a
+   gradient between the two, never on buttons or surfaces. Tabs use these
+   variables only — no raw colors in tab CSS.
+   Declared on body as well as :root: derived tokens (--accent-soft, ...)
    resolve where they are declared, so they have to be resolved again on the body that
    carries the theme class (body.vscode-light overrides --accent). */
 
@@ -23,12 +25,11 @@ body {
   --surface-1: color-mix(in srgb, var(--fg) 3%, var(--bg));
   --surface-2: color-mix(in srgb, var(--fg) 5.5%, var(--bg));
   --surface-3: color-mix(in srgb, var(--fg) 9%, var(--bg));
-  --border: color-mix(in srgb, var(--fg) 11%, transparent);
-  --border-strong: color-mix(in srgb, var(--fg) 20%, transparent);
+  --border: color-mix(in srgb, var(--fg) 9%, transparent);
+  --border-strong: color-mix(in srgb, var(--fg) 16%, transparent);
 
   --accent: #38bdf8;
   --accent-2: #a78bfa;
-  --accent-grad: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
   --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
   --accent-2-soft: color-mix(in srgb, var(--accent-2) 14%, transparent);
   --on-accent: #06121c;
@@ -53,10 +54,13 @@ body {
   --space-5: 24px;
   --space-6: 32px;
 
-  --shadow: 0 1px 0 0 color-mix(in srgb, #fff 4%, transparent) inset, 0 10px 30px -18px rgb(0 0 0 / 0.7);
-  --shadow-pop: 0 12px 40px -12px rgb(0 0 0 / 0.6);
-  --glass: color-mix(in srgb, var(--surface-2) 82%, transparent);
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* Dark: depth from surface steps and hairlines, a soft top highlight at most.
+     Floating things (menus, tooltips, toasts) keep one neutral shadow. */
+  --shadow: 0 1px 0 0 color-mix(in srgb, #fff 3%, transparent) inset;
+  --shadow-pop: 0 12px 32px -12px rgb(0 0 0 / 0.55);
+  /* Overlays on the 3D viewer and charts: nearly opaque, no blur. */
+  --glass: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   --rail-width: 212px;
   color-scheme: dark;
@@ -74,9 +78,9 @@ body.vscode-light {
   --muted: color-mix(in srgb, var(--vscode-descriptionForeground, #717171) 85%, var(--fg-strong));
   --surface-1: color-mix(in srgb, var(--fg) 2.5%, var(--bg));
   --surface-2: color-mix(in srgb, var(--fg) 4.5%, var(--bg));
-  --border: color-mix(in srgb, var(--fg) 12%, transparent);
-  --shadow: 0 1px 2px rgb(15 23 42 / 0.06), 0 10px 30px -20px rgb(15 23 42 / 0.35);
-  --shadow-pop: 0 16px 40px -16px rgb(15 23 42 / 0.35);
+  --border: color-mix(in srgb, var(--fg) 10%, transparent);
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-pop: 0 8px 24px rgb(0 0 0 / 0.08);
   color-scheme: light;
 }
 

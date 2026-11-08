@@ -20,7 +20,7 @@
 
 /* 3D view */
 [data-tab="viewer"] .viewer-head { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-2); }
-[data-tab="viewer"] .viewer-title { font-weight: 600; color: var(--fg-strong); }
+[data-tab="viewer"] .viewer-title { font-weight: 500; color: var(--fg-strong); }
 [data-tab="viewer"] .viewer-note { font-size: var(--font-size-sm); }
 [data-tab="viewer"] .viewer-actions { gap: 4px; }
 [data-tab="viewer"] .viewer-scenes { display: grid; grid-template-columns: 1fr; gap: var(--space-2); }
@@ -36,13 +36,13 @@
   position: absolute; left: 0; top: 0; font-size: 10px; font-family: var(--font-mono); color: var(--fg-strong);
   text-shadow: 0 0 3px var(--surface-1), 0 0 2px var(--surface-1);
 }
-[data-tab="viewer"] .viewer-labels span.on { color: var(--accent); font-weight: 700; }
+[data-tab="viewer"] .viewer-labels span.on { color: var(--accent); font-weight: 600; }
 [data-tab="viewer"] .viewer-scene-title {
   position: absolute; left: 8px; top: 6px; font-size: var(--font-size-sm); color: var(--fg-strong);
   text-shadow: 0 0 4px var(--surface-1); pointer-events: none;
 }
 [data-tab="viewer"] .viewer-measure {
-  position: absolute; left: 8px; bottom: 8px; padding: 4px 10px; border-radius: 999px;
+  position: absolute; left: 8px; bottom: 8px; padding: 4px 10px; border-radius: var(--radius-sm);
   background: var(--glass); border: 1px solid var(--border); font-size: var(--font-size-sm); font-family: var(--font-mono);
 }
 
@@ -67,17 +67,17 @@
 [data-tab="viewer"] .viewer-levels-plot { height: 360px; cursor: pointer; }
 [data-tab="viewer"] .viewer-levels-table { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
 [data-tab="viewer"] .viewer-plane-row { flex-wrap: wrap; gap: 6px; font-size: var(--font-size-sm); }
-[data-tab="viewer"] tr.viewer-frontier td { font-weight: 600; }
+[data-tab="viewer"] tr.viewer-frontier td { font-weight: 500; }
 [data-tab="viewer"] .viewer-subhead { font-size: var(--font-size); margin: var(--space-3) 0 var(--space-2); color: var(--fg-strong); }
 [data-tab="viewer"] .viewer-chips { display: flex; flex-wrap: wrap; gap: 4px; }
 [data-tab="viewer"] .viewer-chip {
-  display: inline-flex; align-items: center; padding: 1px 8px; border: 1px solid var(--border-strong); border-radius: 999px;
+  display: inline-flex; align-items: center; padding: 1px 8px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
   background: var(--surface-2); color: var(--fg); font: inherit; font-size: var(--font-size-sm); font-family: var(--font-mono); cursor: pointer;
 }
 [data-tab="viewer"] .viewer-chip-w { margin-left: 6px; }
 [data-tab="viewer"] .viewer-chip:hover { border-color: var(--accent); background: var(--accent-soft); }
 [data-tab="viewer"] .viewer-chip.static { cursor: default; }
-[data-tab="viewer"] .viewer-plots summary { cursor: pointer; font-weight: 550; margin: var(--space-2) 0; }
+[data-tab="viewer"] .viewer-plots summary { cursor: pointer; font-weight: 500; margin: var(--space-2) 0; }
 [data-tab="viewer"] .viewer-plots .field { max-width: 360px; }
 
 @media (max-width: 1100px) {
