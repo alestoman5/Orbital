@@ -72,7 +72,6 @@
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   background: var(--glass);
-  backdrop-filter: blur(10px);
   box-shadow: var(--shadow-pop);
   color: var(--fg);
   font: var(--font-size-xs) / 1.45 var(--font-ui);

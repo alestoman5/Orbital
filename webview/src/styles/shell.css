@@ -19,7 +19,7 @@ body {
   overflow: hidden;
 }
 
-h1, h2, h3, h4 { margin: 0; color: var(--fg-strong); font-weight: 600; letter-spacing: -0.01em; }
+h1, h2, h3, h4 { margin: 0; color: var(--fg-strong); font-weight: 500; }
 p { margin: 0; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
@@ -48,7 +48,7 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: var(--space-3) var(--space-2);
+  padding: var(--space-4) var(--space-2);
   background: var(--surface-1);
   border-right: 1px solid var(--border);
   overflow-y: auto;
@@ -58,34 +58,22 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 10px 14px;
+  height: 32px;
+  padding: 0 10px;
+  margin-bottom: var(--space-2);
 }
-.brand-mark {
-  width: 26px;
-  height: 26px;
-  padding: 4px;
-  border-radius: 8px;
-  color: var(--on-accent);
-  background: var(--accent-grad);
-  box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--accent) 60%, transparent);
-}
-.brand-name { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; }
-.brand-name b {
-  font-weight: 650;
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+/* Flat p-orbital glyph in the one accent: no tile, no glow. */
+.brand-mark { width: 18px; height: 18px; color: var(--accent); }
+.brand-name { font-size: 14px; font-weight: 500; color: var(--fg-strong); white-space: nowrap; }
+.brand-name b { font-weight: 400; color: var(--muted); }
 
 .rail-group {
-  margin: 12px 10px 4px;
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  margin: var(--space-5) 10px var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 400;
   color: var(--muted);
 }
+.brand + .rail-group { margin-top: var(--space-4); }
 
 .rail-item {
   position: relative;
@@ -93,7 +81,8 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 7px 10px;
+  height: 32px;
+  padding: 0 10px;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -104,19 +93,16 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   transition: background 120ms var(--ease), color 120ms var(--ease);
 }
 .rail-item .icon { width: 18px; height: 18px; color: var(--muted); transition: color 120ms var(--ease); }
-.rail-item:hover { background: var(--surface-3); }
-.rail-item.on { background: var(--accent-soft); color: var(--fg-strong); font-weight: 550; }
-.rail-item.on .icon { color: var(--accent); }
-.rail-item.on::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 6px;
-  bottom: 6px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--accent-grad);
+.rail-item:hover { background: var(--surface-2); }
+/* Active: one surface step with a hairline top highlight; the icon carries the accent. */
+.rail-item.on {
+  background: var(--surface-3);
+  color: var(--fg-strong);
+  font-weight: 500;
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 6%, transparent);
 }
+.rail-item.on .icon { color: var(--accent); }
+body.vscode-light .rail-item.on { box-shadow: inset 0 0 0 1px var(--border); }
 
 .stage {
   display: flex;
@@ -125,7 +111,7 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   min-height: 0;
 }
 
-/* Tab header with the two orbital lobes as a soft glow behind it. */
+/* Tab header: quiet, a hairline under it. */
 .tab-header {
   position: relative;
   display: flex;
@@ -134,38 +120,21 @@ code, kbd, pre, .mono { font-family: var(--font-mono); font-size: 0.92em; }
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
   border-bottom: 1px solid var(--border);
-  overflow: hidden;
+  min-height: 64px;
   flex: none;
 }
-.tab-header::before,
-.tab-header::after {
-  content: '';
-  position: absolute;
-  width: 240px;
-  height: 120px;
-  border-radius: 50%;
-  filter: blur(36px);
-  opacity: 0.18;
-  pointer-events: none;
-}
-.tab-header::before { right: 140px; top: -70px; background: var(--accent); }
-.tab-header::after { right: -20px; top: -40px; background: var(--accent-2); }
-body.vscode-light .tab-header::before,
-body.vscode-light .tab-header::after { opacity: 0.12; }
-body.vscode-high-contrast .tab-header::before,
-body.vscode-high-contrast .tab-header::after { display: none; }
 
 .tab-title { position: relative; display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
-.tab-title h1 { font-size: 17px; }
+.tab-title h1 { font-size: 16px; line-height: 22px; }
 .tab-title p { color: var(--muted); font-size: var(--font-size-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tab-icon {
   width: 36px;
   height: 36px;
-  padding: 8px;
-  border-radius: 10px;
-  color: var(--accent);
-  background: linear-gradient(135deg, var(--accent-soft), var(--accent-2-soft));
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  padding: 9px;
+  border-radius: var(--radius);
+  color: var(--fg);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
 }
 .tab-header-actions { position: relative; display: flex; gap: var(--space-2); flex: none; }
 .tab-actions { display: flex; gap: var(--space-2); align-items: center; }
@@ -177,16 +146,16 @@ body.vscode-high-contrast .tab-header::after { display: none; }
 }
 .tab-root {
   padding: var(--space-4) var(--space-5) var(--space-6);
-  animation: tab-in 220ms var(--ease);
+  animation: tab-in 300ms var(--ease);
 }
-@keyframes tab-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes tab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 /* Narrow panels: icon-only rail. */
 @media (max-width: 760px) {
   :root, body { --rail-width: 56px; }
   .brand-name, .rail-group, .rail-item span { display: none; }
-  .rail-item { justify-content: center; padding: 9px 0; }
-  .brand { justify-content: center; padding: 6px 0 14px; }
+  .rail-item { justify-content: center; padding: 0; }
+  .brand { justify-content: center; padding: 0; }
   .tab-header { padding: var(--space-3) var(--space-4); }
   .tab-root { padding: var(--space-3) var(--space-4) var(--space-5); }
   .tab-title p { display: none; }

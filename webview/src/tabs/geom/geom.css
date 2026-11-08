@@ -11,7 +11,7 @@
 
 /* library table */
 [data-tab="geom"] .geom-file { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; align-items: baseline; gap: 8px; min-width: 0; }
-[data-tab="geom"] .geom-file b { font-weight: 550; color: var(--fg-strong); }
+[data-tab="geom"] .geom-file b { font-weight: 500; color: var(--fg-strong); }
 [data-tab="geom"] .geom-file .muted { font-size: var(--font-size-xs); }
 
 /* coordinate chips */
@@ -22,7 +22,7 @@
   gap: 6px;
   padding: 3px 4px 3px 4px;
   border: 1px solid var(--border-strong);
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
   font-size: var(--font-size-sm);
   cursor: pointer;
@@ -41,12 +41,12 @@
   border-radius: 50%;
   background: var(--surface-0);
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
   font-size: 12px;
 }
 [data-tab="geom"] .geom-chip-kind.angle { color: var(--accent-2); }
 [data-tab="geom"] .geom-chip-kind.dihedral { color: var(--warn); }
-[data-tab="geom"] .geom-chip-label { font-weight: 600; color: var(--fg-strong); }
+[data-tab="geom"] .geom-chip-label { font-weight: 500; color: var(--fg-strong); }
 [data-tab="geom"] .geom-chip-atoms { font-family: var(--font-mono); font-size: var(--font-size-xs); color: var(--muted); }
 [data-tab="geom"] .geom-chip-unit { font-size: var(--font-size-xs); color: var(--muted); }
 [data-tab="geom"] .geom-chip-axis {
@@ -54,7 +54,7 @@
   border-radius: 4px;
   background: var(--surface-0);
   font-size: var(--font-size-xs);
-  font-weight: 700;
+  font-weight: 600;
   color: var(--fg-strong);
 }
 [data-tab="geom"] .geom-chip-x {
@@ -90,9 +90,9 @@
 [data-tab="geom"] .geom-atom:hover .ball,
 [data-tab="geom"] .geom-atom:focus-visible .ball { stroke: var(--accent); stroke-width: 2.5; }
 [data-tab="geom"] .geom-atom .ring { fill: none; stroke: var(--accent); stroke-width: 2.5; }
-[data-tab="geom"] .geom-atom .lbl { font-size: 10px; font-weight: 700; pointer-events: none; }
+[data-tab="geom"] .geom-atom .lbl { font-size: 10px; font-weight: 600; pointer-events: none; }
 [data-tab="geom"] .geom-atom .order { fill: var(--accent); }
-[data-tab="geom"] .geom-atom .order-n { font-size: 9.5px; font-weight: 700; fill: var(--on-accent); pointer-events: none; }
+[data-tab="geom"] .geom-atom .order-n { font-size: 9.5px; font-weight: 600; fill: var(--on-accent); pointer-events: none; }
 [data-tab="geom"] .geom-pick-preview { font-size: var(--font-size-sm); min-height: 18px; }
 [data-tab="geom"] .geom-pick-preview b { font-variant-numeric: tabular-nums; color: var(--fg-strong); }
 
@@ -109,7 +109,7 @@
   padding: 4px 8px;
   background: var(--surface-2);
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 500;
   text-align: right;
 }
 [data-tab="geom"] .geom-atoms th:nth-child(2), [data-tab="geom"] .geom-atoms td:nth-child(2) { text-align: left; }
@@ -137,7 +137,7 @@
   background: var(--accent);
   color: var(--on-accent);
   font-size: 9.5px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* options */
@@ -167,7 +167,6 @@
   display: grid;
   place-items: center;
   background: color-mix(in srgb, var(--bg) 55%, transparent);
-  backdrop-filter: blur(1.5px);
   border-radius: var(--radius-sm);
   z-index: 2;
 }
@@ -182,11 +181,11 @@
 }
 [data-tab="geom"] .geom-progress-label { font-size: var(--font-size-sm); margin-bottom: var(--space-2); }
 [data-tab="geom"] .geom-progress-bar { height: 4px; border-radius: 2px; background: var(--surface-3); overflow: hidden; }
-[data-tab="geom"] .geom-progress-bar span { display: block; height: 100%; background: var(--accent-grad); transition: width 200ms var(--ease); }
+[data-tab="geom"] .geom-progress-bar span { display: block; height: 100%; background: var(--accent); transition: width 200ms var(--ease); }
 [data-tab="geom"] .geom-coordcell .muted { font-size: var(--font-size-xs); }
 
 /* trajectory */
-[data-tab="geom"] .geom-dat-title { font-weight: 600; color: var(--fg-strong); }
+[data-tab="geom"] .geom-dat-title { font-weight: 500; color: var(--fg-strong); }
 [data-tab="geom"] .geom-dat-plot { min-height: 200px; }
 [data-tab="geom"] .geom-dat-hint { margin-top: var(--space-2); }
 [data-tab="geom"] .geom-col-list { display: flex; flex-direction: column; gap: 4px; }
