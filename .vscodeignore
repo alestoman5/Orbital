@@ -19,3 +19,4 @@ out/webview-dev/**
 **/*.tsbuildinfo
 python/__pycache__/**
 python/test_ml_worker.py
+.claude/**
